@@ -1,48 +1,50 @@
 ####imports von libraries##############################################
 library(readr)
+library(rstudioapi)
 #######################################################################
 
 
-####Pfad setzen: jeder dort, wo die Daten auf dem PC liegen########################################################
-setwd('~/Desktop/Uni/4.Semester/projekt/data/')
-print('Aktuelles Verzeichniss: ') getwd()
-#getwd() um auszugeben wo R momentan ausgef??hrt wird, bzw von wo der relative path gestartet wird
-#######################################################################
+#### find local directory #####
+wd = dirname(rstudioapi::getSourceEditorContext()$path)
+#########################
 
 
-##################Einlesen der ganzen Datens??tze#######################
+##################Einlesen der ganzen Daten#######################
 
 #### Drug perturbation data from cell lines (transcriptome modulation and inhibition of cell growth)
 ##Hauptpaper
 # Gene expression
-mat_NCI_TPW_gep_untreated <- readRDS("NCI_TPW_gep_untreated.rds")
-mat_NCI_TPW_gep_treated <- readRDS("NCI_TPW_gep_treated.rds")
-tsv_NCI_TPW_metadata <- read_tsv("NCI_TPW_metadata.tsv")
+ 
+NCI_TPW_gep_untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+NCI_TPW_gep_treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+NCI_TPW_metadata <- read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
 # Drug sensitivity assay
-mat_NegLogGI50.rds <- readRDS("NegLogGI50.rds")
+NegLogGI50 <- readRDS(paste0(wd,"/data/NegLogGI50.rds"))
 
 ####Basal molecular profiles of cancer cell lines 
 ##(mutations + gene copy number alterations + basal gene expression):
 ##nature paper
-mat_CCLE_basalexpression <- readRDS("CCLE_basalexpression.rds")
-mat_CCLE_copynumber.rds <- readRDS("CCLE_copynumber.rds")
-mat_CCLE_mutations.rds <- readRDS("CCLE_mutations.rds")
+CCLE_basalexpression <- readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
+CCLE_copynumber <- readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
+CCLE_mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
 
 #### Feature annotation
 # cell line metadata
-tsv_cellline_annotation <- read_tsv("cellline_annotation.tsv")
+cellline_annotation <- read_tsv(paste0(wd,"/data/cellline_annotation.tsv"))
 # mechanism of action, ect.
-tsv_drug_annotation <- read_tsv("drug_annotation.tsv")
+drug_annotation <- read_tsv(paste0(wd,"/data/drug_annotation.tsv"))
 
 
 #######################################################################
 
 #daten umwandeln
-mat_NCI_TPW_gep_treated <- as.data.frame(mat_NCI_TPW_gep_treated)
+NCI_TPW_gep_treated <- as.data.frame(NCI_TPW_gep_treated)
 # um Datentyp zu testen: is.recursive(mat_NCI_TPW_gep_treated)
+NCI_TPW_gep_untreated <- as.data.frame(NCI_TPW_gep_untreated)
 
-mat_NCI_TPW_gep_untreated <- as.data.frame(mat_NCI_TPW_gep_untreated)
+NegLogGI50<- as.data.frame(NegLogGI50)
 
-mat_NegLogGI50.rds <- as.data.frame(mat_NegLogGI50.rds)
+
+
 
 
