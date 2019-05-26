@@ -5,16 +5,16 @@ library(rstudioapi)
 
 wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
-  Untreated = readRDS(paste0(wd,"NCI_TPW_gep_untreated.rds"))
-  Treated = readRDS(paste0(wd,"NCI_TPW_gep_treated.rds"))
-  Basal = readRDS(paste0(wd,"CCLE_basalexpression.rds"))
-  Copynumber = readRDS(paste0(wd,"CCLE_copynumber.rds"))
-  Mutations = readRDS(paste0(wd,"CCLE_mutations.rds"))
-  Sensitivity = readRDS(paste0(wd,"NegLogGI50.rds"))
-  Drug_annotation = read_tsv(paste0(wd,"drug_annotation.tsv"))
-  Cellline_annotation = read_tsv(paste0(wd,"cellline_annotation.tsv"))
-  Metadata = read_tsv(paste0(wd,"NCI_TPW_metadata.tsv"))
-
+  Untreated = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+  Treated = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+  Basal = readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
+  Copynumber = readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
+  Mutations = readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
+  Sensitivity = readRDS(paste0(wd,"/data/NegLogGI50.rds"))
+  Drug_annotation = read_tsv(paste0(wd,"/data/drug_annotation.tsv"))
+  Cellline_annotation = read_tsv(paste0(wd,"/data/cellline_annotation.tsv"))
+  Metadata = read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
+  ## /data/ to find the file in the directory!
   
 ###BROAD ANALYSIS
 
@@ -33,7 +33,8 @@ top10Untreated <- head(VariableFeatures(BroadAnU), 10)
 
 # plot variable features with and without labels
 plot1 <- VariableFeaturePlot(BroadAnU)
-plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE, xnudge = 0, ynudge = 0)
+plot2 <- LabelPoints(plot = plot1, points = top10Untreated, repel = TRUE, xnudge = 0, ynudge = 0)
+# Change from top1o to top10Untreated
 
 #The same with treated data:
 BroadAnT <- CreateSeuratObject(counts = Treated, project = "BroadAnT")
@@ -44,7 +45,8 @@ top10Treated <- head(VariableFeatures(BroadAnT), 10)
 
 # plot variable features with and without labels
 plot1 <- VariableFeaturePlot(BroadAnT)
-plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE, xnudge = 0, ynudge = 0)
+plot2 <- LabelPoints(plot = plot1, points = top10Treated, repel = TRUE, xnudge = 0, ynudge = 0)
+# Change from top10 to top10Treated
 
 ## Can we find matches between Treated and Untreated regarding their most variable gene expression?
 top10Untreated == top10Treated
@@ -64,7 +66,7 @@ print(BroadAnU[["pca"]], dims = 1:5, nfeatures = 5)
 VizDimLoadings(BroadAnU, dims = 1:2, reduction = "pca")
 DimPlot(BroadAnU, reduction = "pca")
 DimHeatmap(BroadAnU, dims = 1, cells = 500, balanced = TRUE)
-
+DimHeatmap(BroadAnU, dims = 2, cells = 500, balanced = TRUE)
 ElbowPlot(BroadAnU)
 
 #Problem: There is no clear elbow in the curve.
