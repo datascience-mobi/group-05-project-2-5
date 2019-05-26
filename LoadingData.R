@@ -17,7 +17,8 @@ wd = dirname(rstudioapi::getSourceEditorContext()$path)
  
 NCI_TPW_gep_untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
 NCI_TPW_gep_treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
-NCI_TPW_metadata <- read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
+#NCI_TPW_metadata <- read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
+NCI_TPW_metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 # Drug sensitivity assay
 NegLogGI50 <- readRDS(paste0(wd,"/data/NegLogGI50.rds"))
 
@@ -30,9 +31,11 @@ CCLE_mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
 
 #### Feature annotation
 # cell line metadata
-cellline_annotation <- read_tsv(paste0(wd,"/data/cellline_annotation.tsv"))
+#cellline_annotation <- read_tsv(paste0(wd,"/data/cellline_annotation.tsv"))
+cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 # mechanism of action, ect.
-drug_annotation <- read_tsv(paste0(wd,"/data/drug_annotation.tsv"))
+#drug_annotation <- read_tsv(paste0(wd,"/data/drug_annotation.tsv"))
+drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 
 
 #######################################################################
@@ -43,6 +46,9 @@ NCI_TPW_gep_treated <- as.data.frame(NCI_TPW_gep_treated)
 NCI_TPW_gep_untreated <- as.data.frame(NCI_TPW_gep_untreated)
 
 NegLogGI50<- as.data.frame(NegLogGI50)
+
+################### auf levels zugreifen: levels(datensatz$spalte)
+levels(NCI_TPW_metadata$drug)
 
 
 
