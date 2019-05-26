@@ -16,7 +16,28 @@ wd = dirname(rstudioapi::getSourceEditorContext()$path)
   Metadata = read_tsv(paste0(wd,"NCI_TPW_metadata.tsv"))
 
   
-###BROAD ANALYSIS
+########################## BROAD ANALYSIS ###############################################
+
+##################################################################################################
+
+########## colored with "level function" --> see loading data
+############### Do we have batches ? ########
+boxplot(Treated,medcol="red", border = NA, col= Metadata$drug, 
+        xlab="drugs", ylab="gene expression", main= "gene expression over treated cellines", las=3)
+  
+#### Ja, da wir nicht ??berall einen gleichen Median haben und eindeutig Boxen erkennen, die jeweils 
+# zu einem Medikament geh??ren 
+  
+  
+########## remove batches ##############
+#### load limma package  befor: http://bioconductor.org/packages/release/bioc/html/limma.html
+library(limma)
+#### which parameters are needed??? -> does not work yet 
+removeBatchEffect()
+
+##################################################################################################
+
+##################################################################################################
 
 ##Find genes which vary the most in Untreated and Treated celllines:
 ## Seurat packages need to be installed: install.packages('Seurat')
@@ -51,6 +72,9 @@ top10Untreated == top10Treated
 
 #There are matches! 4 genes are positioned equally in the top10 positions. A closer look at the top10 genes shows,that there are even 6 out of 10 genes which appear in both samples.
 
+###################################################################################################
+
+#####################################################################################################
 
 ###PCA with untreated celllines:
 
@@ -69,8 +93,24 @@ ElbowPlot(BroadAnU)
 
 #Problem: There is no clear elbow in the curve.
 
+####################################################################################################
+
+###################################################################################################
+
+##### PCA over "normal" data ######
+treated.pca = prcomp(Treated, center=T, scale. = T)
+# colored drug
+plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19,
+     xlab = "PC1",ylab = "PC2", col=Metadata$drug)
+# colored tissue
+plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19,
+     xlab = "PC1",ylab = "PC2", col=Metadata$tissue)
+### --> found groups 
+
+###################################################################################################
 
 
+###################################################################################################
 
 #Density plot which compares the mean expression of all celllines with and without treatment:
 plot(density(colMeans(Untreated)) ,xlab = "Mean", main = "Effects of treatment on gene expression")
@@ -99,7 +139,9 @@ axis(2, 1:dim, names, cex.axis = 0.8, las=1)
 # we could add the values of the differences with text(expand.grid(1:dim, 1:dim), sprintf("%0.1f", distances.m), cex=1) but that is too confusing.
 
 
+####################################################################################################################
 
+####################################################################################################
 
 ### PCA with the foldchange matrix:
 
@@ -129,6 +171,8 @@ tissue <- as.factor(FC[13300,])
     plot(pca$rotation[, 1], pca$rotation[, 2], col = tissue, pch = 19, xlab = "PC1", ylab = "PC2")
     #--> I tried different PCs but could not find groups of cellines from the same tissue.
 
+    # here also the levels could be used for coloring 
+    # plot(pca$rotation[, 1], pca$rotation[, 2], col = Metadata$tissue, pch = 19, xlab = "PC1", ylab = "PC2")
 
 ##Separate points according to the 15 different drugs:
 drug <- Metadata[1:819,3]
