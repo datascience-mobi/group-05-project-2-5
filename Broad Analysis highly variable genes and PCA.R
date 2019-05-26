@@ -25,7 +25,7 @@ wd = dirname(rstudioapi::getSourceEditorContext()$path)
 boxplot(Treated,medcol="red", border = NA, col= Metadata$drug, 
         xlab="drugs", ylab="gene expression", main= "gene expression over treated cellines", las=3)
   
-#### Ja, da wir nicht ??berall einen gleichen Median haben und eindeutig Boxen erkennen, die jeweils 
+#### Ja, da wir nicht ueberall einen gleichen Median haben und eindeutig Boxen erkennen, die jeweils 
 # zu einem Medikament geh??ren 
   
   
