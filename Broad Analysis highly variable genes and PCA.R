@@ -22,15 +22,15 @@ wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
 ########## colored with "level function" --> see loading data
 ############### Do we have batches ? ########
-boxplot(Treated,medcol="red", border = NA, col= Metadata$drug, 
+boxplot(Treated,medcol="red", border = NA, col= drug, 
         xlab="drugs", ylab="gene expression", main= "gene expression over treated cellines", las=3)
-  
+#Changed  col from Metadata$drug to drug, so that the function can be read#  
 #### Ja, da wir nicht ueberall einen gleichen Median haben und eindeutig Boxen erkennen, die jeweils 
 # zu einem Medikament geh??ren 
   
   
 ########## remove batches ##############
-#### load limma package  befor: http://bioconductor.org/packages/release/bioc/html/limma.html
+#### load limma package  before: http://bioconductor.org/packages/release/bioc/html/limma.html
 library(limma)
 #### which parameters are needed??? -> does not work yet 
 removeBatchEffect()
@@ -103,12 +103,22 @@ ElbowPlot(BroadAnU)
 treated.pca = prcomp(Treated, center=T, scale. = T)
 # colored drug
 plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19,
-     xlab = "PC1",ylab = "PC2", col=Metadata$drug)
+     xlab = "PC1",ylab = "PC2", col=drug)
 # colored tissue
 plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19,
-     xlab = "PC1",ylab = "PC2", col=Metadata$tissue)
+     xlab = "PC1",ylab = "PC2", col=tissue)
 ### --> found groups 
+#Changed  col from Metadata$drug to drug and Metadata$tissue to tissue, so that the functions can be read#  Added same plots with legends
+plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19,
+     xlab = "PC1",ylab = "PC2", col=drug)
+     legend("topright", inset = c(-0.3,0), levels(drug), xpd = TRUE, pch=19, col = levels)
+     par(mar=c(5, 4, 5, 7))
 
+plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19,
+     xlab = "PC1",ylab = "PC2", col=tissue, )
+        levels <- as.factor(levels(tissue))
+        legend("topright", inset = c(-0.3,0), levels(tissue), xpd = TRUE, pch=19, col = levels) 
+        par(mar=c(5, 4, 5, 5))
 ###################################################################################################
 
 
