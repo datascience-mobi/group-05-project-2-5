@@ -23,10 +23,12 @@ wd = dirname(rstudioapi::getSourceEditorContext()$path)
 ########## colored with "level function" --> see loading data
 ############### Do we have batches ? ########
 boxplot(Treated,medcol="red", border = NA, col= drug, 
-        xlab="drugs", ylab="gene expression", main= "gene expression over treated cellines", las=3)
+        xlab="drugs", ylab="gene expression", main= "Gene expression over treated cellines", las=3)
 #Changed  col from Metadata$drug to drug, so that the function can be read#  
 #### Ja, da wir nicht ueberall einen gleichen Median haben und eindeutig Boxen erkennen, die jeweils 
-# zu einem Medikament geh??ren 
+# zu einem Medikament geh??ren # Translation to english:
+##Yes, because we do not have the same median overall and boxes corresponding to a drug can be clearly recognised.
+
   
   
 ########## remove batches ##############
@@ -41,8 +43,8 @@ removeBatchEffect()
 
 ##Find genes which vary the most in Untreated and Treated celllines:
 ## Seurat packages need to be installed: install.packages('Seurat')
+##For the seurat library to be available, digest packages need to be installed: install.packages("digest")
 library(Seurat)
-
 #BroadAnU = Broad analysis untreated
 
 BroadAnU <- CreateSeuratObject(counts = Untreated, project = "BroadAnU")
