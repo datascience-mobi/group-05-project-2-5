@@ -5,16 +5,16 @@ library(rstudioapi)
 
 wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
-  Untreated = readRDS(paste0(wd,"NCI_TPW_gep_untreated.rds"))
-  Treated = readRDS(paste0(wd,"NCI_TPW_gep_treated.rds"))
-  Basal = readRDS(paste0(wd,"CCLE_basalexpression.rds"))
-  Copynumber = readRDS(paste0(wd,"CCLE_copynumber.rds"))
-  Mutations = readRDS(paste0(wd,"CCLE_mutations.rds"))
-  Sensitivity = readRDS(paste0(wd,"NegLogGI50.rds"))
-  Drug_annotation = read_tsv(paste0(wd,"drug_annotation.tsv"))
-  Cellline_annotation = read_tsv(paste0(wd,"cellline_annotation.tsv"))
-  Metadata = read_tsv(paste0(wd,"NCI_TPW_metadata.tsv"))
-
+  Untreated = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+  Treated = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+  Basal = readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
+  Copynumber = readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
+  Mutations = readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
+  Sensitivity = readRDS(paste0(wd,"/data/NegLogGI50.rds"))
+  Drug_annotation = read_tsv(paste0(wd,"/data/drug_annotation.tsv"))
+  Cellline_annotation = read_tsv(paste0(wd,"/data/cellline_annotation.tsv"))
+  Metadata = read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
+  ## /data/ to find the file in the directory!
   
 ########################## BROAD ANALYSIS ###############################################
 
@@ -22,15 +22,17 @@ wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
 ########## colored with "level function" --> see loading data
 ############### Do we have batches ? ########
-boxplot(Treated,medcol="red", border = NA, col= Metadata$drug, 
-        xlab="drugs", ylab="gene expression", main= "gene expression over treated cellines", las=3)
-  
+boxplot(Treated,medcol="red", border = NA, col= drug, 
+        xlab="drugs", ylab="gene expression", main= "Gene expression over treated cellines", las=3)
+#Changed  col from Metadata$drug to drug, so that the function can be read#  
 #### Ja, da wir nicht ueberall einen gleichen Median haben und eindeutig Boxen erkennen, die jeweils 
-# zu einem Medikament geh??ren 
+# zu einem Medikament geh??ren # Translation to english:
+##Yes, because we do not have the same median overall and boxes corresponding to a drug can be clearly recognised.
+
   
   
 ########## remove batches ##############
-#### load limma package  befor: http://bioconductor.org/packages/release/bioc/html/limma.html
+#### load limma package  before: http://bioconductor.org/packages/release/bioc/html/limma.html
 library(limma)
 #### which parameters are needed??? -> does not work yet 
 removeBatchEffect()
@@ -41,8 +43,8 @@ removeBatchEffect()
 
 ##Find genes which vary the most in Untreated and Treated celllines:
 ## Seurat packages need to be installed: install.packages('Seurat')
+##For the seurat library to be available, digest packages need to be installed: install.packages("digest")
 library(Seurat)
-
 #BroadAnU = Broad analysis untreated
 
 BroadAnU <- CreateSeuratObject(counts = Untreated, project = "BroadAnU")
@@ -54,7 +56,8 @@ top10Untreated <- head(VariableFeatures(BroadAnU), 10)
 
 # plot variable features with and without labels
 plot1 <- VariableFeaturePlot(BroadAnU)
-plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE, xnudge = 0, ynudge = 0)
+plot2 <- LabelPoints(plot = plot1, points = top10Untreated, repel = TRUE, xnudge = 0, ynudge = 0)
+# Change from top1o to top10Untreated
 
 #The same with treated data:
 BroadAnT <- CreateSeuratObject(counts = Treated, project = "BroadAnT")
@@ -65,13 +68,20 @@ top10Treated <- head(VariableFeatures(BroadAnT), 10)
 
 # plot variable features with and without labels
 plot1 <- VariableFeaturePlot(BroadAnT)
-plot2 <- LabelPoints(plot = plot1, points = top10, repel = TRUE, xnudge = 0, ynudge = 0)
+plot2 <- LabelPoints(plot = plot1, points = top10Treated, repel = TRUE, xnudge = 0, ynudge = 0)
+# Change from top10 to top10Treated
 
 ## Can we find matches between Treated and Untreated regarding their most variable gene expression?
-top10Untreated == top10Treated
+top10Untreated %in% top10Treated
+# There are 7 matches! 
 
-#There are matches! 4 genes are positioned equally in the top10 positions. A closer look at the top10 genes shows,that there are even 6 out of 10 genes which appear in both samples.
+# Which genes are in the Untreated but not in Treated
+setdiff(top10Untreated, top10Treated)  #  "CD24"  "KRT18" "SPARC"
 
+# Which genes are in the Treated but not in Untreated
+setdiff(top10Treated, top10Untreated)  #  "CRISP3"   "RGS1"   "LOC101928635///ALDH1A2"
+
+# Can we say that for the matching genes, the treatment did not change the high variation?
 ###################################################################################################
 
 #####################################################################################################
@@ -88,7 +98,7 @@ print(BroadAnU[["pca"]], dims = 1:5, nfeatures = 5)
 VizDimLoadings(BroadAnU, dims = 1:2, reduction = "pca")
 DimPlot(BroadAnU, reduction = "pca")
 DimHeatmap(BroadAnU, dims = 1, cells = 500, balanced = TRUE)
-
+DimHeatmap(BroadAnU, dims = 2, cells = 500, balanced = TRUE)
 ElbowPlot(BroadAnU)
 
 #Problem: There is no clear elbow in the curve.
@@ -101,12 +111,22 @@ ElbowPlot(BroadAnU)
 treated.pca = prcomp(Treated, center=T, scale. = T)
 # colored drug
 plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19,
-     xlab = "PC1",ylab = "PC2", col=Metadata$drug)
+     xlab = "PC1",ylab = "PC2", col=drug)
 # colored tissue
 plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19,
-     xlab = "PC1",ylab = "PC2", col=Metadata$tissue)
+     xlab = "PC1",ylab = "PC2", col=tissue)
 ### --> found groups 
+#Changed  col from Metadata$drug to drug and Metadata$tissue to tissue, so that the functions can be read#  Added same plots with legends
+plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19,
+     xlab = "PC1",ylab = "PC2", col=drug)
+     legend("topright", inset = c(-0.3,0), levels(drug), xpd = TRUE, pch=19, col = levels)
+     par(mar=c(5, 4, 5, 7))
 
+plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19,
+     xlab = "PC1",ylab = "PC2", col=tissue, )
+        levels <- as.factor(levels(tissue))
+        legend("topright", inset = c(-0.3,0), levels(tissue), xpd = TRUE, pch=19, col = levels) 
+        par(mar=c(5, 4, 5, 5))
 ###################################################################################################
 
 
