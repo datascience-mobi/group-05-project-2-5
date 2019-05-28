@@ -72,10 +72,16 @@ plot2 <- LabelPoints(plot = plot1, points = top10Treated, repel = TRUE, xnudge =
 # Change from top10 to top10Treated
 
 ## Can we find matches between Treated and Untreated regarding their most variable gene expression?
-top10Untreated == top10Treated
+top10Untreated %in% top10Treated
+# There are 7 matches! 
 
-#There are matches! 4 genes are positioned equally in the top10 positions. A closer look at the top10 genes shows,that there are even 6 out of 10 genes which appear in both samples.
+# Which genes are in the Untreated but not in Treated
+setdiff(top10Untreated, top10Treated)  #  "CD24"  "KRT18" "SPARC"
 
+# Which genes are in the Treated but not in Untreated
+setdiff(top10Treated, top10Untreated)  #  "CRISP3"   "RGS1"   "LOC101928635///ALDH1A2"
+
+# Can we say that for the matching genes, the treatment did not change the high variation?
 ###################################################################################################
 
 #####################################################################################################
