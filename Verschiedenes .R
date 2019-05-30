@@ -11,6 +11,7 @@ FC_all_mean_mat=as.matrix(FC_all_mean)
 
 all_drug_names = Metadata[0:819,]$drug
 
+palette(rainbow(15))
 #farben die spaeter im plot benutzt werden
 color_vector_rainbow = rainbow(15)
 #index fuer das colorvector_rainbow array
