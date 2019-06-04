@@ -21,3 +21,10 @@ TreatedVorinostat <- Treated[,761:819]
 # um Zahlen zu vermeiden  
 UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
 TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+#fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+# sensitivity 
+vorinostat_Sensitivity_alleZeilen= grep ('vorinostat', rownames(Sensitivity))
+vorinostat_Sensitivity_data= Sensitivity[vorinostat_Sensitivity_alleZeilen,]
