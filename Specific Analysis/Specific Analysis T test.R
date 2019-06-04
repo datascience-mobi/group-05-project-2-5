@@ -19,8 +19,15 @@
   #Create Vorinostat Untreated matrix:
     UntreatedVorinostat <- Untreated[,761:819]
     TreatedVorinostat <- Treated[,761:819]
+   
+  # um Zahlen zu vermeiden  
+    UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+    TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+    
+    
     
     #For the t-test, we need to check if genes and celllines are in the same order in both matrices:
+    # kann auch mit 'oder' sortiert werden, falls nicht der Fall order function 
     identical(rownames(UntreatedVorinostat), rownames(TreatedVorinostat))
     #-> genes are in the same order
     
@@ -41,6 +48,13 @@
        qqline(FC, col= "red")
        #We see, that we have a heavy tailed distribution. Nevertheless, we assume normality.
        
+# same check for treated and untreated 
+       qqnorm(TreatedVorinostat)
+       qqline(TreatedVorinostat, col= "red")
+       
+       qqnorm(UntreatedVorinostat)
+       qqline(UntreatedVorinostat, col= "red")
+       
 #Perform a paired t-test by using the apply-function:
        #H0 hypothesis: Gene expression does not change significantly after drug treatment.
        #H1 hypothesis: Gene expression changes significantly after drug treatment.
@@ -48,12 +62,23 @@
        dim(UntreatedVorinostat)
        #->59 celllines and 13299 genes
        
-       
-  VorinostatTotal <- cbind(UntreatedVorinostat, TreatedVorinostat)
+ 
+ VorinostatTotal <- cbind(UntreatedVorinostat, TreatedVorinostat)
   
-  pValues <- apply(VorinostatTotal, 1, function(x) t.test(x[1:59], x[60:118],paired = TRUE, alternative = "two.sided")$p.value)
+  # variable um Zahlen zu ersetzen 
+ col_untreated = grep ('_0nM',colnames(VorinostatTotal))
+ col_untreated
+ 
+ col_treated = grep ('_5000nM',colnames(VorinostatTotal))
+ col_treated
+
+  
+  pValues <- apply(VorinostatTotal, 1, function(x) t.test(x[col_untreated],x[col_treated],paired = TRUE, alternative = "two.sided")$p.value)
   sum(pValues < 0.05)   
   #Problem: gives a p value for each gene but takes the mean of rows
+  
+  t.test.Vorinostat = apply(VorinostatTotal, 1, function(x) t.test(x[1:59], x[60:118],paired = TRUE, alternative = "two.sided")) 
+  # gives a list with all informations from t.test
   
   #MARGIN= c(1,2) means that the t-test should be performed over rows and columns
   i <- 1
