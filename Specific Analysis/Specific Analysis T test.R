@@ -41,6 +41,15 @@
        qqline(FC, col= "red")
        #We see, that we have a heavy tailed distribution. Nevertheless, we assume normality.
        
+       #For normalization, a package needs to be installed: install.packages("BBmisc")
+       library(BBmisc)
+       FCnorm <- normalize(FC, method= "scale")
+       #Check, if data look more normal distributed now:
+       qqnorm(FCnorm)
+       qqline(FCnorm, col= "red")
+       #-> more linear than before
+       
+       
 #Perform a paired t-test by using the apply-function:
        #H0 hypothesis: Gene expression does not change significantly after drug treatment.
        #H1 hypothesis: Gene expression changes significantly after drug treatment.
@@ -51,9 +60,12 @@
        
   VorinostatTotal <- cbind(UntreatedVorinostat, TreatedVorinostat)
   
-  pValues <- apply(VorinostatTotal, 1, function(x) t.test(x[1:59], x[60:118],paired = TRUE, alternative = "two.sided")$p.value)
+  pValues1 <- apply(VorinostatTotal, 1, function(x) t.test(x[1:59], x[60:118],paired = TRUE, alternative = "two.sided")$p.value)
   sum(pValues < 0.05)   
-  #Problem: gives a p value for each gene but takes the mean of rows
+  #-> gives a p value for each gene but takes the mean of rows
+  
+  pValues2 <- apply(VorinostatTotal, 1, function(x) t.test(x= VorinostatTotal[1:59], y= VorinostatTotal[60:118],paired = TRUE, alternative = "two.sided")$p.value)
+  #-> if we write the conditions for the t-test in this way, we get different p-Values.Why?
   
   #MARGIN= c(1,2) means that the t-test should be performed over rows and columns
   i <- 1
