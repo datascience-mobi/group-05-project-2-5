@@ -65,3 +65,6 @@
   }
     #-> does not work, computer calculates for hours
   
+# t.test FC 
+  t_v_FC= apply(FC,1,t.test)
+  
