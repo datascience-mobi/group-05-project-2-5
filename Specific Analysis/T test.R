@@ -73,19 +73,20 @@
   #sort p-Values:
   sortedpValues <- sort(pValues, decreasing = FALSE)
   sortedpValues <- as.matrix(sortedpValues)
-  sortedpValues[100,]
+  SignificantsortedpValues[100,]
   
   #add p-Values as a new column to each gene:
   VorinostatwithpValues <- cbind(VorinostatTotal, pValues)
   dim(VorinostatwithpValues)
   
-  #select those rows with smallest p.Values: -> does not work
-  new <- filter(VorinostatwithpValues, pValues <= sortedpValues[100,] )
   
   
-  #does not work too:
-  significantgenes <- sort(VorinostatwithpValues[,"pValues"], decreasing = FALSE)
+  #select those rows with smallest p.Values:
+  Biomarker <- VorinostatwithpValues[VorinostatwithpValues$pValues <  sortedpValues[100,],]
+  #-->Matrix with biomarker-genes!!
   
+
+
   
   
   ##find 100 genes with smallest p-Values:
