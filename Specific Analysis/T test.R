@@ -37,11 +37,9 @@
        #-> more linear than before
 
 # same check for treated and untreated 
-       TreatedVorinostatnorm <- normalize(TreatedVorinostat, method= "scale")
        qqnorm(TreatedVorinostat)
        qqline(TreatedVorinostat, col= "red")
        
-       UntreatedVorinostatnorm <- normalize(UntreatedVorinostat, method= "scale")
        qqnorm(UntreatedVorinostat)
        qqline(UntreatedVorinostat, col= "red")
 
