@@ -54,13 +54,19 @@ plot(FC_all_mean, col= Metadata$drug)
 plot(density(FC_all_mean))
 
 ###### find Top 10 values 
-FC_all_min= as.data.frame (apply(FC_all,2,min))
-FC_all_max= as.data.frame (apply(FC_all,2,max))
+FC_all_min= apply(FC_all,2,min)
+FC_all_max= apply(FC_all,2,max)
 
-largest10_FC_all_min <- as.data.frame(sort(t(FC_all_min), decreasing = F)[1:10])
-largest10_FC_all_max <- as.data.frame(sort(t(FC_all_max), decreasing = T)[1:10])
+largest10_FC_all_min <- sort(FC_all_min, decreasing = F)[1:10]
+largest10_FC_all_min = as.matrix(largest10_FC_all_min)
+# these genes may be downregulated by the diffrent drugs
 
-#### can be used to narrow down the values 
+largest10_FC_all_max <-sort(FC_all_max, decreasing = T)[1:10]
+largest10_FC_all_max = as.matrix(largest10_FC_all_max)
+# these genes may be upregulated by the diffrent drugs
+
+
+#### ideal: can be used to narrow down the values --> which FC values are 'significant' 
 
 
 
