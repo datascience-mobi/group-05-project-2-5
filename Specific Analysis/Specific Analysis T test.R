@@ -82,9 +82,13 @@
   
   
   #select those rows with smallest p.Values:
-  Biomarker <- VorinostatwithpValues[VorinostatwithpValues$pValues <  sortedpValues[100,],]
+  Biomarker <- VorinostatwithpValues[VorinostatwithpValues$pValues <=  sortedpValues[100,],]
   #-->Matrix with biomarker-genes!!
   
+  
+  #Sort biomarkers according to increasing p-Values (most significant p-Values on top of the data frame):
+  Biomarker <- as.data.frame(Biomarker)
+  Biomarkersorted <- Biomarker[order(Biomarker$pValues),]
 
 
   
