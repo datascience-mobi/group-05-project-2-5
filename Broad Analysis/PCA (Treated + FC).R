@@ -30,7 +30,7 @@ treated.pca = prcomp(Treated, center=T, scale. = T)
   #use drug information from Metadata to color points in PCA:
   
         ##First we need to find out, which column in Metadata represents the different samples:
-         samplecolumn <- (grep(colnames(Metadata), pattern = "sample"))
+         samplecolumn <- grep(colnames(Metadata), pattern = "sample")
          samplecolumn
               #column 1 includes the samplenames
     
@@ -38,10 +38,12 @@ treated.pca = prcomp(Treated, center=T, scale. = T)
         #next, we need to check, if the sample-column includes the same celllines in the same order as the Treated matrix:
          dim(Metadata)
           #-> we have 2*819 rows since Metadata consists information for treated and untreated celllines.
-    
-      Metadatasamples <- Metadata[1:819,samplecolumn]
-      identical(colnames(Treated), Metadatasamples)
-       #--> TRUE, consequently the drug information of the Metadata-matrix can be assigned to the samples in the Treated-matrix sequentially:
+      
+       #Check, if the sample order is equal in the Treated-matrix and in Metadata:
+        Metadata <- as.data.frame(Metadata)
+        Metadatasamples <- Metadata[1:819,samplecolumn]
+        identical(colnames(Treated), Metadatasamples)
+        #--> TRUE, consequently the drug information of the Metadata-matrix can be assigned to the samples in the Treated-matrix sequentially:
   
   #Find the drug-column in Metadata:
   drugcolumn <- (grep(colnames(Metadata), pattern= "drug"))
@@ -116,12 +118,16 @@ pca = prcomp(FC, center = T, scale. = T)
   #Where are the vorinostat-treated celllines in the PCA plot? --> use ifelse-function
       Metadata <-as.data.frame(Metadata)    
       Marking <- ifelse(Metadata$drug == "vorinostat", "yellow", "black")
-      #add the information, whether samples belong to Vorinostat, to the FC matrix:
-      HighlightVorinostat <- cbind(`FC` = Marking)
+         #add the information, whether samples belong to Vorinostat, to the FC matrix:
+         HighlightVorinostat <- cbind(`FC` = Marking)
           
         #plot the PCA:
-          plot(pca$rotation[, 3], pca$rotation[, 4], col = HighlightVorinostat, pch = 19, xlab = "PC3", ylab = "PC4")
+          plot(pca$rotation[, 3], pca$rotation[, 4], col = HighlightVorinostat, pch = 19, xlab = "PC3", ylab = "PC4", main = "Vorinostat samples")
 
+          #adda a legend: 
+          legend("topright", inset = c(-0.3,0), legend = c("Vorinostat","Other drugs"), xpd = TRUE, pch=19, col = c("yellow", "black")) 
+          par(mar=c(5, 4, 5, 8))
+          
           
 ###########PLOT PCA & COLOR ACCORDING TO TISSUE###########################
   
