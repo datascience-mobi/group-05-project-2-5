@@ -1,19 +1,22 @@
+################################# Analyse Fold Change Matrix #####################################
 
+##################################################################################################
 
-####################################################################################################
+##################################################################################################
 
-############## Analyse Fold Change Matrix ###############
+########################################### old way ##############################################
 
-
+# creat FC data 
 FC_all = (Treated - Untreated)
-
-############## Mittelwert der Medikamente mit Zelllinien ####################
 FC_all_mean=colMeans(FC_all)
-FC_all_mean_mat=as.matrix(FC_all_mean)
+#FC_all_mean_mat=as.matrix(FC_all_mean)
 
-all_drug_names = Metadata[0:819,]$drug
+# creat names vector 
+all_drug_names = Metadata$drug
+length(all_drug_names) 
 
-palette(rainbow(15))
+# prepare barplot 
+
 #farben die spaeter im plot benutzt werden
 color_vector_rainbow = rainbow(15)
 #index fuer das colorvector_rainbow array
@@ -34,33 +37,81 @@ for(i in 0:length(all_drug_names)){
   color_array[i] <- color_vector_rainbow[index]
 }
 # erstelle dataframe mit den spalten 
-df_test <- data.frame("ID" = 1:819, "Color" = color_array, "Name" = all_drug_names, "MeanValue" = as.vector(FC_all_mean_mat))
+df_test <- data.frame("ID" = 1:819, "Color" = color_array, "Name" = all_drug_names, "MeanValue" = as.vector(FC_all_mean))
 
-#
-barplot( height = df_test$MeanValue
-         , names.arg = df_test$Name
-         , las = 3
-         , col = df_test$Color
-         , border = NA
-)
+#barplot 
+barplot( height = df_test$MeanValue, names= FALSE, col = df_test$Color, border = NA)
+
+##################################################################################################
+
+##################################################################################################
+
+########################################### new way ##############################################
+
+# creat FC data 
+FC_all = (Treated - Untreated)
+FC_all_mean=colMeans(FC_all)
+
+# creat levels for coloring 
+drug <- Metadata$drug
+palette(15)
+
+# creat boxplot
+barplot( height = FC_all_mean, names= FALSE, col = drug, border = NA)
+
+# creat legend 
+levels <- as.factor(levels(drug))
+legend("topright", inset = c(-0.3,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
+
+##################################################################################################
+
+##################################################################################################
+
+######################################### scatter plot ###########################################
+
+plot(FC_all_mean, col= Metadata$drug, main="Fold change with drugs")
+# legend 
+drug <- Metadata$drug
+levels <- as.factor(levels(drug))
+legend("topright", inset = c(-0.3,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
+# in general similar FC values, only 5-Azacytidine and bortezomib have clear outliners 
+
+### tissue 
+plot(FC_all_mean, col= Metadata$tissue,main="Fold change with tissues")
+# legend 
+tissue <- Metadata$tissue
+levels <- as.factor(levels(tissue))
+legend("topright", inset = c(-0.3,0), legend= levels(tissue), xpd = TRUE, pch=19, col = levels, title = "drugs")
+# no correlation with tissue 
 
 
-############ scatter plot ##############
-plot(FC_all_mean, col= Metadata$tissue)
-plot(FC_all_mean, col= Metadata$drug)
+##################################################################################################
 
+##################################################################################################
 
-########## denity plot ###############
+######################################### density plot ###########################################
+
 plot(density(FC_all_mean))
 
-###### find Top 10 values 
-FC_all_min= as.data.frame (apply(FC_all,2,min))
-FC_all_max= as.data.frame (apply(FC_all,2,max))
+# normally distributed 
+# most values between -0.75 and 0.5 
 
-largest10_FC_all_min <- as.data.frame(sort(t(FC_all_min), decreasing = F)[1:10])
-largest10_FC_all_max <- as.data.frame(sort(t(FC_all_max), decreasing = T)[1:10])
+##################################################################################################
 
-#### can be used to narrow down the values 
+##################################################################################################
+
+
+#################################### find Top 10 values  #########################################
+
+FC_all_min= (apply(FC_all,2,min))
+FC_all_max= (apply(FC_all,2,max))
+
+largest10_FC_all_min <- (sort(FC_all_min, decreasing = F)[1:10])
+# most down regulated genes 
+largest10_FC_all_max <- (sort(FC_all_max, decreasing = T)[1:10])
+# most up regulated genes 
+
+
 
 
 
