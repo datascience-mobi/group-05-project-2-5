@@ -75,6 +75,12 @@ ggo2=as.data.frame(ggo)
 head(summary(ggo))
 plot (ggo2)
 
+# visualization 
+barplot(ggo, drop=TRUE, showCategory=1)
+
+## here we can see that something is wrong with the counts 
+
+
 # transfrom GO name to symbol 
 x=ggo2$ID
 translated.ggo= bitr(x,fromType="GO", toType="SYMBOL",OrgDb = org.Hs.eg.db)
