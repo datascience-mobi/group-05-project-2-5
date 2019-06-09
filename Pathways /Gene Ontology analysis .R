@@ -68,17 +68,19 @@ if (!requireNamespace("BiocManager", quietly = TRUE))
 BiocManager::install("DOSE")
 
 library(DOSE)
+data(biomarkers)
+gene=translated.genes$ENTREZID
+head(gene)
 
 # gene classification 
-ggo <- groupGO(gene= biomarkers.genes, OrgDb = org.Hs.eg.db,  ont = "BP", level = 3, readable = FALSE)
+ggo <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "BP", level = 3, readable = FALSE)
 ggo2=as.data.frame(ggo)               
-head(summary(ggo))
+head(summary(ggo2))
 plot (ggo2)
 
 # visualization 
-barplot(ggo, drop=TRUE, showCategory=1)
+barplot(ggo, drop=TRUE, showCategory=12)
 
-## here we can see that something is wrong with the counts 
 
 
 # transfrom GO name to symbol 
@@ -109,10 +111,12 @@ e.genes= translated.genes$ENTREZID
 e.genes=as.data.frame(e.genes)
 e.genes
 
-# does not work ! :(
-# problem with gene id 
+
 # perform GO Enrichment Analysis 
-ego <- enrichGO(e.genes,  OrgDb = org.Hs.eg.db, keyType = "ENTREZID", ont = "CC",
+data(biomarkers)
+gene.test=translated.genes$ENTREZID
+gene.test=as.vector(gene.test)
+ego <- enrichGO(biomarkers,  OrgDb = org.Hs.eg.db, keyType = "ENTREZID", ont = "CC",
                 pvalueCutoff = 0.01, pAdjustMethod = "BH", universe,
                 qvalueCutoff = 0.05,readable = TRUE)
 
