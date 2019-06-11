@@ -11,9 +11,6 @@
 install.packages("BBmisc")       #For normalization
 library(BBmisc)     
 
-Treated   = normalize(Treated,   method= "scale")
-Untreated = normalize(Untreated, method= "scale")
-
 install.packages("dplyr")        #   dplyr for data manipulation
 install.packages("ggpubr")       # ggpubr for an easy ggplot2-based data visualization
 library("dplyr")
@@ -25,6 +22,9 @@ Untreated   = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
 Treated     = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
 Metadata    = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 
+
+Treated   = normalize(Treated,   method= "scale")
+Untreated = normalize(Untreated, method= "scale")
 
 # Drug sensitivity assay
 Sensitivity = readRDS(paste0(wd,"/data/NegLogGI50.rds"))
@@ -50,6 +50,8 @@ Vorinostat_Treated     =  Treated   [, which(grepl  ( "vorinostat" ,colnames(Tre
 Drug_Response =  Vorinostat_Treated - Vorinostat_Untreated
 
 Vorinostat_Untreated
+
+
 
 # Cleaning the column names
 col_names_VU    = as.data.frame(strsplit(x=colnames(Vorinostat_Untreated),split="_"))
