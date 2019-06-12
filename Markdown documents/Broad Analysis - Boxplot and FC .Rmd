@@ -2,7 +2,10 @@
 title: 'Broad Analysis I: Boxplot'
 author: "Laura Plutowski"
 date: "8.6.2019"
-output: html_document
+output:
+  html_document: default
+  pdf_document: default
+  word_document: default
 ---
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set( echo=TRUE)
@@ -25,8 +28,9 @@ First of all, we want to explore the whole data from all 15 drug responses inclu
 - Different PCA 
 
 Before being able to start the analysis, we have to load our data. The data set is taken from the NCI Transcriptional Pharmacodynamics Workbench, including the effect on 13.299 genes from 61 cell lines treated with 15 different anticancer agents. Also, different annotation data is loaded.
+
 ```{r, include = FALSE}
-wd = ("Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 ```{r read_data, message = FALSE, warning = FALSE}
@@ -41,11 +45,11 @@ Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TR
 
 Treated <- as.data.frame(Treated)
 Untreated <- as.data.frame(Untreated)
-Sensitivity<- as.data.frame(Sensitivity)
+
 ```
 
 
-```
+
 ### 1.1 Boxplot from treated data 
 
 To visualize our data, we performed a boxplot from the treated data over all 15 drugs. 
@@ -58,11 +62,12 @@ drug <- Metadata$drug
 # 15 diffrent colors, for each drug one
 palette(rainbow(15))
 # Boxplot 
-boxplot(Treated, medcol="black", border = drug, col= drug, xlab="drugs", ylab="gene expression", main= "Gene expression treated celllines", names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
+boxplot(Treated, medcol="black", border = drug, col= drug, xlab="drugs", ylab="gene expression",
+        main= "Gene expression treated celllines", names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
     
 #add a legend to see which color corresponds to which drug:
 levels <- as.factor(levels(drug))
-legend("topright", inset = c(-0.3,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
+legend("topright", inset = c(-0.28,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
 ```
 
 The different colors indicate the 15 different anticancer drugs. We can can identify clearly 15 different boxes, each box belonging to one medicine. This indicates that we have batches between all 15 drugs. One reason for this could be, that the experiments were done on different days under slightly different conditions like air pressure or room temperature. Moreover, the black colored median shows us that the data is already normalized, because the medians of the single samples within one drug are at a similar height. 
@@ -78,14 +83,14 @@ FC_all_mean=colMeans(FC_all)
 
 # creat levels for coloring 
 drug <- Metadata$drug
-palette(15)
+palette(rainbow(15))
 
 # creat boxplot
 barplot( height = FC_all_mean, names= FALSE, col = drug, border = NA, main= "Fold change")
 
 # creat legend 
 levels <- as.factor(levels(drug))
-legend("topright", inset = c(-0.3,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
+legend("topright", inset = c(-0.05,0.1), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
 ```
 
 Here we can see that most FC values are in a similar value range. This becomes even clearer when looking at the following scatter plots. Only 5-Azacytidine and bortezomib have clear outliners. 
@@ -97,7 +102,7 @@ plot(FC_all_mean, col= Metadata$drug, main="Fold change with drugs")
 # creat legend 
 drug <- Metadata$drug
 levels <- as.factor(levels(drug))
-legend("topright", inset = c(-0.3,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
+legend("topright", inset = c(-0.15,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
 ```
 
 The shape of the density plot also shows that the data is normally distributed. 
@@ -115,7 +120,8 @@ plot(FC_all_mean, col= Metadata$tissue,main="Fold change with tissues")
 # legend 
 tissue <- Metadata$tissue
 levels <- as.factor(levels(tissue))
-legend("topright", inset = c(-0.3,0), legend= levels(tissue), xpd = TRUE, pch=19, col = levels, title = "tissues")
+legend("topright", inset = c(-0.3,0), legend= levels(tissue), xpd = TRUE, pch=19, col = levels, 
+       title = "tissues")
 ```
 
 We also can identify the Top 10 values from the FC matrix, which indicate the ten most up and down regulated genes by a specific drug in a specific cell line. 
