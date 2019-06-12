@@ -1,10 +1,9 @@
 #T-test
 
 #Create a matrix that  contains only the celllines treated with vorinostat:
+# see Creat Vorinostat data ! 
 
-  
-
-
+##############################################################################################################
     #For the t-test, we need to check if genes and celllines are in the same order in both matrices:
     # kann auch mit 'oder' sortiert werden, falls nicht der Fall order function 
     identical(rownames(UntreatedVorinostat), rownames(TreatedVorinostat))
@@ -20,6 +19,8 @@
        identical(Untreatedcolnames, Treatedcolnames)
        #-> since the colnames are equal now, matrices do not differ regarding their order of celllines, the dosis is the only difference, thus we can use both matrices to perform a t-test:
        
+##############################################################################################################
+              
  #T-tests require normal distributions. Since our sample is  very big, a normality test is not needed necessarily.
  #Anyway: Check normality of the FC-values via qqplot:
        FC <- TreatedVorinostat - UntreatedVorinostat
@@ -50,7 +51,7 @@
        dim(UntreatedVorinostat)
        #->59 celllines and 13299 genes
     
-       
+##############################################################################################################       
           
  #Create a common matrix for treated and untreated vorinostat data:
  VorinostatTotal <- cbind(UntreatedVorinostat, TreatedVorinostat)
@@ -65,7 +66,13 @@
  col_treated = grep ('_5000nM',colnames(VorinostatTotal))
  col_treated
 
-  
+ 
+ ##############################################################################################################
+ 
+ 
+  # gives a list with all information from t.test
+  t.test.Vorinostat = apply(VorinostatTotal, 1, function(x) t.test(x[col_untreated], x[col_treated],paired = TRUE, alternative = "two.sided"))  
+ 
   pValues <- apply(VorinostatTotal, 1, function(x) t.test(x[col_untreated],x[col_treated],paired = TRUE, alternative = "two.sided")$p.value)
   sum(pValues < 0.05)   
   #-> gives a p value for each gene but takes the mean of rows
@@ -80,6 +87,7 @@
   dim(VorinostatwithpValues)
   
   
+  ##############################################################################################################
   
   #select those rows with smallest p.Values:
   Biomarker <- VorinostatwithpValues[VorinostatwithpValues$pValues <=  sortedpValues[100,],]
@@ -91,8 +99,7 @@
   Biomarkersorted <- Biomarker[order(Biomarker$pValues),]
 
 
-  
-  
+
   ##find 100 genes with smallest p-Values:
   #we want the smallest values at the beginning, thus they should be sorted by increasing value:
   sortedpValues <- sort(pValues, decreasing = FALSE)
@@ -105,25 +112,16 @@
   
   
   
-  #-> gives a vector with the corresponding rownumbers in VorinostatTotal -matrix:
+  '#-> gives a vector with the corresponding rownumbers in VorinostatTotal -matrix:
   i=1
   l <- vector("list", 100)
   while(i<=100) {
     l[[i]] <- (grep(rownames(VorinostatTotal), pattern= names(biomarkers[i,])))
     i=i+1
-  }
+  }'
   
-  
-  
-
-  
-  
-
-  t.test.Vorinostat = apply(VorinostatTotal, 1, function(x) t.test(x[col_untreated], x[col_treated],paired = TRUE, alternative = "two.sided")) 
-  # gives a list with all information from t.test
-  
- 
-  
-# t.test FC 
+  ##############################################################################################################
+  #Not important here, but for the sake of completeness:
+  # t.test FC 
   t_v_FC= apply(FC,1,t.test)
   
