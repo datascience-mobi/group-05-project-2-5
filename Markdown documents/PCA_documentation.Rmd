@@ -1,0 +1,287 @@
+---
+title: "PCA documentation"
+author: "Franziska Heinkele"
+date: "8 Juni 2019"
+output: pdf_document
+---
+
+```{r, include = FALSE}
+wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+``` 
+
+Load data:
+```{r read_data, message = FALSE, warning = FALSE}
+library(readr)
+  Untreated = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+  Treated = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+  Basal = readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
+  Copynumber = readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
+  Mutations = readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
+  Sensitivity = readRDS(paste0(wd,"/data/NegLogGI50.rds"))
+  Drug_annotation = read_tsv(paste0(wd,"/data/drug_annotation.tsv"))
+  Cellline_annotation = read_tsv(paste0(wd,"/data/cellline_annotation.tsv"))
+  Metadata = read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
+```
+
+
+***
+# BROAD ANALYSIS 
+***
+
+##PRINCIPAL COMPONENT ANALYSIS
+
+> Description of this file:
+
+This file documents the PCA analysis which was performed for two matrices:
+
+* Treated data
+* Fold change data
+
+For both PCAs, the celllines were colored by 2 different features:
+
+* tissue-type
+* drug-type
+
+##Treated data PCA
+
+Execute the PCA for Treated data:
+```{r}
+treated.pca = prcomp(Treated, center=T, scale. = T)
+```
+
+Hereinafter, we want to use __information from Metadata__ to color different celllines in the PCA. Therefore we need to check, if the celllines in the sample-column of Metadata are in the same order as in the Treated matrix. First of all we test, if the number of samples is equal.
+
+```{r}
+identical(nrow(Metadata), ncol(Treated))
+nrow(Metadata)
+ncol(Treated)
+```
+
+Metadata consists of twice as much celllines as the Treated matrix since Metadata contains information for treated and untreated celllines.
+We want to print those rows from Metadata which do not contain a zero concentration because they belong to the treated samples.
+
+```{r}
+TreatedrowsMetadata <- grep(Metadata$sample, pattern = "_0nM_", invert = TRUE)
+``` 
+          
+Check, if the sample order is equal in the Treated-matrix and in Metadata:
+
+```{r}
+Metadata <- as.data.frame(Metadata)
+Metadatasamples <- Metadata[TreatedrowsMetadata,"sample"]
+identical(colnames(Treated), Metadatasamples)
+```
+
+Consequently the drug information of the Metadata-matrix can be assigned to the samples in the Treated-matrix sequentially.
+For better readability, we assign the column of interest to the name "Metadatadrugs":
+
+```{r}
+Metadatadrugs <- Metadata[TreatedrowsMetadata,"drug"]
+```
+
+Add Metadatadrugs as a new row to the Treated-matrix:
+
+```{r}
+Treatedwithdrugs <- rbind(Treated, Metadatadrugs)
+```
+
+Save drug information as factors so it can be used for coloring:
+
+```{r}
+drugfactor <- as.factor(Treatedwithdrugs["Metadatadrugs",])
+```
+
+__Now we can go on with coloring!__
+
+***
+
+###PLOT PCA & COLOR ACCORDING TO DRUGS:
+        
+Since we have 15 different drugs we need 15 different colors:
+```{r}
+palette(rainbow(15))
+```
+        
+Plot Principal component 1 and 2 and add a legend to the plot. To see the PCA plot and the legend next to each other, the graphical parameters are setted by the par() function.
+```{r plot_data, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9))
+plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19, xlab = "PC1",
+     ylab = "PC2", col=drugfactor, main = "Treated samples")
+levels <- as.factor(levels(drugfactor))
+legend("topright", inset = c(-0.4,0),levels(drugfactor), xpd = TRUE, pch=19,
+       col = levels, title = "Drug")
+```
+          
+           
+###PLOT PCA & COLOR ACCORDING TO TISSUE:
+           
+
+The information which is needed for coloring is summarized as Metadatatissue:
+```{r}
+Metadatatissue <- Metadata[TreatedrowsMetadata,"tissue"]
+```
+        
+Bind Metadatatissue as a new row to the Treated matrix:
+```{r}
+Treatedwithtissue <- rbind(Treated, Metadatatissue)
+```
+           
+Save tissue information as factors so it can be used for coloring:
+```{r}
+tissuefactor <- as.factor(Treatedwithtissue["Metadatatissue",])
+```
+           
+Since we have 9 different tissue types we need 9 different colors:
+```{r}
+palette(rainbow(9))
+```
+    
+Plot PC 3 and PC 4 and add a legend:
+```{r, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9))
+plot(treated.pca$rotation[, 3], treated.pca$rotation[, 4], pch = 19, xlab = "PC1",
+     ylab = "PC2", col=tissuefactor, main= "Treated samples")
+levels <- as.factor(levels(tissuefactor))
+legend("topright", inset = c(-0.3,0), levels(tissuefactor), xpd = TRUE, pch=19,
+       col = levels, title = "Tissue") 
+```
+
+           
+                 
+***
+###################################################################################################
+
+          
+
+##FC data PCA
+
+First we create a fold change matrix:
+
+```{r}
+FC <- Treated-Untreated
+```
+
+Then we execute the PCA with FC data:
+
+```{r}
+pca = prcomp(FC, center = T, scale. = T)
+```
+
+We want to see how much variance is explained by each principle component:
+
+```{r}
+plot(pca, type = "l")
+```
+     
+We can interpret, that __PC 1-3__ explain most of the variance because an "elbow" can be seen after the third PC.
+Nevertheless, we should not exclude other PCs from our further analysis.
+      
+          
+          
+###PLOT PCA & COLOR ACCORDING TO TISSUE
+  
+Bind the tissue-information as a new row to the FC matrix:
+
+```{r}
+FCwithtissue <- rbind(FC, Metadatatissue)
+```
+      
+Save tissue information as factors so it can used for coloring:
+
+```{r}
+tissuefactorFC <- as.factor(FCwithtissue["Metadatatissue",])
+```         
+
+9 different tissue types require 9 different colors:
+
+```{r}
+palette(rainbow(9))
+``` 
+           
+Different PCs are plotted to see which combination groups the samples best. However, different tissues do not seem to group the points in any of the following PC combinations:
+ 
+```{r, eval = FALSE}
+   Plot1 <- plot(pca$rotation[, 1], pca$rotation[, 2], col= tissuefactor, pch = 19,
+                 xlab = "PC1", ylab = "PC2")
+   Plot2 <- plot(pca$rotation[, 2], pca$rotation[, 3], col= tissuefactor, pch = 19,
+                 xlab = "PC2", ylab = "PC3")
+   Plot3 <- plot(pca$rotation[, 3], pca$rotation[, 4], col= tissuefactor, pch = 19,
+                 xlab = "PC3", ylab = "PC4")
+   Plot4 <- plot(pca$rotation[, 1], pca$rotation[, 3], col= tissuefactor, pch = 19,
+                 xlab = "PC1", ylab = "PC3")
+    ```
+
+Example: PC1 and PC2 do not group celllines of same tissue-type:
+
+```{r, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9))   
+plot(pca$rotation[, 1], pca$rotation[, 2], col = tissuefactor, pch = 19, xlab = "PC1",
+     ylab = "PC2", main = "FC colored by tissue")
+levels <- as.factor(levels(tissuefactorFC))
+legend("topright", inset = c(-0.3,0), levels(tissuefactorFC), xpd = TRUE, pch=19,
+       col = levels, title = "Tissue") 
+```
+    
+###PLOT PCA & COLOR ACCORDING TO DRUGS
+    
+Create a new matrix ("FCwithdrugs") where the druginformation is added as a new row to the FC-matrix:
+
+```{r}
+FCwithdrugs <- rbind(FC, Metadatadrugs)
+```
+    
+Save drug information as factors so it can used for coloring:
+
+```{r}
+drugfactorFC <- as.factor(FCwithdrugs["Metadatadrugs",])
+```
+
+According to 15 different tissue types we need 15 different colors:
+
+```{r}
+palette(rainbow(15))
+```        
+    
+Plot PC 3 & PC 4 since they group celllines treated with different drugs best:
+
+```{r, fig.height= 5, fig.width= 7}
+par(mar=c(5,4,5,9))
+plot(pca$rotation[, 3], pca$rotation[, 4], col = drugfactor , pch = 19, xlab = "PC3",
+     ylab = "PC4", main = "FC colored by drug")
+levels <- as.factor(levels(drugfactorFC))
+legend("topright", inset = c(-0.4,0), levels(drugfactorFC), xpd = TRUE, pch=19,
+       col = levels, title = "Drugs")
+```
+
+***
+
+###HIGHLIGHT VORINOSTAT
+
+Since we are going to analyze the effects of Vorinostat in our specific analysis we want to plot a PCA that highlights exclusively those celllines which belong to Vorinostattreatment.
+
+Therefore we use the ifelse-function:
+
+```{r}
+Metadata <-as.data.frame(Metadata)    
+Marking <- ifelse(Metadata$drug == "vorinostat", "yellow", "black")
+```
+
+Add the information, whether samples belong to Vorinostat, to the FC matrix:
+
+```{r}
+HighlightVorinostat <- cbind(`FC` = Marking)
+```
+
+After plotting different Principal Components, we found that PC 3 and PC 4 group the Vorinostat-treated celllines best:
+
+```{r, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9))
+plot(pca$rotation[, 3], pca$rotation[, 4], col = HighlightVorinostat, pch = 19,
+     xlab = "PC3", ylab = "PC4", main = "Vorinostat samples")
+legend("topright", inset = c(-0.3,0), legend = c("Vorinostat","Other drugs"),
+       xpd = TRUE, pch=19, col = c("yellow", "black")) 
+
+```
+
+
+
