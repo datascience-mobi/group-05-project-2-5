@@ -1,15 +1,19 @@
 ####################################  visualization biomarkers ################################################
+biomarkers_FC_genes= row.names(biomarkers_FC)
 
 install.packages("rbokeh")
 library(rbokeh)
 
-figure() %>%
-  ly_points(biomarkers_FC_values, color = "red", size = 20)
+# hist 
+#figure() %>%
+#  ly_hist(biomarkers_FC_values, color = "red")
 
+# scatter plot 
 n <- nrow(biomarkers_FC_values)
 ramp <- colorRampPalette(c("red", "blue"))(n)
-figure() %>%
-  ly_points(biomarkers_FC_values, color = ramp, size = seq_len(n))
+figure(title = "Gene Expression Change for Biomarkers") %>%
+  ly_points(biomarkers_FC_values, color = ramp, size = -seq_len(n), legend = FALSE)%>%
+  x_axis(label = "biomarkers")
 
 ################################################################################################################
 ################################################################################################################
