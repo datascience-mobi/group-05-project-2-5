@@ -122,6 +122,7 @@ head(summary(ego1))
 # visualization 
 dotplot(ego1, showCategory=3)
 cnetplot(ego1)
+emapplot(ego1)
 ##############################################################################################################
 
 ### Biological Process
@@ -138,7 +139,7 @@ head(summary(ego2))
 # visualization 
 dotplot(ego2, showCategory=10)
 cnetplot(ego2)
-
+emapplot(ego2)
 ##############################################################################################################
 
 ### Molecular Function
@@ -155,7 +156,7 @@ head(summary(ego3))
 # visualization 
 dotplot(ego3, showCategory=100)
 cnetplot(ego3)
-
+emapplot(ego3)
 
 
 
