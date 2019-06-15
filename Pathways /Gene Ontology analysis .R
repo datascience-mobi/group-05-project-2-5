@@ -71,16 +71,26 @@ data(biomarkers)
 gene=translated.genes$ENTREZID
 head(gene)
 
-# gene classification 
+### gene classification 
+
+### Biological Process
 ggo <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "BP", level = 3, readable = FALSE)
-ggo2=as.data.frame(ggo)               
-head(summary(ggo2))
-plot (ggo2)
+ggo.data=as.data.frame(ggo)               
+head(summary(ggo.data))
+plot (ggo.data)
 
 # visualization 
 barplot(ggo, drop=TRUE, showCategory=12)
 
+### Cellular Component
+ggo2 <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "CC", level = 3, readable = FALSE)
+barplot(ggo2, drop=TRUE, showCategory=12)
 
+### Molecular Function
+ggo3 <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "MF", level = 3, readable = FALSE)
+barplot(ggo2, drop=TRUE, showCategory=12)
+
+##############################################################################################################
 
 '# transfrom GO name to symbol 
 x=ggo2$ID
@@ -89,8 +99,6 @@ ggo.sym.genes=translated.ggo$SYMBOL
 # bind to ggo matrix 
 ggo.sym=cbind(ggo2,ggo.sym.genes)
 # will return the symbol gene name of all GO genes, but we do not have a count for every GO gene'
-
-
 
 # To Do: GO -> Pathway/Function, Symbol -> GO -> pathway  
 
