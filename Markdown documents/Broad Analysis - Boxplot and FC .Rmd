@@ -2,10 +2,8 @@
 title: 'Broad Analysis I: Boxplot'
 author: "Laura Plutowski"
 date: "8.6.2019"
-output:
-  html_document: default
-  pdf_document: default
-  word_document: default
+output: html_document 
+
 ---
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set( echo=TRUE)
@@ -62,12 +60,13 @@ drug <- Metadata$drug
 # 15 diffrent colors, for each drug one
 palette(rainbow(15))
 # Boxplot 
+par(mar=c(5, 4, 5, 9))
 boxplot(Treated, medcol="black", border = drug, col= drug, xlab="drugs", ylab="gene expression",
         main= "Gene expression treated celllines", names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
     
 #add a legend to see which color corresponds to which drug:
 levels <- as.factor(levels(drug))
-legend("topright", inset = c(-0.28,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
+legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
 ```
 
 The different colors indicate the 15 different anticancer drugs. We can can identify clearly 15 different boxes, each box belonging to one medicine. This indicates that we have batches between all 15 drugs. One reason for this could be, that the experiments were done on different days under slightly different conditions like air pressure or room temperature. Moreover, the black colored median shows us that the data is already normalized, because the medians of the single samples within one drug are at a similar height. 
@@ -86,23 +85,25 @@ drug <- Metadata$drug
 palette(rainbow(15))
 
 # creat boxplot
+par(mar=c(5, 4, 5, 9))
 barplot( height = FC_all_mean, names= FALSE, col = drug, border = NA, main= "Fold change")
 
 # creat legend 
 levels <- as.factor(levels(drug))
-legend("topright", inset = c(-0.05,0.1), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
+legend("topright", inset = c(-0.4,0.0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
 ```
 
 Here we can see that most FC values are in a similar value range. This becomes even clearer when looking at the following scatter plots. Only 5-Azacytidine and bortezomib have clear outliners. 
 
 ```{r}
 # scatter plot
+par(mar=c(5, 4, 5, 9))
 plot(FC_all_mean, col= Metadata$drug, main="Fold change with drugs")
 
 # creat legend 
 drug <- Metadata$drug
 levels <- as.factor(levels(drug))
-legend("topright", inset = c(-0.15,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
+legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
 ```
 
 The shape of the density plot also shows that the data is normally distributed. 
@@ -115,6 +116,7 @@ Coloring the scatter plot according to the tissue types, shows that there is no 
 
 ``` {r}
 # scatter plot
+par(mar=c(5, 4, 5, 9))
 plot(FC_all_mean, col= Metadata$tissue,main="Fold change with tissues")
 
 # legend 
@@ -126,7 +128,15 @@ legend("topright", inset = c(-0.3,0), legend= levels(tissue), xpd = TRUE, pch=19
 
 We also can identify the Top 10 values from the FC matrix, which indicate the ten most up and down regulated genes by a specific drug in a specific cell line. 
 
-```{r}
+``` {r include = FALSE}
+#install.packages("knitr")
+library(knitr)
+#install.packages("xtable")
+#library(xtable)
+```
+
+```{r results = "asis"}
+
 ### find all min and max 
 FC_all_min= (apply(FC_all,2,min))
 FC_all_max= (apply(FC_all,2,max))
@@ -135,11 +145,13 @@ FC_all_max= (apply(FC_all,2,max))
 
 # most down regulated gene
 largest10_FC_all_min <- (sort(FC_all_min, decreasing = F)[1:10])
-largest10_FC_all_min 
+knitr::kable(largest10_FC_all_min, caption = "10 smallest FC values")
+#print(xtable::xtable(largest10_FC_all_min, caption = "10 smallest FC values 2"),type="html",html.table.attributes="border=0")
 
 # most up regulated genes 
 largest10_FC_all_max <- (sort(FC_all_max, decreasing = T)[1:10])
 largest10_FC_all_max
+knitr::kable(largest10_FC_all_max, caption = "10 highest FC values")
 ```
 
 Here we can see, that see that vorinostat (occurs 3 times for downregulated and 2 times for up regulated), bortezomib (occurs 3 times for downregulated and 6 times for up regulated) seem to have the biggest effects on the gene expression in the cell lines. Moreover, the OVCAR-4 cell line, which bellows to the ovarian cancer, occurs the most (3 times) in the down regulated data. 
