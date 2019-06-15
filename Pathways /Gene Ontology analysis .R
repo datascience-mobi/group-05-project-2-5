@@ -6,10 +6,10 @@
 ###################################################################################################
 
 #install cluster profiler 
-if (!requireNamespace("BiocManager", quietly = TRUE))
+'if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
-BiocManager::install("clusterProfiler")
+BiocManager::install("clusterProfiler")'
 
 library(clusterProfiler)
 
@@ -36,10 +36,10 @@ biomarkers.genes
 ############################ translating amog diffrent gene ID types ##############################
 
 # install needed libary form translation 
-if (!requireNamespace("BiocManager", quietly = TRUE))
+'if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
-BiocManager::install("org.Hs.eg.db")
+BiocManager::install("org.Hs.eg.db")'
 
 library(org.Hs.eg.db)
 
@@ -56,16 +56,15 @@ idType("org.Hs.eg.db")
 ################################# Gene Ontology analysis ##########################################
 
 ###################################################################################################
-###################################################################################################
 
 ################################### Gene Ontology Classification ##################################
 # einheitliche Bezeichnungen in der Bioinformatik 
 
 # install needed libary 
-if (!requireNamespace("BiocManager", quietly = TRUE))
+'if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
-BiocManager::install("DOSE")
+BiocManager::install("DOSE")'
 
 library(DOSE)
 data(biomarkers)
@@ -83,47 +82,79 @@ barplot(ggo, drop=TRUE, showCategory=12)
 
 
 
-# transfrom GO name to symbol 
+'# transfrom GO name to symbol 
 x=ggo2$ID
 translated.ggo= bitr(x,fromType="GO", toType="SYMBOL",OrgDb = org.Hs.eg.db)
 ggo.sym.genes=translated.ggo$SYMBOL
-
 # bind to ggo matrix 
 ggo.sym=cbind(ggo2,ggo.sym.genes)
+# will return the symbol gene name of all GO genes, but we do not have a count for every GO gene'
 
-# problem: not the same size, some GO have more then one gene 
-# because GO are groups???
+
 
 # To Do: GO -> Pathway/Function, Symbol -> GO -> pathway  
 
-#################################### GO over-representation test ###################################
+##############################################################################################################
+##############################################################################################################
 
-## hypergeometric model to assess wether a numer of selected genes is associated with disease is 
-# lager than expected
+########################################## enrich GO ########################################################
+# Notes: BP for Biological Process, MF for Molecular Function, and CC for Cellular Component
+# only works with gene id ENSEMBL, do not know why 
 
-# only works with ENTREZID Gene IdType 
-# creat vector with ENTREZID Genes
+library(org.Hs.eg.db)
+gene2 <- row.names(biomarkers)
+gene.df <- bitr(gene2, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
 
-# contains symbol and ENTREZID (see above)
-translated.genes
-# vector with only ENTREZID Genes
-e.genes= translated.genes$ENTREZID
-e.genes=as.data.frame(e.genes)
-e.genes
+##############################################################################################################
+### Cellular Component
+ego1 <- enrichGO(gene         = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "CC",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
 
+head(summary(ego1))
 
-# perform GO Enrichment Analysis 
-data(biomarkers)
-gene.test=translated.genes$ENTREZID
-gene.test=as.vector(gene.test)
-ego <- enrichGO(biomarkers,  OrgDb = org.Hs.eg.db, keyType = "ENTREZID", ont = "CC",
-                pvalueCutoff = 0.01, pAdjustMethod = "BH", universe,
-                qvalueCutoff = 0.05,readable = TRUE)
+# visualization 
+dotplot(ego1, showCategory=3)
+cnetplot(ego1)
+##############################################################################################################
 
-ego2=as.data.frame(ego)
+### Biological Process
+ego2 <- enrichGO(gene         = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "BP",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
 head(summary(ego2))
-                
 
+# visualization 
+dotplot(ego2, showCategory=10)
+cnetplot(ego2)
+
+##############################################################################################################
+
+### Molecular Function
+ego3 <- enrichGO(gene         = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "MF",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego3))
+
+# visualization 
+dotplot(ego3, showCategory=100)
+cnetplot(ego3)
 
 
 
