@@ -14,11 +14,7 @@ TreatedVorinostatcolumns
 identical(TreatedVorinostatcolumns, 761:819)
 
 
-#Create Vorinostat Untreated matrix:
-UntreatedVorinostat <- Untreated[,761:819]
-TreatedVorinostat <- Treated[,761:819]
-
-# um Zahlen zu vermeiden  
+#Define Vorinostat-data: 
 UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
 TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
 
