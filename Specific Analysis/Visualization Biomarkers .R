@@ -1,5 +1,5 @@
 ####################################  visualization biomarkers ################################################
-biomarkers_FC_genes= row.names(biomarkers_FC)
+# biomarkers_FC_values from biomarkers over FC
 
 install.packages("rbokeh")
 library(rbokeh)
