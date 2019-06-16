@@ -1,0 +1,215 @@
+---
+title: "Test"
+author: "Laura Plutowski"
+date: "16 6 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+``` 
+
+```{r read_data, message = FALSE, warning = FALSE}
+library(readr)
+
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+
+Treated <- as.data.frame(Treated)
+Untreated <- as.data.frame(Untreated)
+
+```
+
+```{r}
+#Find cell lines, which belong to vorinostat:
+#Untreated matrix:
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+UntreatedVorinostatcolumns
+#-> seems like column 761 - 819 belongs to vorinostat. Check if that is true:
+identical(UntreatedVorinostatcolumns, 761:819)
+#-> TRUE
+
+#Same with treated matrix:
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+TreatedVorinostatcolumns
+identical(TreatedVorinostatcolumns, 761:819)
+
+
+#Define Vorinostat-data: 
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+#fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#Create a common matrix for treated and untreated vorinostat data:
+ VorinostatTotal <- cbind(UntreatedVorinostat, TreatedVorinostat)
+  
+
+
+  
+    # variable um Zahlen zu ersetzen 
+ col_untreated = grep ('_0nM',colnames(VorinostatTotal))
+ col_untreated
+ 
+ col_treated = grep ('_5000nM',colnames(VorinostatTotal))
+ col_treated
+
+ 
+```
+
+```{r}
+
+library(clusterProfiler)
+
+###################################################################################################
+###################################################################################################
+
+############################## creat a list of genes/biomarkers ###################################
+
+# pValues for biomarkers
+pValues <- apply(VorinostatTotal, 1, function(x) t.test(x[col_untreated],x[col_treated],paired = TRUE, alternative = "two.sided")$p.value)
+
+# sort the p.values 
+sortedpValues <- sort(pValues, decreasing = FALSE)
+sortedpValues <- as.matrix(sortedpValues)
+
+# take the first 100 p.values for biomarkers 
+biomarkers <- sortedpValues[1:100,]
+biomarkers <- as.matrix(biomarkers)
+
+# creat vector with genes 
+biomarkers.genes = row.names(biomarkers)
+biomarkers.genes
+
+###################################################################################################
+###################################################################################################
+
+############################ translating amog diffrent gene ID types ##############################
+
+# install needed libary form translation 
+'if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("org.Hs.eg.db")'
+
+library(org.Hs.eg.db)
+
+# do the translation 
+translated.genes= bitr(biomarkers.genes,fromType="SYMBOL", toType="ENTREZID",OrgDb = org.Hs.eg.db) 
+head(translated.genes)
+
+# in which types the gene names can be translated by this libary 
+idType("org.Hs.eg.db")
+
+###################################################################################################
+
+################################### Gene Ontology Classification ##################################
+
+# install needed libary 
+'if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("DOSE")'
+
+library(DOSE)
+data(biomarkers)
+gene=translated.genes$ENTREZID
+head(gene)
+
+###################################################################################################
+# Notes: BP for Biological Process, MF for Molecular Function, and CC for Cellular Component
+
+#### do the Gene Ontology Classification
+
+### Biological Process
+ggo <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "BP", level = 3, readable = FALSE)
+ggo.data=as.data.frame(ggo)               
+head(summary(ggo.data))
+#plot (ggo.data) --> ugly plot with no usable informations 
+# visualization 
+barplot(ggo, drop=TRUE, showCategory=12)
+
+### Cellular Component
+ggo2 <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "CC", level = 3, readable = FALSE)
+barplot(ggo2, drop=TRUE, showCategory=12)
+
+### Molecular Function
+ggo3 <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "MF", level = 3, readable = FALSE)
+barplot(ggo2, drop=TRUE, showCategory=12)
+
+
+
+########################################## enrich GO ########################################################
+
+# only works with gene id ENSEMBL 
+
+library(org.Hs.eg.db)
+
+# create gene data frame ans translate it 
+
+gene2 <- row.names(biomarkers)
+gene.df <- bitr(gene2, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+
+##############################################################################################################
+### Cellular Component
+ego1 <- enrichGO(gene         = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "CC",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego1))
+
+# visualization 
+dotplot(ego1, showCategory=3)
+cnetplot(ego1)
+emapplot(ego1)
+##############################################################################################################
+
+### Biological Process
+ego2 <- enrichGO(gene         = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "BP",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego2))
+
+# visualization 
+dotplot(ego2, showCategory=10)
+cnetplot(ego2)
+emapplot(ego2)
+##############################################################################################################
+
+### Molecular Function
+ego3 <- enrichGO(gene         = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "MF",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego3))
+
+# visualization 
+dotplot(ego3, showCategory=100)
+cnetplot(ego3)
+emapplot(ego3)
+
+```
