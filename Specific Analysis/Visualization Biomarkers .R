@@ -11,9 +11,10 @@ library(rbokeh)
 # scatter plot 
 n <- nrow(biomarkers_FC_values)
 ramp <- colorRampPalette(c("red", "blue"))(n)
-figure(title = "Gene Expression Change for Biomarkers") %>%
+figure(title = "Gene Expression Change for Biomarkers",toolbar_location = NULL) %>%
   ly_points(biomarkers_FC_values, color = ramp, size = -seq_len(n), legend = FALSE)%>%
   x_axis(label = "biomarkers")
+  
 
 ################################################################################################################
 ################################################################################################################
