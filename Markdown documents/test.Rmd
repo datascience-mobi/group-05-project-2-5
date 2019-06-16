@@ -144,7 +144,7 @@ barplot(ggo2, drop=TRUE, showCategory=12)
 
 ### Molecular Function
 ggo3 <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "MF", level = 3, readable = FALSE)
-barplot(ggo2, drop=TRUE, showCategory=12)
+barplot(ggo3, drop=TRUE, showCategory=12)
 
 
 
