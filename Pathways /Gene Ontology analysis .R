@@ -1,3 +1,4 @@
+################################# Gene Ontology analysis with FC biomarkers ##########################################
 
 # work according to this paper: 
 # https://bioconductor.statistik.tu-dortmund.de/packages/3.1/bioc/vignettes/clusterProfiler/inst/doc/clusterProfiler.pdf
@@ -33,6 +34,9 @@ biomarkers <- as.matrix(biomarkers)
 biomarkers.genes = row.names(biomarkers)
 biomarkers.genes
 
+###################################################################################################
+###################################################################################################
+
 ############################ translating amog diffrent gene ID types ##############################
 
 # install needed libary form translation 
@@ -51,14 +55,8 @@ head(translated.genes)
 idType("org.Hs.eg.db")
 
 ###################################################################################################
-###################################################################################################
-
-################################# Gene Ontology analysis ##########################################
-
-###################################################################################################
 
 ################################### Gene Ontology Classification ##################################
-# einheitliche Bezeichnungen in der Bioinformatik 
 
 # install needed libary 
 'if (!requireNamespace("BiocManager", quietly = TRUE))
@@ -71,14 +69,16 @@ data(biomarkers)
 gene=translated.genes$ENTREZID
 head(gene)
 
-### gene classification 
+###################################################################################################
+# Notes: BP for Biological Process, MF for Molecular Function, and CC for Cellular Component
+
+#### do the Gene Ontology Classification
 
 ### Biological Process
 ggo <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "BP", level = 3, readable = FALSE)
 ggo.data=as.data.frame(ggo)               
 head(summary(ggo.data))
-plot (ggo.data)
-
+#plot (ggo.data) --> ugly plot with no usable informations 
 # visualization 
 barplot(ggo, drop=TRUE, showCategory=12)
 
@@ -106,10 +106,13 @@ ggo.sym=cbind(ggo2,ggo.sym.genes)
 ##############################################################################################################
 
 ########################################## enrich GO ########################################################
-# Notes: BP for Biological Process, MF for Molecular Function, and CC for Cellular Component
-# only works with gene id ENSEMBL, do not know why 
+
+# only works with gene id ENSEMBL 
 
 library(org.Hs.eg.db)
+
+# create gene data frame ans translate it 
+
 gene2 <- row.names(biomarkers)
 gene.df <- bitr(gene2, fromType = "SYMBOL",
                 toType = c("ENSEMBL", "ENTREZID"),
