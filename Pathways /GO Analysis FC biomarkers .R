@@ -51,4 +51,70 @@ head(summary(ggo2.3))
 # visualization 
 barplot(ggo2.3, drop=TRUE, showCategory=12)
 
+#################################################################################################################
 
+### enrich GO 
+
+# only works with gene id ENSEMBL 
+
+library(org.Hs.eg.db)
+
+# create gene data frame ans translate it 
+
+gene2.2 <- row.names(biomarkers_FC_values)
+gene.df2 <- bitr(gene2.2, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+
+##############################################################################################################
+### Cellular Component
+ego2.1 <- enrichGO(gene         = gene.df2$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "CC",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego2.1))
+
+# visualization 
+dotplot(ego2.1, showCategory=3)
+cnetplot(ego2.1)
+emapplot(ego2.1)
+
+##############################################################################################################
+
+### Biological Process
+ego2.2 <- enrichGO(gene         = gene.df2$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "BP",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego2.2))
+
+# visualization 
+dotplot(ego2.2, showCategory=10)
+cnetplot(ego2.2)
+emapplot(ego2.2)
+
+##############################################################################################################
+
+### Molecular Function
+ego2.3 <- enrichGO(gene         = gene.df2$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "MF",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego2.3))
+
+# visualization 
+dotplot(ego2.3, showCategory=10)
+cnetplot(ego2.3)
+emapplot(ego2.3)
