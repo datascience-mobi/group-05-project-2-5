@@ -102,7 +102,6 @@ cnetplot(ego2.2)
 emapplot(ego2.2)
 
 ##############################################################################################################
-
 ### Molecular Function
 ego2.3 <- enrichGO(gene         = gene.df2$ENSEMBL,
                  OrgDb         = org.Hs.eg.db,
