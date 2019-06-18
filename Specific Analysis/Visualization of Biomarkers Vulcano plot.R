@@ -55,12 +55,29 @@ log2FC <- apply(FC, 1, mean)
 #add the FCvalues as a new column to the data frame containing the results of the t.test:
 FCandpvalues <- cbind(Tfinalresults, log2FC)
 
+
+
+keyvals <- rep('black', nrow(FCandpvalues))
+names(keyvals) <- rep('FC<Top100', nrow(FCandpvalues))
+
+keyvals[which(FCandpvalues$log2FC >= min(biomarkers_FC))] <- 'gold'
+names(keyvals)[which(FCandpvalues$log2FC >= min(biomarkers_FC))] <- 'positive FC in Top100'
+
+keyvals[which(FCandpvalues$log2FC <= -min(biomarkers_FC))] <- 'green'
+names(keyvals)[which(FCandpvalues$log2FC <= -min(biomarkers_FC))] <- 'negative FC in Top100'
+
 #Create a Vulcanoplot:
 EnhancedVolcano(FCandpvalues,
                 lab = rownames(FCandpvalues),
                 x = 'log2FC',
                 y = 'p.value',
-                xlim = c(-5, 8))
+                title = 'Significance versus fold change of all genes',
+                selectLab = biomarkers_FC_genes,
+                transcriptLabSize = 1.8,
+                colOverride = keyvals,
+                pCutoff = 10e-14,
+                FCcutoff = min(biomarkers_FC)
+              )
 
 
 
