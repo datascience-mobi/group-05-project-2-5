@@ -1,12 +1,6 @@
-# FINDING BIOMARKERS USING VARIANCE: (AND COMPARISON THEREOF WITH BIOMARKERS CALCULATED BY T-TEST)
+# FINDING BIOMARKERS 
 
-# -> (11.06.2019) I could not work with t-tests from other users, so added my own calculations instead,
-# which however are not in their final form
-
-# Complete until the 6th section
-
-
-# Loading Data                                                                                  ######
+# Loading Data                                                                                    ######
 
 install.packages("BBmisc")       #For normalization
 library(BBmisc)     
@@ -22,9 +16,14 @@ Untreated   = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
 Treated     = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
 Metadata    = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 
+Untreated = as.data.frame(Untreated)
+Treated = as.data.frame(Treated)
 
 Treated   = normalize(Treated,   method= "scale")
 Untreated = normalize(Untreated, method= "scale")
+
+colnames(Treated)
+colnames(Untreated)
 
 # Drug sensitivity assay
 Sensitivity = readRDS(paste0(wd,"/data/NegLogGI50.rds"))
@@ -40,58 +39,124 @@ Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), hea
 # mechanism of action, targets ect.
 Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 
-
+?normalize
 
 # As Vorinostat is our chosen drug, we should cut the coulumn names including "vorinostat"
-Vorinostat_Untreated   =  Untreated [, which(grepl  ( "vorinostat" ,colnames(Untreated) )  )] 
+Vorinostat_Untreated   =  as.data.frame (Untreated [, which(grepl  ( "vorinostat" ,colnames(Untreated) )  )] )
 Vorinostat_Treated     =  Treated   [, which(grepl  ( "vorinostat" ,colnames(Treated) )  )] 
 
 # Calculate the amount of the difference in expression levels => Drug Response
 Drug_Response =  Vorinostat_Treated - Vorinostat_Untreated
 
-Vorinostat_Untreated
-
-
+colnames(Vorinostat_Untreated)
 
 # Cleaning the column names
+colnames(Vorinostat_Untreated)
 col_names_VU    = as.data.frame(strsplit(x=colnames(Vorinostat_Untreated),split="_"))
 colnames (Vorinostat_Untreated) = as.data.frame (t(col_names_VU[1,]))[,1]
-
+Vorinostat_Untreated[1:5,1:5]
 
 col_names_VT    = as.data.frame(strsplit(x=colnames(Vorinostat_Treated),split="_"))
 colnames (Vorinostat_Treated) = as.data.frame (t(col_names_VT[1,]))[,1]
 
 
 
+# 0-      Different type of Biomarkers                                                            ####
+# 0.1 -   Biomarkers as genes highly expressed in all cancerogenic cell lines                     ####
 
-# 0-  I will compare the variances of each gene before and after treatment among 59 cell lines. ####
+# PART 1 
 
-# Genes showing high variance before treatment are either cancerogenic
-# or have high variance due to cell line specificity
+# Here, we will look at the drug responses (Gene expr. after Treatment - Gene expr. before Tr.)
+# And see which genes showed the highest responses in average
 
-# Thus, I will detect the genes with highly variant activity among 59 cell lines
+
+# 0.2 -   Biomarkers as genes highly expressed in some specific cancerogenic cell lines           ####
+
+# PART 2
+
+
+# For this part, we will look at variances 
+# Firstly, to the genes which show a high variance before treatment => Cancer type specific genes
+# Not only cancerogenic genes will show high variance but also cell line specific genes
+# (For example, in lung cells vs intestinal cells)
+
+# Then find the high changes in variance => If the variance change, the genes would be responding
+# We expect the highest responses to come from cancerogenic genes
+
+
+#  HOW TO FIND THESE GENES:
+
+# I will detect the genes with highly variant activity among 59 cell lines
 # and measure the difference in variances before and after treatmen (Variance_after - Variance_before)
 
-# I expect the genes with highly variant activity (before treatment), which also show a high variance difference after 
-# treatment to be responding to the drug
+# I expect the genes with highly variant activity (before treatment), 
+# which also show a high variance difference after treatment to be responding to the drug
+
 
 # For genes, who show a high variance difference (Variance_after - Variance_before), 
 # but did not show high variance before treatment: 
 # - These could be either omnipresent cancerogenic genes with less variance before treatment,
 #   since they play roles in general mechanisms such as proliferation or 
 #   apoptosis supression, and reacted differently to the drug among cell lines.
-#   ( However, this does not seem very likely to me )
+#   ( These could be investigated by t-tests )
 # - Or side-effects on non-cancerogenic genes
 
-# In 4, I will look at the variance of gene responses to drug.
+
+# In part 4, I will look at the variance of gene responses to drug.
 # Genes expression levels change differently for a gene among cell lines.
 # A high variance in drug response would indicate that for a cancerogenic gene in a specific 
 # cell line, its aberrant expression levels normalized, causing different amount
 # of change and thus variance. 
 
 
+# 0.3 -   Why we cannot depend on t-test for finding biomarkers                                   ####     
+# 1 -     PART 1    =>         *Biomarkers_Highest_Mean_Drug_Response*                            ####
 
-# 1-  Genes with highest variance before treatment                                              ####
+# (This is the adviced way of finding biomarker by our tutor)
+
+# In this part, we will look at the highest mean values of changes 
+# in gene expression levels after treatment
+# => Genes whose expression level changed strongly in many cell types
+
+# Mean values of drug response
+mean_Drug_Response = as.data.frame(apply(Drug_Response,1, mean))
+
+# We want the highest changes, regardless of their positivity or negativity
+# => We will use absolute values
+mean_Drug_Response = abs(mean_Drug_Response)
+
+# Now list in decreasing order
+mean_Drug_Response = mean_Drug_Response[ order(-mean_Drug_Response[,1]), , drop= FALSE ]
+
+# Get the hundert highes changes
+Biomarkers_Highest_Mean_Drug_Response = mean_Drug_Response[ order(-mean_Drug_Response)[1:100], , drop = FALSE ]
+
+
+
+# 2 -     PART 2    =>         *Biomarkers_Variance*                                              ####
+
+# The genes found in the first part are those, which showed the highest change on average 
+# among 59 cell lines.
+
+# Yet, in our cell lines we have different cancer types and in order to find genes specific
+# for different cancer types, we need to look at the genes with high variance.
+
+# The problem will be that not only genes with cancerogenic activity will differ among cell lines,
+# but also the tissue specific genes will have high variance (compare: lung versus intestine)
+
+# In order to find the *cancerogenic* genes with high variance, we will
+# 1- Look at all the genes with high variance before treatment
+# 2- See which of those responded strongly to the tratment
+# 3- Expect the strongest responses will be made by cancerogenic genes, as these
+# tend to be affected most strongly by chemotherapeutic treatment.
+
+# VARIANCE IN DRUG RESPONSE => CELL LINE SPECIFITY
+# Then, we will investigate the highest variances in Drug Response,
+# the higher variance in drug response, the more specific the drug response to cell line
+
+
+# 2.1 -   VARIANCE AFTER - VARIANCE BEFORE => VARIANCE CHANGE                                     ####
+# 2.1.1-  Genes with highest variance before treatment                                            ####
 Variances_Untreated = as.data.frame(  apply(Vorinostat_Untreated,1,var)  )
 colnames(Variances_Untreated)[1] = "var"
 
@@ -105,7 +170,7 @@ dim(Most_Variances_Unt)    #  [1] 665   1
 #  These are the genes showing highest variance among untreated cell lines
 #  and can be considered as relevant for the cancerogenic activity
 
-# 2-  Variance of genes after treatment                                                         ####
+# 2.1.2-  Variance of genes after treatment                                                       ####
 
 # Later, I will compare variances before and adter treatment and see if there is a change. 
 # A change would signify a drug response.
@@ -124,8 +189,8 @@ dim(Most_Variances_Tr)    #  [1] 665   1
 # 665 genes from both data are not the same
 rownames(Most_Variances_Unt) %in% rownames(Most_Variances_Tr)
 
-# 3-  Variance Comparison                                                                       ####
-# 3a- High Variance change in genes who showed high variance before treatment                   ####
+# 2.1.3-  Variance Comparison   ↓ ↓ ↓                                                             ####
+# 2.1.3a- High Variance change in genes which showed high variance before treatment               ####
 Variance_Change = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
 
 row.names(Variance_Change)   = rownames(Variances_Treated)
@@ -146,7 +211,7 @@ Biomarker_candidates = intersect( Highest_VC, rownames(Most_Variances_Unt)  )
 Biomarker_candidates # 242 out of 666
 
 
-# 3b- High Variance change in genes whose variance was not very high in the beginning           ####
+# 2.1.3b- High Variance change in genes which showed LOW variance before treatment                ####
 
 # These are genes whose variance changed strongly, but were not variant before treatment.
 # These may be cancerogenic genes (equally expressed in all cell lines) or housekeeping genes,
@@ -155,7 +220,7 @@ Biomarker_candidates # 242 out of 666
 # In each case, we cannot come to a relevant conclusion.
 
 
-# 4-  Variance in Drug Response                                                                 ####
+# 2.2-    VARIANCE IN DRUG RESPONSE                                                               ####
 
 # After the treatment, we expect different levels of drug response for a gene 
 # across different cell lines if the gene is responsible for an oncological activity.
@@ -169,58 +234,76 @@ Variances_DR = Variances_DR[ order(-Variances_DR$var), , drop= FALSE ]
 nintyfive_quartile_VC  = quantile(Variances_DR$var, probs = 0.95)
 
 Most_Variances_DR = Variances_DR[-which(Variances_DR$var < nintyfive_quartile_VC),, drop= FALSE ]
-hist(Most_Variances_DR[,1])
+rownames(Most_Variances_DR)
 
-# 5-  Comparison of genes from 3 and 4    => Biomarkers (calculated by variance)                ####
+# 2.3-    Comparison of Biomarkers from 3 and 4 =>  Biomarkers_Variance*                          ####
 
 # In 3, I selected the genes, which I think are responsible for oncological character
 # and also respond to the treatment.
 
 # In 4, I focused on the genes with the highest variance in drug response.
-# Higher variance in drug response means, for specific cancer types a gene was overexpressed
-# only in some cell lines (therefore high variance before treatment), and the response is
-# also variant among cell lines, as some cell lines are affected differently than others.
+
+# Higher variance in drug response means, that a gene responded differently to the treatment
+# in different cell lines. This would be a sign for differing drug responses. 
+
+# These genes could be cancerogenic or not, however I expect the cancerogenic genes to show 
+# higher variance, as regular genes probably would not have reason to be affected differently
+# by chemotherapic agents. 
+# (Chemotherapic agents tend to attack the highly dividing cells the most strongly)
+
 Biomarker_candidates     #     247 
 nrow(Most_Variances_DR)  # [1] 665
-Biomarkers= as.data.frame(intersect( Biomarker_candidates, rownames(Most_Variances_DR)) ) 
-Biomarkers  # 171 biomarkers, this number will decrease after the comparison with t-test values !!!!!
+Biomarkers_1= as.data.frame(intersect( Biomarker_candidates, rownames(Most_Variances_DR)) ) 
+Biomarkers_1  # 169 biomarkers, this number will decrease after the comparison with t-test values !
 
+# Changing row names
 rownames(Biomarkers)     =  Biomarkers$`intersect(Biomarker_candidates, rownames(Most_Variances_DR))`
-# This long name was name of thecolumn =>   $`intersect(Biomarker_candidates, rownames(Most_Variances_DR))`
+# This long name was name of the column name:
+# =>   $`intersect(Biomarker_candidates, rownames(Most_Variances_DR))`
 
 
 # Now I create data frame Vorinostat_Treated and Vorinostat_Untreated only with the biomarker genes
 Biomarkers_Untreated     =  Vorinostat_Untreated[ which(row.names(Vorinostat_Untreated) %in% rownames(Biomarkers)),]
 Biomarkers_Treated       =  Vorinostat_Treated  [ which(row.names(Vorinostat_Treated) %in% rownames(Biomarkers)),  ]
-Drug_Response_Biomarkers =  Biomarkers_Treated - Biomarkers_Untreated
-# And also a Drug Response file with only biomarker genes
-Drug_Response_Biomarkers
+Biomarkers_Variance      =  Biomarkers_Treated - Biomarkers_Untreated
+
+dim(Biomarkers_Variance)   #  [1] 169  59
 
 
-# 6-  Calculating Biomarkers using t-test                                                       ####
+# 3 -     PART 3     =>        NO Biomarkers_t_test data, see: 3.2                                ####
 
-# We will calculate the genes which show smallest p-values:
+# t-TEST
+# We will also look at the p values of changes, however as the changes are really small,
+# a lot of tiny changes will be considered significant, although they are not necessarily so.
+
+# 3.1-    How to calculate Biomarkers using t-test and why                                        ####
+
+# We will calculate the genes showing drug response with very high significance (lowest p values):
+
 # -first,  using a paired two-tailed t-test on treated and basal expression levels
-# -second, using a independent two-tailed t-test on drug responses (gene expression change levels)
+# -second, using an independent two-tailed t-test on drug responses (gene expression level changes)
+# lastly, we will compare genes from both t-tests
 
-# We will then compare the genes showing drug response with very high significance (highest p values)
 
 
-# 6a- Calculating Biomarkers using t-test ( paired; Treated vs Untreated)                       ####
+# 3.1a-   Calculating Biomarkers using t-test (two-tailed paired;      Treated vs. Untreated)     ####
+
 p_values_Vorinostat = sapply(1:13299, function(i){  
-  t.test( Vorinostat_Treated[i,],Vorinostat_Untreated[i,])$p.value
+ t.test( Vorinostat_Treated[i,],Vorinostat_Untreated[i,])$p.value
 })
 
 p_values_Vorinostat           = as.data.frame (p_values_Vorinostat)
 rownames(p_values_Vorinostat) = rownames((Vorinostat_Treated))
 colnames(p_values_Vorinostat) =  " p_values"
 
-p_values_Vorinostat
+sort(p_values_Vorinostat[,1])  #  A lot of values are essentially zero
+
+hist(p_values_Vorinostat[,1])
 
 
 Significance_Treated = sapply(1:13299, function(i) {
-  # Return whether p-value  is < 0.05 
-  Vorinostat_p_Values[i,] < 0.025
+  # Return whether p-value  is < 0.05  
+  Vorinostat_p_Values[i,] < 0.05
 })
 
 p_values_Vorinostat$significance = Significance_Treated
@@ -230,93 +313,72 @@ p_values_Vorinostat = p_values_Vorinostat[ order(p_values_Vorinostat$` p_values`
 
 hist(p_values_Vorinostat[,1])
 
-p_values_Vorinostat = head( p_values_Vorinostat,30, drop =FALSE   )
-p_values_Vorinostat
-p_values_Vorinostat[1:10,]
+
+Biomarker_candidates_t_test_1 = p_values_Vorinostat
+
+dim(Biomarker_candidates_t_test_1)    #   [1] 665   2
 
 
 
-# 6b- Calculating Biomarkers using t-test ( independent; Drug Respomse = Treated - Untreated)   ####
+# 3.1b-   Calculating Biomarkers using t-test (two-tailed independent; Treated - Untreated)       ####
 
-Expr_change_Vorinostat =  Vorinostat_Treated - Vorinostat_Untreated
-Expr_change_Vorinostat = normalize(Expr_change_Vorinostat, method= "scale")
+Drug_Response = Vorinostat_Treated - Vorinostat_Untreated
+Drug_Response = normalize(Drug_Response, method= "scale")
 
-
-
-t.test(Expr_change_Vorinostat[1,])$p.value
 
 p_values_EC = sapply(1:13299, function(i){  
-  t.test( Expr_change_Vorinostat[i,])$p.value
+  t.test(Drug_Response[i,])$p.value
 })
 
 p_values_EC            = as.data.frame (p_values_EC )
 rownames(p_values_EC ) = rownames((Vorinostat_Treated))
-colnames(p_values_EC ) =  " p_values"
+colnames(p_values_EC ) = " p_values"
 
+dim(p_values_EC)
 
+hist(p_values_EC[,1])
+
+# Which values are significant?
 Significance_EC = sapply(1:13299, function(i) {
-  # Return whether p-value  is < 0.05 
-  p_values_EC[i,] < 0.05
+  # Return whether p-value  is < 0.05
+p_values_EC[i,] < 0.05
 })
 Significance_EC
 
+# Create a column with significance = TRUE/FALSE
 p_values_EC$significance = Significance_EC
+# Delete unsignificant rows
 p_values_EC = p_values_EC[ which (p_values_EC$significance == TRUE),]
-dim(p_values_EC)
+dim(p_values_EC)   #   [1] 8480    2
+
+# Order data frame according to p values
 p_values_EC = p_values_EC[ order(p_values_EC$` p_values`), ,drop = FALSE ]
 p_values_EC
 hist(p_values_EC[,1])
 
+Biomarker_candidates_t_test_2 =  p_values_EC
 
-p_values_EC =  head(p_values_EC, 30, drop = FALSE)
-p_values_EC[1:50,]
-
-
+dim (Biomarker_candidates_t_test_2)  # [1] 8480    2 => TOO MUCH
 
 
 
+# 3.2-    Comparing Biomarkers calculated using t-test                                            ####
 
-# 7-  Comparing Biomarkers calculated by variance and those calculated by t-test               ####
-# 8-  PCA of biomarkers        = Dissecting Patterns of Transcriptome Regulation                ####
+# Which of the different biomarker candiates from both t tests are common ?
 
-Biomarkers_Untreated     =  Vorinostat_Untreated[ which(row.names(Vorinostat_Untreated) %in% rownames(Biomarkers)),  ]
-Biomarkers_Treated       =  Vorinostat_Treated  [ which(row.names(Vorinostat_Treated) %in% rownames(Biomarkers)),  ]
-Drug_Response_Biomarkers = Biomarkers_Treated - Biomarkers_Untreated
+Biomarkers_t_test  = intersect(rownames(Biomarker_candidates_t_test_1), rownames(Biomarker_candidates_t_test_2))
+Biomarkers_t_test  # 665 names
 
-
-pca = prcomp(Drug_Response_Biomarkers, center = T, scale. = T)  
-
-plot(pca, type = "l")
-# Make sure to have library(ggfortify)
-autoplot(pca)
+# CONCLUSION: AS EXPECTED, WHEN VALUES ARE TOO SMALL (AS IS THE CASE IN DRUG RESPONSES), 
+# SLIGHTEST CHANGES ARE CONSIDERED SIGNIFICANT. (SEE: 3.1b)
+# THEREFORE, WE CANNOT WORK WITH T-TEST RESULTS, AS THESE ARE BIASED !
 
 
-# Now we can group cell lines using omics files and color the cell lines belonging to the same group 
-
-# 9-  kmeans of biomarkers     = Dissecting Patterns of Transcriptome Regulation                ####
-
-t_DR_Biom = as.data.frame( t(Drug_Response_Biomarkers)  )
-t_DR_Biom
-
-topVar = apply(Drug_Response_Biomarkers, 1, var)
-summary(topVar)
-
-topVar_DR_Biom = Drug_Response_Biomarkers[topVar > quantile(topVar, probs = 0.75), ]
-dim(topVar_DR_Biom)
-
-rm(topVar)
 
 
-# Creating a correlation based distance matrix
-cor.mat = cor(topVar_DR_Biom, method = "spearman")
-cor.dist = as.dist(1 - cor.mat)
-cor.hc = hclust(cor.dist, method = "ward.D2")
-cor.hc = as.dendrogram(cor.hc)
-
-plot(cor.hc, las = 2, cex.lab = 0.7) 
 
 
-# 10- Working with Anootations and Metadata                                                     ####
+####
 
 # Experiment metadata for the gene expression profiling above. 
 Metadata
