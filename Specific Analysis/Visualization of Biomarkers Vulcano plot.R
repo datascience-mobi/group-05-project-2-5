@@ -28,9 +28,9 @@ Tfinalresults <- do.call(rbind, TResults)
 
 #For the vulcano plot, a package needs to be installed:
 
-if (!requireNamespace('BiocManager', quietly = TRUE))
-  install.packages('BiocManager')
-BiocManager::install('EnhancedVolcano')
+#if (!requireNamespace('BiocManager', quietly = TRUE))
+  #install.packages('BiocManager')
+#BiocManager::install('EnhancedVolcano')
 
 library(EnhancedVolcano)
 
