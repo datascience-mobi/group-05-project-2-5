@@ -378,57 +378,6 @@ Biomarkers_t_test  # 665 names
 
 
 
-####
-
-# Experiment metadata for the gene expression profiling above. 
-Metadata
-# => Discover cell line to tissue relations
-unique(sort(Metadata$tissue)) # [1] Breast   CNS      Colon    Leukemia Lung     Melanoma Ovarian  Prostate Renal
-
-Metadata_BM   =  Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
-Metadata_BM   =  Metadata_BM [ order(Metadata_BM$tissue), ,drop = FALSE ] 
-
-sort(Metadata_BM$cell)  # For every cell line, there is a treated and 
-Metadata_BM$dose
-Metadata_BM   =  Metadata_BM [ -which(Metadata_BM$dose == "0nM"), ] 
-
-Metadata_BM
-
-Metadata_BM$cell %in% Biomarker_candidates
-
-
-
-# Now we can colour our PCA results from 6
-
-autoplot(pca)
-autoplot(pca, data = Metadata, colour = 'tissue')
-
-
-# We cannot, because here we have only tissue to cell line connections, not the genes
-
-sapply ( )
-
-
-
-# Drug sensitivity assay = NetLogGI50
-Sensitivity  
-
-# Basal molecular profiles of cancer cell lines 
-Basal       
-Copynumber 
-Mutations   
-
-# Feature annotation
-# cell line metadata => To be expanded with Basal Molecular Profiles
-Cellline_annotation 
-# mechanism of action, targets ect.
-Drug_annotation 
-
-
-
-
-
-
 
 
 
