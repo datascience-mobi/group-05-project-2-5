@@ -64,5 +64,6 @@ biomarkers_FC_values = as.matrix(biomarkers_FC_values)
 
 #################################################################################################################
 
-
+### Creat Matirx with biomarkers with FC of all samples 
+FCbiomarkers <- FC[biomarkers_FC_genes,]
 
