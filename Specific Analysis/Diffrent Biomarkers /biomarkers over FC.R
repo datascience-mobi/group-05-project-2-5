@@ -71,7 +71,7 @@ FCbiomarkers <- FC[biomarkers_FC_genes,]
 
 ### visualization in bar plot 
 tissue <- Metadata$tissue
-palette(15)
+palette(rainbow(9))
 
 # creat boxplot
 barplot( height= biomarkers_FC_values$FC_meanrow,col = tissue, border = NA, 
