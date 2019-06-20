@@ -13,8 +13,8 @@ knitr::opts_chunk$set( cache=TRUE)
 ## Introduction 
 
 Analyzing big data frames becomes a more and more important for working on biological issues. This is the reason why we want to take a look at such an exploratory analysis. 
-Therefore, we focused on data that reports different cellular responses to drug perturbations in cancer treatment. 
-... 
+Therefore, we focus on data that reports different cellular responses to drug perturbations in cancer treatment. First of all, we will perform a board exploratory analysis over the whole data set. Then we will continue looking at the specific anticancer drug vorinostat.  
+
 
 ## 1.Broad Analysis 
 
@@ -61,7 +61,7 @@ drug <- Metadata$drug
 palette(rainbow(15))
 # Boxplot 
 par(mar=c(5, 4, 5, 9))
-boxplot(Treated, medcol="black", border = drug, col= drug, xlab="drugs", ylab="gene expression",
+boxplot(Treated, medcol="black", border = drug, col= drug, xlab="sampels", ylab="gene expression",
         main= "Gene expression treated celllines", names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
     
 #add a legend to see which color corresponds to which drug:
@@ -86,8 +86,7 @@ palette(rainbow(15))
 
 # creat boxplot
 par(mar=c(5, 4, 5, 9))
-barplot( height = FC_all_mean, names= FALSE, col = drug, border = NA, 
-main= "Changes in gene expression by treatment with 15 anticancer durgs", xlab="sampels", ylab="mean Fold Change values")
+barplot( height = FC_all_mean, names= FALSE, col = drug, border = NA, main= "         Changes in gene expression by treatment with 15 anticancer durgs", xlab="sampels", ylab="mean Fold Change values")
 
 # creat legend 
 levels <- as.factor(levels(drug))
