@@ -28,6 +28,31 @@ Untreated <- as.data.frame(Untreated)
 
 ```
 
+```{r, include = FALSE}
+################## Creat Vorinostat data ####################
+
+#Find cell lines, which belong to vorinostat:
+#Untreated matrix:
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+
+
+#Same with treated matrix:
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+
+
+#Create Vorinostat Untreated matrix:
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+#fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#normalization 
+#For normalization, a package needs to be installed: install.packages("BBmisc")
+library(BBmisc)
+FCnorm <- normalize(FC, method= "scale")
+```
+
 Biomarkers over "normal" fold change, without absolute values: 
 
 ```{r}
@@ -81,33 +106,6 @@ biomarkers_FC_values = as.matrix(biomarkers_FC_values)
 
 ```
 
-KEGG enrichment, better then GO, fits with literature to vorinostat 
-
-```{r}
-library(KEGG.db)
-
-# see for other applications of this libary: 
-# https://bioconductor.org/packages/release/data/annotation/manuals/KEGG.db/man/KEGG.db.pdf
-
-###################################################################################################
-# works better with biomarkers from FC
-library(org.Hs.eg.db)
-gene2 <- row.names(biomarkers_FC)
-gene.df <- bitr(gene2, fromType = "SYMBOL",
-                toType = c("ENSEMBL", "ENTREZID"),
-                OrgDb = org.Hs.eg.db)
-
-kk <- enrichKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05)
-head(summary(kk))
-
-# visualization
-barplot(kk,showCategory=12)
-dotplot(kk, showCategory=12)
-cnetplot(kk,categorySize="geneNum")
-emapplot(kk)
-
-# problem: only finds 5 categories 
-```
 
 Gene Ontology analysis, more plots and information, but inconclusive
 
@@ -232,4 +230,32 @@ head(summary(ego2.3))
 dotplot(ego2.3, showCategory=10)
 cnetplot(ego2.3)
 emapplot(ego2.3)
+```
+
+KEGG enrichment, better then GO, fits with literature to vorinostat 
+
+```{r}
+library(KEGG.db)
+
+# see for other applications of this libary: 
+# https://bioconductor.org/packages/release/data/annotation/manuals/KEGG.db/man/KEGG.db.pdf
+
+###################################################################################################
+# works better with biomarkers from FC
+library(org.Hs.eg.db)
+gene2 <- row.names(biomarkers_FC)
+gene.df <- bitr(gene2, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+
+kk <- enrichKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05)
+head(summary(kk))
+
+# visualization
+barplot(kk,showCategory=12)
+dotplot(kk, showCategory=12)
+cnetplot(kk,categorySize="geneNum")
+emapplot(kk)
+
+# problem: only finds 5 categories 
 ```
