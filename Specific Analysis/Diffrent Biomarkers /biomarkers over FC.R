@@ -36,6 +36,8 @@ sortedFC_abs <- as.matrix(sortedFC_abs)
 # take the first 100 for biomarkers 
 biomarkers_FC = sortedFC_abs[1:100,]
 biomarkers_FC <- as.matrix(biomarkers_FC)
+head(biomarkers_FC)
+
 
 # see that the last ones have very similar values 
 
