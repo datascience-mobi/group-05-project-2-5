@@ -56,10 +56,10 @@ biomarkersLeukemiaGenes = row.names(biomarkersLeukemia)
 
 
 
-#Comparison with general biomarkers:
-
-biomarkersLeukemiaGenes %in% biomarkers_FC_genes
-
+#Comparison with general up- and downregulating biomarkers:
 intersect(biomarkersLeukemiaGenes, biomarkers_FC_genes)
-unique(biomarkersLeukemiaGenes, biomarkers_FC_genes)
+
+#Comparison with general absolute value biomarkers:
+intersect(biomarkersLeukemiaGenes, generalbiomarkergenes)
+biomarkersLeukemiaGenes[biomarkersLeukemiaGenes == generalbiomarkergenes]
 
