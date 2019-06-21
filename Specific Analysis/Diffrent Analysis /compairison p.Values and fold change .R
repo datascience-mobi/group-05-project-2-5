@@ -29,8 +29,12 @@ length(biomarkers.genes)
 
 FC <- TreatedVorinostat - UntreatedVorinostat
 
+
 # work with mean of the rows because we only want to compare the genes 
-FC_meanrow= rowMeans(FC)
+FC_meanrow=rowMeans(FC)
+
+# look at the absolute value, because genes could be also highly down regulated 
+FC_meanrow=abs(FC_meanrow)
 
 # sort the FC 
 sortedFC <- sort(FC_meanrow, decreasing = FALSE)
@@ -56,7 +60,7 @@ setequal(FC100.genes,biomarkers.genes)
 
 diff= setdiff(FC100.genes,biomarkers.genes)
 length(diff)
-# returs 73 diffrent genes 
+# returs 100 diffrent genes 
 
 # diffrent biomarkers over p.Values from t.test and over FC values 
 
@@ -66,9 +70,8 @@ length(diff)
 
 ### compare p.Values and FC values in a new matrix ###
 
-#creat new matrix
+#creat new matrix with both informations
 pV_FC= cbind(FC_meanrow,sortedpValues)
-
 head(pV_FC)
 # a high p.value does not lead to a high FC value
 
@@ -80,6 +83,9 @@ head(pV_FC)
 
 diff_pV_FC= as.matrix(FC_meanrow-sortedpValues)
 summary(diff_pV_FC)
+
+
+#### not important anymore
 
 # Which genes differ most? 
 

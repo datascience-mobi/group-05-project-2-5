@@ -24,3 +24,6 @@ pie(table(TreatedVorinostattissue["Metadatatissue",]),
     main="Tissue types of Vorinostat-treated samples", 
     radius=1, 
     cex=0.8)
+
+# better coloring: http://www.sthda.com/english/wiki/ggplot2-pie-chart-quick-start-guide-r-software-and-data-visualization
+

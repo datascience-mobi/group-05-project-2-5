@@ -36,6 +36,8 @@ sortedFC_abs <- as.matrix(sortedFC_abs)
 # take the first 100 for biomarkers 
 biomarkers_FC = sortedFC_abs[1:100,]
 biomarkers_FC <- as.matrix(biomarkers_FC)
+head(biomarkers_FC)
+
 
 # see that the last ones have very similar values 
 
@@ -59,10 +61,24 @@ FC_both_sorted <- FC_both[order(FC_both$FC_abs, decreasing = TRUE),]
 biomarkers_FC_values = FC_both_sorted[1:100,]
 # remove the absolute values
 biomarkers_FC_values <- subset( biomarkers_FC_values, select = -FC_abs)
-biomarkers_FC_values = as.matrix(biomarkers_FC_values)
+biomarkers_FC_values = as.data.frame(biomarkers_FC_values)
 
 
 #################################################################################################################
 
+### Creat Matirx with biomarkers with FC of all samples 
+FCbiomarkers <- FC[biomarkers_FC_genes,]
+
+################################################################################################################
+
+### visualization in bar plot 
+tissue <- Metadata$tissue
+palette(rainbow(9))
+
+# creat boxplot
+barplot( height= biomarkers_FC_values$FC_meanrow,col = tissue, border = NA, 
+         main= "Gene Expression Change by biomarkers colored according tissues", ylab="mean Fold change", xlab="biomarkers")
+levels <- as.factor(levels(tissue))
+legend("topright", inset = c(-0.1,0.0), legend= levels(tissue), xpd = TRUE, pch=19, col = levels, title = "tissues")
 
 
