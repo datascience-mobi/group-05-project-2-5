@@ -129,7 +129,9 @@ mean_Drug_Response = abs(mean_Drug_Response)
 mean_Drug_Response = mean_Drug_Response[ order(-mean_Drug_Response[,1]), , drop= FALSE ]
 
 # Get the hundert highes changes
-Biomarkers_Highest_Mean_Drug_Response = mean_Drug_Response[ order(-mean_Drug_Response)[1:100], , drop = FALSE ]
+Biomarkers_Highest_Mean_DR  =  mean_Drug_Response[ order(-mean_Drug_Response)[1:100], , drop = FALSE ]
+Biomarkers_Highest_Mean_DR  =  Drug_Response[ which(row.names(Vorinostat_Untreated) %in% rownames(Biomarkers_Highest_Mean_Drug_Response)),]
+dim(Biomarkers_Highest_Mean_DR)
 
 
 
