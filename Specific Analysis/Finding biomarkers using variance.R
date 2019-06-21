@@ -378,6 +378,68 @@ Biomarkers_t_test  # 665 names
 
 
 
+# 4 -     PCA OF 2 SETS OF BIOMARKERS                                                             ####       
+# 4.1-    PCA OF Biomarkers_Highest_Mean_DR        (From Part 1)                                  ####
+
+dim(Biomarkers_Highest_Mean_DR)
+t_Biomarkers_Highest_Mean_DR = as.data.frame( t(   Biomarkers_Highest_Mean_DR   ))
+
+# Exclude rows in metadata, that are treated with other drugs, sort according to cell names
+Metadata_Vorinostat                 =  Metadata            [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
+Metadata_Vorinostat                 =  Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
+Metadata_Vorinostat                 =  subset(Metadata_Vorinostat, Metadata_Vorinostat$dose == "5000nM")
+
+
+t_Biomarkers_Highest_Mean_DR$tissue  = Metadata_Vorinostat$tissue
+dim(t_Biomarkers_Highest_Mean_DR)
+
+
+pca_HM = prcomp(t_Biomarkers_Highest_Mean_DR[,1:100], center = T, scale. = T)
+plot(pca_HM, type = "l")                # First 2 PCs are most relevant
+
+autoplot(pca_HM, x=1, y=2, data= t_Biomarkers_Highest_Mean_DR, colour = 'tissue')
+# autoplot(pca_HM, x=1, y=3, data= t_Biomarkers_Highest_Mean_DR, colour = 'tissue')
+# autoplot(pca_HM, x=2, y=3, data= t_Biomarkers_Highest_Mean_DR, colour = 'tissue')
+
+# None of the 
+
+
+
+
+# 4.2-    PCA of Biomarkers_Variance               (From Part 2)                                  ####
+
+# Adding tissue names to Biomarkers_Variance data frame
+t_Biomarkers_Variance = as.data.frame(t(Biomarkers_Variance))
+dim(t_Biomarkers_Variance)
+
+
+t_Biomarkers_Variance$tissue        =  Metadata_Vorinostat$tissue
+
+rownames(t_Biomarkers_Variance)
+colnames(t_Biomarkers_Variance)
+dim(t_Biomarkers_Variance)
+
+
+pca_BV = prcomp(t_Biomarkers_Variance[,1:169], center = F, scale. = F)
+plot(pca_BV, type = "l")               # First 4 PCs are most relevant
+
+
+# We set these as false as we have already scaled our data
+autoplot(pca_BV, x=1, y=2, data= t_Biomarkers_Variance, colour = 'tissue')
+autoplot(pca_BV, x=1, y=3, data= t_Biomarkers_Variance, colour = 'tissue')
+autoplot(pca_BV, x=1, y=4, data= t_Biomarkers_Variance, colour = 'tissue')
+
+autoplot(pca_BV, x=2, y=3, data= t_Biomarkers_Variance, colour = 'tissue')
+# Melanoma cell lines seems to be affected the most by Vorinostat
+autoplot(pca_BV, x=2, y=4, data= t_Biomarkers_Variance, colour = 'tissue')
+
+autoplot(pca_BV, x=3, y=4, data= t_Biomarkers_Variance, colour = 'tissue')
+# Melanoma cell lines seems to be affected the most by Vorinostat
+
+
+
+
+
 
 
 
