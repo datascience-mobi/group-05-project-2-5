@@ -7,7 +7,6 @@
 ### 1. LOADING DATA
 ##  1.1 Creating Vorinostat                                                                                 ####
 
-
 #Find cell lines, which belong to vorinostat:
 #Untreated matrix:
 UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
