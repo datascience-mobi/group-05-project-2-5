@@ -18,7 +18,7 @@ gene.df <- bitr(gene2, fromType = "SYMBOL",
                 toType = c("ENSEMBL", "ENTREZID"),
                 OrgDb = org.Hs.eg.db)
 
-kk <- enrichKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05)
+kk <- enrichKEGG(gene=gene.df$ENTREZID, keyType="kegg", pvalueCutoff = 0.05)
 head(summary(kk))
 
 
@@ -29,12 +29,20 @@ cnetplot(kk,categorySize="geneNum")
 emapplot(kk)
 
 
-kk2 <- enrichMKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05)
+kk2 <- enrichMKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05, pAdjustMethod = "none")
 head(summary(kk2))
-
 # visualization
 barplot(kk2,showCategory=12)
 # only one categorie found 
+
+
+# finde more categories 
+kk3 <- enrichKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05,pAdjustMethod = "none")
+head(summary(kk3))
+barplot(kk3,showCategory=100)
+dotplot(kk3, showCategory=12)
+cnetplot(kk3,categorySize="geneNum")
+emapplot(kk3)
 
 ###################################################################################################
 # following enrichments based on this web page: 
