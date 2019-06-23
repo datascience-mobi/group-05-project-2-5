@@ -795,6 +795,9 @@ tanglegram(dl,
 # Loading Data
 library(corrgram)
 library(ggplot2)
+library(hexbin)
+library(RColorBrewer)
+library(ellipse)
 
 # Correlogram
 corrgram(cor1_tab, order=NULL, panel=panel.shade, text.panel=panel.txt,
@@ -807,7 +810,13 @@ pairs(cor1_tab, horInd = 1:30, verInd = 1:30, col="#1E90FF")
 
 pairs(cor1_tab, horInd = 1:10, verInd = 1:10, col="#1E90FF")
 
-#Matrix for correlations: with 20 biomarkers and with 100 biomarkers
+# Scatter plot of 100 biomarkers, showing the distribution of up- and downregulation
+
+bin<-hexbin(biomarkers_FC_values, xbins=40)
+my_colors=colorRampPalette(rev(brewer.pal(11,'Spectral')))
+plot(bin, main="" , colramp=my_colors , legend=F ) 
+
+#Matrix for correlations: with 30 biomarkers and with 100 biomarkers
 
 cor = cor(cor1_tab)
 heatmap(cor, col = cm.colors(256))
@@ -815,8 +824,25 @@ heatmap(cor, col = cm.colors(256))
 cor1.2 = cor(cor1.2_tab)
 heatmap(cor1.2, col = cm.colors(256))
 
+#Matrix for correlations: CELL LINES
+
+ellipse_corrCL=cor(cor1_tab)
+
+my_colors <- brewer.pal(5, "Spectral")
+my_colors=colorRampPalette(my_colors)(100)
+
+#Order the correlation matrix
+ord_ellipse_corrCL <- order(ellipse_corrCL[1, ])
+ellipse_corrCL_ord = ellipse_corrCL[ord, ord]
+
+ellipse_corrCL <- plotcorr(ellipse_corrCL_ord , col=my_colors[ellipse_corrCL_ord*50+50] , mar=c(0,0,0,0) )
+
+
+
 # Pending 
 qplot(cor1_tab, bins = 30)
+
+
 
 
 
@@ -909,6 +935,8 @@ bm_comp_reg= merge(bm_comp_reg_UV, bm_comp_reg_TV, by = "row.names", all = TRUE)
 
 
 #Something went wrong and the first ten genes are being displayed, not the idea, I must fix it!!!!
+
+
 
 
 
