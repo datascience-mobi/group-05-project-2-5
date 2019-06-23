@@ -7,16 +7,16 @@ wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
 #Load needed data:
 
-Untreated = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
-Treated = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+Untreated_notnormalized = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated_notnormalized = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
 Metadata = read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
 
 #We need a FC matrix that contains only the data from Vorinostat-treated celllines:
-UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
-TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated_notnormalized))
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated_notnormalized))
 
-UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
-TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+UntreatedVorinostat <- Untreated_notnormalized[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated_notnormalized[,TreatedVorinostatcolumns]
 
 FCVorinostat <- TreatedVorinostat - UntreatedVorinostat
 
