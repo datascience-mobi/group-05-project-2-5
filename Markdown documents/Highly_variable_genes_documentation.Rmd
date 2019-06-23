@@ -17,24 +17,17 @@ knitr::opts_chunk$set( cache=TRUE)
 Load data:
 ```{r read_data, message = FALSE, warning = FALSE}
 library(readr)
-  Untreated = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
-  Treated = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
-  Basal = readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
-  Copynumber = readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
-  Mutations = readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
-  Sensitivity = readRDS(paste0(wd,"/data/NegLogGI50.rds"))
-  Drug_annotation = read_tsv(paste0(wd,"/data/drug_annotation.tsv"))
-  Cellline_annotation = read_tsv(paste0(wd,"/data/cellline_annotation.tsv"))
-  Metadata = read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
+  Untreated_notnormalized = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+  Treated_notnormalized = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+
 ```
 
 
 ***
-#BROAD ANALYSIS
+##BROAD ANALYSIS HIGHLY VARIABLE GENES
 ***
 
-##HIGHLY VARIABLE GENES
-  
+
 We aim to find genes which vary the most in Untreated and Treated celllines.
 Therefore we work with Seurat packages, which need to be installed: install.packages('Seurat')
 For the seurat library to be available, digest packages need to be installed: install.packages("digest")
@@ -47,7 +40,7 @@ In the following code, we use the abbreviation __"BroadAnU"__ representative for
 First we create a new object that contains the Untreated data. Then 2000 most variable genes are selected from the Untreated data.
 
 ```{r, warning=FALSE}
-BroadAnU <- CreateSeuratObject(counts = Untreated, project = "BroadAnU")
+BroadAnU <- CreateSeuratObject(counts = Untreated_notnormalized, project = "BroadAnU")
 BroadAnU <- FindVariableFeatures(BroadAnU, selection.method = "vst", nfeatures= 2000)
 ```
 
@@ -60,16 +53,18 @@ top10Untreated <- head(VariableFeatures(BroadAnU), 10)
 First we plot variable features without labels, in a second step we add labels to the 10 most variable genes.
 
 ```{r}
+
 plotUntreated <- VariableFeaturePlot(BroadAnU)
 plotUntreatedlabeled <- LabelPoints(plot = plotUntreated, points = top10Untreated,
                                     repel = TRUE, xnudge = 0, ynudge = 0)
+
 plotUntreatedlabeled
 ```
 
 For a comparison, we do the same procedure with the Treated data:
 
 ```{r, warning = FALSE}
-BroadAnT <- CreateSeuratObject(counts = Treated, project = "BroadAnT")
+BroadAnT <- CreateSeuratObject(counts = Treated_notnormalized, project = "BroadAnT")
 BroadAnT <- FindVariableFeatures(BroadAnT, selection.method = "vst", nfeatures= 2000)
 ```
 
