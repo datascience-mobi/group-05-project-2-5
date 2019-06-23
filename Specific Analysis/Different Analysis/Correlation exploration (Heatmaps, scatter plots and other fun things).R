@@ -2,15 +2,14 @@
 #### Exploring correlation in biomarkers using visualization tools #####
 
 
-### Disclaimer: Do not run the entine R file at one, as it contains many plots 
+
 
 ### 1.    LOADING DATA                                                                                        ####                                         
 
 ## Loading packages
 library(readr)
 library(rstudioapi)
-library(BBmisc)   
-
+library(BBmisc)     
 
 ## Finding local directory
 wd = dirname(rstudioapi::getSourceEditorContext()$path)
@@ -468,13 +467,12 @@ cor1.2_ret_hclust$tree_row %>%
 #x-axis on the bottom. 
 
 ##  2.3   Dendogram                                                                                           ####
+#   2.3.1 Dendogram with 30 Biomarkers and 59 cell lines                                                      #####
 
 # load packages
 library(dendextend)
 library(ggplot2)
 library(circlize)
-
-#   2.3.1 Dendogram with 30 Biomarkers and 59 cell lines                                                      #####
 
 
 ## CELL LINES
@@ -530,274 +528,111 @@ plot(cor1_ret_hclust$tree_row, horiz  = TRUE)
 
 # ggplot integration
 
-d_gg_t <- t(cor1_tab) %>% dist %>% hclust %>% as.dendrogram %>%
+d_gg <- t(cor1_tab) %>% dist %>% hclust %>% as.dendrogram %>%
   set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
   set("branches_lty", c(1,1,3,1,1,2)) %>%
   set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
   set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA),
-                               main = "How Vorinostat biomarkers define the relationship between cell lines",
+                               main = "How Vorinostat biomarkers define the relatiosnhip between cell lines",
   )
 
-plot(d_gg_t)
+plot(d_gg)
 
 # Mirror horizontal dendogram
 
-hc_hmd_t <- hclust(dist(t(cor1_tab)), "ave")
-d_hmd_t <- as.dendrogram(hc_hmd_t)
-d_hmd_t <- d_hmd_t %>% color_branches(k=3) %>% color_labels
+hc_hmd <- hclust(dist(t(cor1_tab)), "ave")
+d_hmd <- as.dendrogram(hc_hmd)
+d_hmd <- d_hmd %>% color_branches(k=2) %>% color_labels
 par(mar = c(3,1,1,7))
-plot(d_hmd_t, horiz  = TRUE)
+plot(d_hmd, horiz  = TRUE)
 
 # Polar dendogram
 
-hc_pd_t <- hclust(dist(t(cor1_tab)))
-d_pd_t <- as.dendrogram(hc_pd_t)
+hc_pd <- hclust(dist(t(cor1_tab)))
+d_pd <- as.dendrogram(hc_pd)
 
-d_pd_t <- d_pd_t %>% 
-  color_branches(k=3) %>% 
+d_pd <- d_pd %>% 
+  color_branches(k=2) %>% 
   color_labels
 
 par(mar = rep(0,4))
-circlize_dendrogram(d_pd_t, labels_track_height = NA, dend_track_height = .3) 
+circlize_dendrogram(d_pd, labels_track_height = NA, dend_track_height = .3) 
 
 
 # Retrieving hierachical clustering from the heatmap
 
-cor1_t_ret_hclust <- pheatmap(t(cor1_tab), silent = TRUE)
+cor1_ret_hclust <- pheatmap(t(cor1_tab), silent = TRUE)
 
-hc_hmd_t <- hclust(dist(t(cor1_tab)), "ave")
-cor1_t_ret_hclust$tree_row %>% 
+hc_hmd <- hclust(dist(t(cor1_tab)), "ave")
+cor1_ret_hclust$tree_row %>% 
   as.dendrogram() %>%
   plot(horiz = TRUE)
 
-cor1_t_ret_hclust$tree_row = cor1_t_ret_hclust$tree_row %>% color_branches(k=3) %>% color_labels
+cor1_ret_hclust$tree_row = cor1_ret_hclust$tree_row %>% color_branches(k=2) %>% color_labels
 
 par(mar = c(3,1,1,7))
-plot(cor1_t_ret_hclust$tree_row, horiz  = TRUE)
+plot(cor1_ret_hclust$tree_row, horiz  = TRUE)
 
 
 #   2.3.2 Dendogram with 100 Biomarkers and 59 cell lines                                                     #####
 
-## CELL LINES
-
-# ggplot integration
-
-d_gg_1.2 <- cor1.2_tab %>% dist %>% hclust %>% as.dendrogram %>%
-  set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
-  set("branches_lty", c(1,1,3,1,1,2)) %>%
-  set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
-  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA)
-  )
-
-par(mar = c(3,5,1,3))
-plot(d_gg_1.2)
-title(main = "Relationship between vorinostat biomarkers across cell lines")
-
-# Mirror horizontal dendogram
-
-hc_hmd_1.2 <- hclust(dist(cor1.2_tab), "ave")
-d_hmd_1.2 <- as.dendrogram(hc_hmd_1.2)
-d_hmd_1.2 <- d_hmd_1.2 %>% color_branches(k=2) %>% color_labels
-par(mar = c(3,1,1,5))
-plot(d_hmd_1.2, horiz  = TRUE)
-title(main = "Relationship between vorinostat biomarkers across cell lines", sub = "Horizontal dendogram" )
+pheatmap(cor1.2_tab)
 
 
-# Polar dendogram
+# Scaling the rows
 
-hc_pd_1.2 <- hclust(dist(cor1.2_tab))
-d_pd_1.2 <- as.dendrogram(hc_pd_1.2)
+cal_z_score <- function(x){
+  (x - mean(x)) / sd(x)
+}
 
-d_pd_1.2 <- d_pd_1.2 %>% 
-  color_branches(k=3) %>% 
-  color_labels
-
-par(mar = rep(0,4), mar = c(0,0,1.5,0))
-circlize_dendrogram(d_pd_1.2, labels_track_height = NA, dend_track_height = .3) 
-title(main = "Relationship between vorinostat biomarkers across cell lines")
+cor1.2_tab_norm <- t(apply(cor1.2_tab, 1, cal_z_score))
+pheatmap(cor1.2_tab_norm)
 
 
-# Retrieving hierachical clustering from the heatmap
+# Ploting a dendogram and cutting the tree
+cor1.2_hclust <- hclust(dist(cor1.2_tab), method = "complete")
 
-cor1_1.2_ret_hclust <- pheatmap(cor1.2_tab, silent = TRUE)
+as.dendrogram(cor1.2_hclust) %>%
+  plot(horiz = TRUE)
 
-hc_hmd_1.2 <- hclust(dist(cor1.2_tab), "ave")
-cor1_1.2_ret_hclust$tree_row %>% 
+cor1.2_hclust_tree <- cutree(tree = as.dendrogram(cor1.2_hclust), k = 2)
+
+head(cor1.2_hclust_tree)
+
+
+
+#Heatmap for a 100 Biomarkers
+
+cor1.2_colour = list(cluster = c("Cluster 1" = "#68f9f1", "Cluster 2" = "#c9ff87"))
+
+
+cor1.2 = pheatmap(cor1.2_tab,
+                  annotation_colors = cor1.2_colour,
+                  annotation_row = cor1.2_hclust_tree,
+                  fontsize = 6.5,
+                  fontsize_row= 5, 
+                  fontsize_col = 6,
+                  gaps_col=50,
+                  info = TRUE
+)
+
+
+# Retrieving hierachical clustering
+
+cor1.2_ret_hclust <- pheatmap(cor1.2_tab, silent = TRUE)
+
+cor1.2_ret_hclust$tree_row %>%
   as.dendrogram() %>%
   plot(horiz = TRUE)
 
-cor1_1.2_ret_hclust$tree_row = cor1_1.2_ret_hclust$tree_row %>% color_branches(k=3) %>% color_labels
-
-par(mar = c(2,3,1,7))
-plot(cor1_1.2_ret_hclust$tree_row, horiz  = TRUE)
-title(main = "Relationship between vorinostat biomarkers across cell lines")
-
-
-
-## BIOMARKERS
-
-# ggplot integration
-
-d_gg_t_1.2 <- t(cor1.2_tab) %>% dist %>% hclust %>% as.dendrogram %>%
-  set("branches_k_color", k=3) %>% set("branches_lwd", c(1.5,1,1)) %>%
-  set("branches_lty", c(1,1,3,1,1,2)) %>%
-  set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
-  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA),
-                               main = "How Vorinostat biomarkers define the relationship between cell lines",
-  )
-
-plot(d_gg_t_1.2)
-
-# Mirror horizontal dendogram
-
-hc_hmd_t_1.2 <- hclust(dist(t(cor1.2_tab)), "ave")
-d_hmd_t_1.2 <- as.dendrogram(hc_hmd_t_1.2)
-d_hmd_t_1.2 <- d_hmd_t_1.2 %>% color_branches(k=3) %>% color_labels
-par(mar = c(3,1,1,7))
-plot(d_hmd_t_1.2, horiz  = TRUE)
-
-# Polar dendogram
-
-hc_pd_t_1.2 <- hclust(dist(t(cor1.2_tab)))
-d_pd_t_1.2 <- as.dendrogram(hc_pd_t_1.2)
-
-d_pd_t_1.2 <- d_pd_t_1.2 %>% 
-  color_branches(k=3) %>% 
-  color_labels
-
-par(mar = rep(0,4))
-circlize_dendrogram(d_pd_t_1.2, labels_track_height = NA, dend_track_height = .3) 
-
-
-# Retrieving hierachical clustering from the heatmap
-
-cor1_t_1.2_ret_hclust <- pheatmap(t(cor1.2_tab), silent = TRUE)
-
-hc_hmd_t_1.2 <- hclust(dist(t(cor1.2_tab)), "ave")
-cor1_t_1.2_ret_hclust$tree_row %>% 
-  as.dendrogram() %>%
-  plot(horiz = TRUE)
-
-cor1_t_1.2_ret_hclust$tree_row = cor1_t_1.2_ret_hclust$tree_row %>% color_branches(k=3) %>% color_labels
-
-par(mar = c(3,1,1,7))
-plot(cor1_t_1.2_ret_hclust$tree_row, horiz  = TRUE)
 
 
 #   2.3.3 Comparison of dendograms with 100 Biomarkers and 30 Biomarkers                                      ####
-
-## CELL LINES: Exploration of the relationship between the same cell lines, 
-##when a dendogram with 30 biomarkers is created vs when one with 100 biomarkers is created
-
-
-# Comparison 1: Different cluster size
-
-dl <- dendlist(
-  d_hmd %>% 
-    set("labels_col", value = c("skyblue", "orange", "grey"), k=2) %>%
-    set("branches_lty", 1) %>%
-    set("branches_k_color", value = c("skyblue", "orange", "grey"), k = 2),
-  d_hmd_1.2 %>% 
-    set("labels_col", value = c("skyblue", "orange", "grey"), k=3) %>%
-    set("branches_lty", 1) %>%
-    set("branches_k_color", value = c("skyblue", "orange", "grey"), k = 3)
-)
-
-tanglegram(dl, 
-           common_subtrees_color_lines = FALSE, highlight_distinct_edges  = TRUE, highlight_branches_lwd=FALSE, 
-           margin_inner=7,
-           lwd=2,
-           warn = TRUE
-)
-# Due to the different sizes of the trees, only matches are shown. Therefore, the differences in clustering
-#between only 30 out of the 100 biomarkers can be observed. 
-
-# Comparison 2: Same cluster size
-
-dl <- dendlist(
-  d_hmd %>% 
-    set("labels_col", value = c("skyblue", "orange", "grey"), k=3) %>%
-    set("branches_lty", 1) %>%
-    set("branches_k_color", value = c("skyblue", "orange", "grey"), k = 3),
-  d_hmd_1.2 %>% 
-    set("labels_col", value = c("skyblue", "orange", "grey"), k=3) %>%
-    set("branches_lty", 1) %>%
-    set("branches_k_color", value = c("skyblue", "orange", "grey"), k = 3)
-)
-
-tanglegram(dl, 
-           common_subtrees_color_lines = FALSE, highlight_distinct_edges  = TRUE, highlight_branches_lwd=FALSE, 
-           margin_inner=7,
-           lwd=2,
-           warn = TRUE
-)
-# Due to the different sizes of the trees, only matches are shown. Therefore, the differences in clustering
-#between only 30 out of the 100 biomarkers can be observed. 
-
-# A small difference in cluster size can have a big impact on the outcome of the relationship between cell lines
-
-
-
-## BIOMARKERS: Exploration of the relationship between biomarkers
-##when a dendogram with 30 biomarkers is created vs when one with 100 biomarkers is created
-
-# Comparison 1: Different cluster size
-
-dl <- dendlist(
-  d_hmd_t %>% 
-    set("labels_col", value = c("skyblue", "orange", "grey"), k=2) %>%
-    set("branches_lty", 1) %>%
-    set("branches_k_color", value = c("skyblue", "orange", "grey"), k = 2),
-  d_hmd_t_1.2 %>% 
-    set("labels_col", value = c("skyblue", "orange", "grey"), k=3) %>%
-    set("branches_lty", 1) %>%
-    set("branches_k_color", value = c("skyblue", "orange", "grey"), k = 3)
-)
-
-tanglegram(dl, 
-           common_subtrees_color_lines = FALSE, highlight_distinct_edges  = TRUE, highlight_branches_lwd=FALSE, 
-           margin_inner=7,
-           lwd=2,
-           warn = TRUE
-)
-
-
-# Due to the different sizes of the trees, only matches are shown. Therefore, the differences in clustering
-#between only 30 out of the 100 biomarkers can be observed. 
-
-# Comparison 2: Same cluster size
-
-dl <- dendlist(
-  d_hmd_t %>% 
-    set("labels_col", value = c("skyblue", "orange", "grey"), k=3) %>%
-    set("branches_lty", 1) %>%
-    set("branches_k_color", value = c("skyblue", "orange", "grey"), k = 3),
-  d_hmd_t_1.2 %>% 
-    set("labels_col", value = c("skyblue", "orange", "grey"), k=3) %>%
-    set("branches_lty", 1) %>%
-    set("branches_k_color", value = c("skyblue", "orange", "grey"), k = 3)
-)
-
-tanglegram(dl, 
-           common_subtrees_color_lines = FALSE, highlight_distinct_edges  = TRUE, highlight_branches_lwd=FALSE, 
-           margin_inner=7,
-           lwd=2,
-           warn = TRUE
-)
-# Due to the different sizes of the trees, only matches are shown. Therefore, the differences in clustering
-#between only 30 out of the 100 biomarkers can be observed. 
-
-# A small difference in cluster size can have a big impact on the outcome of the relationship between cell lines
-
-
 ##  2.4   Correlogram and Scatter Plot for 30 Biomarkers and 59 cell lines                                    ####
 
 # Loading Data
 library(corrgram)
 library(ggplot2)
-library(hexbin)
-library(RColorBrewer)
-library(ellipse)
 
 # Correlogram
 corrgram(cor1_tab, order=NULL, panel=panel.shade, text.panel=panel.txt,
@@ -810,13 +645,7 @@ pairs(cor1_tab, horInd = 1:30, verInd = 1:30, col="#1E90FF")
 
 pairs(cor1_tab, horInd = 1:10, verInd = 1:10, col="#1E90FF")
 
-# Scatter plot of 100 biomarkers, showing the distribution of up- and downregulation
-
-bin<-hexbin(biomarkers_FC_values, xbins=40)
-my_colors=colorRampPalette(rev(brewer.pal(11,'Spectral')))
-plot(bin, main="" , colramp=my_colors , legend=F ) 
-
-#Matrix for correlations: with 30 biomarkers and with 100 biomarkers
+#Matrix for correlations: with 20 biomarkers and with 100 biomarkers
 
 cor = cor(cor1_tab)
 heatmap(cor, col = cm.colors(256))
@@ -824,25 +653,8 @@ heatmap(cor, col = cm.colors(256))
 cor1.2 = cor(cor1.2_tab)
 heatmap(cor1.2, col = cm.colors(256))
 
-#Matrix for correlations: CELL LINES
-
-ellipse_corrCL=cor(cor1_tab)
-
-my_colors <- brewer.pal(5, "Spectral")
-my_colors=colorRampPalette(my_colors)(100)
-
-#Order the correlation matrix
-ord_ellipse_corrCL <- order(ellipse_corrCL[1, ])
-ellipse_corrCL_ord = ellipse_corrCL[ord, ord]
-
-ellipse_corrCL <- plotcorr(ellipse_corrCL_ord , col=my_colors[ellipse_corrCL_ord*50+50] , mar=c(0,0,0,0) )
-
-
-
 # Pending 
 qplot(cor1_tab, bins = 30)
-
-
 
 
 
@@ -853,7 +665,7 @@ qplot(cor1_tab, bins = 30)
 ##  3.1   Table with Biomarkers, difference beatween treated and untreated, and cell lines                    ####
 ##  3.2.1 Heatmap with 30 Biomarkers and 59 cell lines                                                        ####
 
-#   3.2.2 Heatmap with 100 Biomarkers and 59 cell lines                                                       ####
+#   3.2.2 Heatmap with 100 Biomarkers and 59 cell lines                                                       #####
 ##  3.3   Dendogram                                                                                           ####
 
 #   3.3.1 Dendogram with 30 Biomarkers and 59 cell lines                                                      ####
@@ -935,8 +747,6 @@ bm_comp_reg= merge(bm_comp_reg_UV, bm_comp_reg_TV, by = "row.names", all = TRUE)
 
 
 #Something went wrong and the first ten genes are being displayed, not the idea, I must fix it!!!!
-
-
 
 
 
