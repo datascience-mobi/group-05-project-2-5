@@ -41,12 +41,11 @@ generalbiomarkergenes = row.names(top100generalbiomarkers)
 ### compare this biomarkers to the biomarkers without absolute values 
  
 ### creat the other biomarkers 
-FC <- TreatedVorinostat - UntreatedVorinostat
-FC_meanrow= rowMeans(FC)
+FCVorinostatmean_noabs= rowMeans(FCVorinostat)
 
 # work with absolute value to find the highest values
 # because we want to have the most up and down regulated genes 
-FC_abs= abs(FC_meanrow)
+FC_abs= abs(FCVorinostatmean_noabs)
 
 ## sort the values to get the 100 largest values 
 
