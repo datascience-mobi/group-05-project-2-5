@@ -151,8 +151,7 @@ library(org.Hs.eg.db)
 
 # create gene data frame ans translate it 
 
-gene2.2 <- row.names(generalbiomarkergenes)
-gene.df2 <- bitr(gene2.2, fromType = "SYMBOL",
+gene.df2 <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
                 toType = c("ENSEMBL", "ENTREZID"),
                 OrgDb = org.Hs.eg.db)
 
@@ -221,8 +220,8 @@ library(KEGG.db)
 ###################################################################################################
 # works better with biomarkers from FC
 library(org.Hs.eg.db)
-gene2 <- row.names(generalbiomarkergenes)
-gene.df <- bitr(gene2, fromType = "SYMBOL",
+
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
                 toType = c("ENSEMBL", "ENTREZID"),
                 OrgDb = org.Hs.eg.db)
 
