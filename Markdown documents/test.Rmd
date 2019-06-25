@@ -1,0 +1,261 @@
+---
+title: "Specific 2"
+author: "Laura Plutowski"
+date: "25 6 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+``` 
+
+```{r read_data, message = FALSE, warning = FALSE,include = FALSE}
+library(readr)
+
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+
+Treated <- as.data.frame(Treated)
+Untreated <- as.data.frame(Untreated)
+```
+
+```{r, include = FALSE}
+################## Creat Vorinostat data ####################
+
+#Find cell lines, which belong to vorinostat:
+#Untreated matrix:
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+
+
+#Same with treated matrix:
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+
+
+#Create Vorinostat Untreated matrix:
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+#fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#normalization 
+#For normalization, a package needs to be installed: install.packages("BBmisc")
+library(BBmisc)
+FCnorm <- normalize(FC, method= "scale")
+```
+
+Now that we have determined the biomarkers via the T-test, we want to investigate their FC values, since our biomarkers should have the largest change in gene expression. 
+```{r}
+### create data for p.values ###
+
+#Create a common matrix for treated and untreated vorinostat data:
+VorinostatTotal <- cbind(UntreatedVorinostat, TreatedVorinostat)
+
+# find the needed colums 
+ col_untreated = grep ('_0nM',colnames(VorinostatTotal))
+ col_treated = grep ('_5000nM',colnames(VorinostatTotal))
+
+pValues <- apply(VorinostatTotal, 1, function(x) t.test(x[col_untreated],x[col_treated],paired = TRUE, alternative = "two.sided")$p.value)
+
+# sort the p.values 
+sortedpValues <- sort(pValues, decreasing = FALSE)
+sortedpValues <- as.matrix(sortedpValues)
+
+# take the first 100 p.values for biomarkers 
+biomarkers <- sortedpValues[1:100,]
+biomarkers <- as.matrix(biomarkers)
+
+# creat vector with genes 
+biomarkers.genes = row.names(biomarkers)
+# check if it has the correct length
+length(biomarkers.genes)
+
+
+
+### create data for FC ###
+
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+# work with mean of the rows because we only want to compare the genes 
+FC_meanrow= rowMeans(FC)
+
+# look at the absolute value, because genes could be also highly down regulated 
+FC_meanrow=abs(FC_meanrow)
+
+# sort the FC 
+sortedFC <- sort(FC_meanrow, decreasing = FALSE)
+sortedFC <- as.matrix(sortedFC)
+
+# take the first 100 values like done above for compairison 
+FC100<- sortedFC[1:100,]
+FC100 <- as.matrix(FC100)
+
+# creat vector with genes 
+FC100.genes = row.names(FC100)
+# check if it has the correct length
+length(FC100.genes)
+
+
+### compare genes vectors ### 
+
+# Do we have exactly the same biomarkers?
+setequal(FC100.genes,biomarkers.genes)
+
+# How many of the biomarkers are different? 
+diff= setdiff(FC100.genes,biomarkers.genes)
+length(diff)
+
+### compare p.Values and FC values in a new matrix ###
+
+#creat new matrix with both informations
+pV_FC= cbind(FC_meanrow,sortedpValues)
+head(pV_FC)
+
+```
+Now we know that p.Value and FC value do not deliver exactly the same biomarkers. In fact, they differ by 100%. 
+If we compare the values directly, we see that a low p.value does not correlate with a high FC value. This is because small values are also assigned small p.values by the T-test and the result of the test is therefore falsified. For this reason, we cannot trust the biomarkers from the T-test and will now determine them via the fold change values.
+
+```{r}
+### creat FC data ###
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+# work with mean of the rows because we only want to compare the genes 
+FC_meanrow= rowMeans(FC)
+
+
+### sort the data ###
+
+# work with absolute value to find the highest values
+# because we want to have the most up and down regulated genes 
+FC_abs= abs(FC_meanrow)
+
+## sort the values to get the 100 largest values 
+
+sortedFC_abs <- sort(FC_abs, decreasing = TRUE)
+sortedFC_abs <- as.matrix(sortedFC_abs)
+
+# take the first 100 for biomarkers 
+biomarkers_FC = sortedFC_abs[1:100,]
+biomarkers_FC <- as.matrix(biomarkers_FC)
+head(biomarkers_FC)
+
+# creat vector with gene names 
+biomarkers_FC_genes= row.names(biomarkers_FC)
+```
+
+Now we have determined trusting biomarkers via the fold change. But with these biomarkers it is not taken into account that up- or down-regulating effects cancel each other out. So now we're going to determine the biomarkers by their absolute FC values.
+
+```{r}
+
+# creat FC matrix
+FCVorinostat <- TreatedVorinostat - UntreatedVorinostat
+
+# work with mean of the rows because we only want to compare the genes:
+FCVorinostatabs= abs(FCVorinostat)
+FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
+
+# sort the values to get the 100 largest values:
+sortedgeneralbiomarker <- sort(FCVorinostatmean, decreasing = TRUE)
+sortedgeneralbiomarker <- as.matrix(sortedgeneralbiomarker)
+
+#select the top 100 general biomarkers:
+top100generalbiomarkers = sortedgeneralbiomarker[1:100,]
+top100generalbiomarkers <- as.matrix(top100generalbiomarkers)
+head(top100generalbiomarkers)
+
+#create vector with gene names:
+generalbiomarkergenes = row.names(top100generalbiomarkers)
+```
+
+Now we want to compare the biomarkers with and without using the absolute value for determining to see how much they differ and to decide which genes we will continue to work with.
+
+```{r}
+### compairison ###
+
+# Do we have exactly the same biomarkers?
+setequal(biomarkers_FC_genes,generalbiomarkergenes)
+
+# How many of the biomarkers are different? 
+
+# biomarkers in biomarkers_FC_genes but not in generalbiomarkergenes
+diff1= setdiff(biomarkers_FC_genes,generalbiomarkergenes)
+length(diff1)
+diff1
+
+# biomarkers in generalbiomarkergenes but not in biomarkers_FC_genes
+diff2= setdiff(generalbiomarkergenes,biomarkers_FC_genes)
+length(diff2)
+diff2
+```
+
+We see that only 5 genes differ in the biomarkers. Nevertheless, it is better to trust the absolute values, as they indicate the largest change in gene expression.
+In order to be able to work better with the biomarkers, we creat a matrix with the information whether the genes are up or down regulated.  
+
+``` {r include = FALSE}
+#install.packages("knitr")
+library(knitr)
+```
+
+```{r results = "asis"}
+#loop, which adds those biomarkergenes to a vector, which are mostly upregulated:
+i=1
+Upregulated <- c()
+while(i<=100) {
+  if(FCVorinostatmean_noabs_matrix[generalbiomarkergenes[i],1] >0) {
+    Upregulated <- union(Upregulated, generalbiomarkergenes[i])
+  }
+  i=i+1}
+
+#Create a vector that includes for each gene sequentially if it is up- or downregulated:
+i=1
+Generalchange <- c()
+while(i<=100) {
+  if(FCVorinostatmean_noabs_matrix[generalbiomarkergenes[i],1] >0) {
+    Generalchange <- append(Generalchange, "Up")
+  } else {
+    Generalchange <- append(Generalchange, "Down")
+  }
+  i=i+1}
+
+#Bind the information about up/downregulation as a new column to the biomarkermatrix:
+top100generalbiomarkers_withUporDown <- cbind(top100generalbiomarkers, Generalchange)
+colnames(top100generalbiomarkers_withUporDown)[1] <- "FCmean"
+knitr::kable(head(top100generalbiomarkers_withUporDown), caption = "10 highest FC values")
+```
+
+Our biomarkers from the real FC values are visualized below, as they better reflect the change in gene expression: 
+
+```{r plot_data, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9))
+### visualization in bar plot 
+tissue <- Metadata$tissue
+palette(rainbow(9))
+
+# creat boxplot
+barplot( height= biomarkers_FC_values$FC_meanrow,col = tissue, border = NA, 
+         main= "        Gene Expression Change by biomarkers colored according tissues", ylab="mean Fold change", xlab="biomarkers")
+levels <- as.factor(levels(tissue))
+legend("topright", inset = c(-0.4,0.0), legend= levels(tissue), xpd = TRUE, pch=19, col = levels, title = "tissues")
+```
+
+```{r plot_data, fig.height= 5, fig.width= 7}
+library(rbokeh)
+
+n <- nrow(biomarkers_FC_values)
+ramp <- colorRampPalette(c("red", "blue"))(n)
+figure(title = "Gene Expression Change for Biomarkers",toolbar_location = NULL) %>%
+  ly_points(biomarkers_FC_values, color = ramp, size = -seq_len(n), legend = FALSE)%>%
+  x_axis(label = "biomarkers")
+```
+
+Now we want to further investigate our biomarkers. First, we will see whether the targets for vorinostat in the metadata can also be found in our biomarkers.
+
+
