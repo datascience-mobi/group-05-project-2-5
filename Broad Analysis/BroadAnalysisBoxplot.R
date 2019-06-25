@@ -23,7 +23,7 @@ wd = dirname(rstudioapi::getSourceEditorContext()$path)
     par(mar= c(5, 4, 4, 7) + 0.1)
     drug <- Metadata$drug
     palette(rainbow(15))
-    boxplot(Treated, medcol="black", border = drug, col= drug, xlab="drugs", ylab="gene expression", main= "Gene expression treated celllines", names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
+    boxplot(Treated_norm, medcol="black", border = drug, col= drug, xlab="drugs", ylab="gene expression", main= "Gene expression treated celllines", names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
     
       #add a legend to see which color corresponds to which drug:
        levels <- as.factor(levels(drug))
@@ -33,7 +33,7 @@ wd = dirname(rstudioapi::getSourceEditorContext()$path)
     par(mar= c(5, 4, 4, 7) + 0.1)
     drug <- Metadata$drug
     palette(rainbow(15))
-    boxplot(Untreated, medcol="black", border = drug, col= drug, xlab="drugs", ylab="gene expression", main= "Gene expression untreated celllines", names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
+    boxplot(Untreated_norm, medcol="black", border = drug, col= drug, xlab="drugs", ylab="gene expression", main= "Gene expression untreated celllines", names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
     
       levels <- as.factor(levels(drug))
       legend("topright", inset = c(-0.3,0), legend= levels(drug), xpd = TRUE, pch=19, col = levels, title = "drugs")
