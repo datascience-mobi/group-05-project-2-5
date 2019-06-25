@@ -10,6 +10,10 @@ Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TR
 
 ################################################################################################################
 
+# search for HDAC in biomarkers 
+target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
+length(target)
+
 # In drug annotation HDAC genes are mentioned as target of vorinostat, but these genes are not in our defined 
 # biomarkers, so know we want to check their FC values 
 
@@ -24,6 +28,7 @@ target_vorinostat
 
 # new vector with names as strings, because otherwise problem with spacer | 
 target_vorinostat=c("HDAC1","HDAC10","HDAC11","HDAC2","HDAC3","HDAC5","HDAC6","HDAC8","HDAC9")
+
 
 ### find FC values of targets 
 
