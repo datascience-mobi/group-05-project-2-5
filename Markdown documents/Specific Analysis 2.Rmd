@@ -1,5 +1,5 @@
 ---
-title: "test"
+title: "Specific"
 author: "Laura Plutowski"
 date: "20.06.2019"
 output: html_document
@@ -207,6 +207,12 @@ library(knitr)
 ```
 
 ```{r results = "asis"}
+### creat matrix
+FCVorinostatmean_noabs= rowMeans(FCVorinostat)
+
+#Matrix with information about general up- or downregulation:
+FCVorinostatmean_noabs_matrix <- as.matrix(FCVorinostatmean_noabs)
+
 #loop, which adds those biomarkergenes to a vector, which are mostly upregulated:
 i=1
 Upregulated <- c()
@@ -237,6 +243,22 @@ knitr::kable(head(top100generalbiomarkers_withUporDown), caption = "10 highest F
 Our biomarkers from the real FC values are visualized below, as they better reflect the change in gene expression: 
 
 ```{r plot_data, fig.height= 5, fig.width= 7}
+### creat matrix with FC values (positive and negativ) 
+
+# add the abs values to FC matrix 
+FC_both= cbind(FC_meanrow,FC_abs)
+FC_both=as.data.frame(FC_both)
+
+# order this matrix 
+FC_both_sorted <- FC_both[order(FC_both$FC_abs, decreasing = TRUE),]
+
+# FC values of biomarkers
+# take the first 100 of the sorted matrix, should be the same as un biomarkers_FC 
+biomarkers_FC_values = FC_both_sorted[1:100,]
+# remove the absolute values
+biomarkers_FC_values <- subset( biomarkers_FC_values, select = -FC_abs)
+biomarkers_FC_values = as.data.frame(biomarkers_FC_values)
+
 par(mar=c(5, 4, 5, 9))
 ### visualization in bar plot 
 tissue <- Metadata$tissue
@@ -249,19 +271,17 @@ levels <- as.factor(levels(tissue))
 legend("topright", inset = c(-0.4,0.0), legend= levels(tissue), xpd = TRUE, pch=19, col = levels, title = "tissues")
 ```
 
-```{r plot_data, fig.height= 5, fig.width= 7}
-library(rbokeh)
-
-n <- nrow(biomarkers_FC_values)
-ramp <- colorRampPalette(c("red", "blue"))(n)
-figure(title = "Gene Expression Change for Biomarkers",toolbar_location = NULL) %>%
-  ly_points(biomarkers_FC_values, color = ramp, size = -seq_len(n), legend = FALSE)%>%
-  x_axis(label = "biomarkers")
-```
 
 Now we want to further investigate our biomarkers. First, we will see whether the targets for vorinostat in the metadata can also be found in our biomarkers.
 
-``` {r results = "asis"}
+```{r}
+# search for HDAC in biomarkers 
+target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
+length(target)
+
+# In drug annotation HDAC genes are mentioned as target of vorinostat, but these genes are not in our defined 
+# biomarkers, so know we want to check their FC values 
+
 ###find target of vorinostat 
 
 target=Drug_annotation$target
@@ -273,10 +293,6 @@ target_vorinostat
 
 # new vector with names as strings, because otherwise problem with spacer | 
 target_vorinostat=c("HDAC1","HDAC10","HDAC11","HDAC2","HDAC3","HDAC5","HDAC6","HDAC8","HDAC9")
-
-# search for HDAC in biomarkers 
-target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
-length(target)
 ```
 
 In drug annotation HDAC genes are mentioned as target of vorinostat, but these genes are not in our defined biomarkers, so know we want to check their FC values.  
@@ -291,11 +307,17 @@ FC=as.data.frame(FC)
 genes=row.names(FC)
 FC_new=cbind(FC,genes)
 
+```
+
+``` {r, include = FALSE}
 # filter data 
 library(dplyr)
+```
+
+```{r}
 FC_target=as.data.frame(filter(FC_new, genes %in% target_vorinostat))
 
-knitr::kable(head(FC_target), caption = "10 highest FC values")
+knitr::kable(head(FC_target), caption = "FC values vorinostat targets")
 ```
 
 The changes in gene expression are really low. Most of the HDAC genes are up regulated insted of being down regulated. This could be because the cell wants to compensate the inhibition of the enzymes by their increased formation. 
