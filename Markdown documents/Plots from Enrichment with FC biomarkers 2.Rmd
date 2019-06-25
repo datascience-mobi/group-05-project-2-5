@@ -258,5 +258,5 @@ dotplot(kk, showCategory=12)
 cnetplot(kk,categorySize="geneNum")
 emapplot(kk)
 
-# problem: only finds 5 categories 
+
 ```
