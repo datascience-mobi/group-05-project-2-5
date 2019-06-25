@@ -1,5 +1,5 @@
 ---
-title: "Specfic Analysis"
+title: "Specific"
 author: "Laura Plutowski"
 date: "20.06.2019"
 output: html_document
@@ -52,7 +52,8 @@ library(BBmisc)
 FCnorm <- normalize(FC, method= "scale")
 ```
 
-Now that we have determined the biomarkers via the T-test, we want to investigate their FC values, since our biomarkers should have the largest change in gene expression. 
+Now that we have determined the biomarkers via the T-test, we want to investigate their FC values, since our biomarkers should have the largest change in gene expression.
+
 ```{r}
 ### create data for p.values ###
 
@@ -120,33 +121,9 @@ pV_FC= cbind(FC_meanrow,sortedpValues)
 head(pV_FC)
 
 ```
+
 Now we know that p.Value and FC value do not deliver exactly the same biomarkers. In fact, they differ by 100%. 
-If we compare the values directly, we see that a low p.value does not correlate with a high FC value. This is because small values are also assigned small p.values by the T-test and the result of the test is therefore falsified. For this reason, we cannot trust the biomarkers from the T-test and will now determine them via the fold change values.To avoid that up- or down-regulating effects cancel each other out, we will work on the amount of biomarkers with the absolute value of FC values.
-
-```{r}
-
-# creat FC matrix
-FCVorinostat <- TreatedVorinostat - UntreatedVorinostat
-
-# work with mean of the rows because we only want to compare the genes:
-FCVorinostatabs= abs(FCVorinostat)
-FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
-
-# sort the values to get the 100 largest values:
-sortedgeneralbiomarker <- sort(FCVorinostatmean, decreasing = TRUE)
-sortedgeneralbiomarker <- as.matrix(sortedgeneralbiomarker)
-
-#select the top 100 general biomarkers:
-top100generalbiomarkers = sortedgeneralbiomarker[1:100,]
-top100generalbiomarkers <- as.matrix(top100generalbiomarkers)
-head(top100generalbiomarkers)
-
-#create vector with gene names:
-generalbiomarkergenes = row.names(top100generalbiomarkers)
-```
-
-Now we have determined trusting biomarkers via the fold change. However, since we have worked with the amount, we cannot say whether our genes were up- or down-regulated. Therefore, we will now determine the biomarkers via the FC values for another time, but this time we will work without an absolute value. 
-
+If we compare the values directly, we see that a low p.value does not correlate with a high FC value. This is because small values are also assigned small p.values by the T-test and the result of the test is therefore falsified. For this reason, we cannot trust the biomarkers from the T-test and will now determine them via the fold change values.
 
 ```{r}
 ### creat FC data ###
@@ -176,6 +153,30 @@ head(biomarkers_FC)
 biomarkers_FC_genes= row.names(biomarkers_FC)
 ```
 
+Now we have determined trusting biomarkers via the fold change. But with these biomarkers it is not taken into account that up- or down-regulating effects can cancel each other out. So now we're going to determine the biomarkers by their absolute FC values.
+
+```{r}
+
+# creat FC matrix
+FCVorinostat <- TreatedVorinostat - UntreatedVorinostat
+
+# work with mean of the rows because we only want to compare the genes:
+FCVorinostatabs= abs(FCVorinostat)
+FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
+
+# sort the values to get the 100 largest values:
+sortedgeneralbiomarker <- sort(FCVorinostatmean, decreasing = TRUE)
+sortedgeneralbiomarker <- as.matrix(sortedgeneralbiomarker)
+
+#select the top 100 general biomarkers:
+top100generalbiomarkers = sortedgeneralbiomarker[1:100,]
+top100generalbiomarkers <- as.matrix(top100generalbiomarkers)
+head(top100generalbiomarkers)
+
+#create vector with gene names:
+generalbiomarkergenes = row.names(top100generalbiomarkers)
+```
+
 Now we want to compare the biomarkers with and without using the absolute value for determining to see how much they differ and to decide which genes we will continue to work with.
 
 ```{r}
@@ -197,11 +198,51 @@ length(diff2)
 diff2
 ```
 
-We see that only 5 genes differ in the biomarkers. Since the non-use of the absolute value gives us additional information as to whether our genes are generally regulated up or down, we will continue to work with these biomarkers (biomarkers_FC_genes).
+We see that only 5 genes differ in the biomarkers. Nevertheless, it is better to trust the absolute values, as they indicate the largest change in gene expression.
+In order to be able to work better with the biomarkers, we creat a matrix with the information whether the genes are up or down regulated.  
 
-In order to be able to work better with the biomarkers, we have created a matrix from the FC values of these genes. 
+``` {r include = FALSE}
+#install.packages("knitr")
+library(knitr)
+```
 
-```{r}
+```{r results = "asis"}
+### creat matrix
+FCVorinostatmean_noabs= rowMeans(FCVorinostat)
+
+#Matrix with information about general up- or downregulation:
+FCVorinostatmean_noabs_matrix <- as.matrix(FCVorinostatmean_noabs)
+
+#loop, which adds those biomarkergenes to a vector, which are mostly upregulated:
+i=1
+Upregulated <- c()
+while(i<=100) {
+  if(FCVorinostatmean_noabs_matrix[generalbiomarkergenes[i],1] >0) {
+    Upregulated <- union(Upregulated, generalbiomarkergenes[i])
+  }
+  i=i+1}
+
+#Create a vector that includes for each gene sequentially if it is up- or downregulated:
+i=1
+Generalchange <- c()
+while(i<=100) {
+  if(FCVorinostatmean_noabs_matrix[generalbiomarkergenes[i],1] >0) {
+    Generalchange <- append(Generalchange, "Up")
+  } else {
+    Generalchange <- append(Generalchange, "Down")
+  }
+  i=i+1}
+
+#Bind the information about up/downregulation as a new column to the biomarkermatrix:
+top100generalbiomarkers_withUporDown <- cbind(top100generalbiomarkers, Generalchange)
+colnames(top100generalbiomarkers_withUporDown)[1] <- "FCmean"
+
+knitr::kable(head(top100generalbiomarkers_withUporDown), caption = "Gene Expression Biomarkers")
+```
+
+Our biomarkers from the real FC values are visualized below, as they better reflect the change in gene expression: 
+
+```{r plot_data, fig.height= 5, fig.width= 7}
 ### creat matrix with FC values (positive and negativ) 
 
 # add the abs values to FC matrix 
@@ -216,17 +257,8 @@ FC_both_sorted <- FC_both[order(FC_both$FC_abs, decreasing = TRUE),]
 biomarkers_FC_values = FC_both_sorted[1:100,]
 # remove the absolute values
 biomarkers_FC_values <- subset( biomarkers_FC_values, select = -FC_abs)
-# this is a matrix with mean of the FC values from all samples for each biomarker
 biomarkers_FC_values = as.data.frame(biomarkers_FC_values)
 
-
-### Creat Matirx with biomarkers with FC of all samples 
-FCbiomarkers <- FC[biomarkers_FC_genes,]
-```
-
-Our biomarkers with their FC values are visualized below: 
-
-```{r plot_data, fig.height= 5, fig.width= 7}
 par(mar=c(5, 4, 5, 9))
 ### visualization in bar plot 
 tissue <- Metadata$tissue
@@ -238,3 +270,54 @@ barplot( height= biomarkers_FC_values$FC_meanrow,col = tissue, border = NA,
 levels <- as.factor(levels(tissue))
 legend("topright", inset = c(-0.4,0.0), legend= levels(tissue), xpd = TRUE, pch=19, col = levels, title = "tissues")
 ```
+
+
+Now we want to further investigate our biomarkers. First, we will see whether the targets for vorinostat in the metadata can also be found in our biomarkers.
+
+```{r}
+# search for HDAC in biomarkers 
+target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
+length(target)
+
+# In drug annotation HDAC genes are mentioned as target of vorinostat, but these genes are not in our defined 
+# biomarkers, so know we want to check their FC values 
+
+###find target of vorinostat 
+
+target=Drug_annotation$target
+target=as.data.frame(target)
+
+# take row with vorinostat 
+target_vorinostat=target[9,]
+target_vorinostat
+
+# new vector with names as strings, because otherwise problem with spacer | 
+target_vorinostat=c("HDAC1","HDAC10","HDAC11","HDAC2","HDAC3","HDAC5","HDAC6","HDAC8","HDAC9")
+```
+
+In drug annotation HDAC genes are mentioned as target of vorinostat, but these genes are not in our defined biomarkers, so know we want to check their FC values.  
+
+```{r}
+### find FC values of targets 
+
+# creat FC data 
+FC =TreatedVorinostat - UntreatedVorinostat
+FC= rowMeans(FC)
+FC=as.data.frame(FC)
+genes=row.names(FC)
+FC_new=cbind(FC,genes)
+
+```
+
+``` {r, include = FALSE}
+# filter data 
+library(dplyr)
+```
+
+```{r}
+FC_target=as.data.frame(filter(FC_new, genes %in% target_vorinostat))
+
+knitr::kable(head(FC_target), caption = "FC values vorinostat targets")
+```
+
+The changes in gene expression are really low. Most of the HDAC genes are up regulated insted of being down regulated. This could be because the cell wants to compensate the inhibition of the enzymes by their increased formation. 
