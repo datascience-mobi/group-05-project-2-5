@@ -36,8 +36,23 @@ Untreated <- as.data.frame(Untreated)
 
 Sensitivity<- as.data.frame(Sensitivity)
 
-################### auf levels zugreifen: levels(datensatz$spalte)
-levels(Metadata$drug)
+########################################################################
+# if you want to work with normalized data 
+
+Untreated_norm <- apply(Untreated, 2, function(x){
+  (x - mean(x)) / sd(x)
+})
+
+
+Treated_norm <- apply(Treated, 2, function(x){
+  (x - mean(x)) / sd(x)
+})
+
+
+FC <- Treated - Untreated
+FC_norm <- apply(FC, 2, function(x){
+  (x - mean(x)) / sd(x)
+})
 
 
 
