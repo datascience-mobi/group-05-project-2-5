@@ -56,7 +56,7 @@ FC_all_mean=colMeans(FC_all)
 
 # creat levels for coloring 
 drug <- Metadata$drug
-palette(15)
+palette(rainbow(15))
 
 # creat boxplot
 barplot( height = FC_all_mean, names= FALSE, col = drug, border = NA,main= "Fold change")
