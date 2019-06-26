@@ -54,7 +54,7 @@ FCnorm <- normalize(FC, method= "scale")
 
 Now that we have determined the biomarkers via the T-test, we want to investigate their FC values, since our biomarkers should have the largest change in gene expression.
 
-```{r}
+```{r include = FALSE}
 ### create data for p.values ###
 
 #Create a common matrix for treated and untreated vorinostat data:
@@ -78,9 +78,9 @@ biomarkers <- as.matrix(biomarkers)
 biomarkers.genes = row.names(biomarkers)
 # check if it has the correct length
 length(biomarkers.genes)
+```
 
-
-
+```{r}
 ### create data for FC ###
 
 FC <- TreatedVorinostat - UntreatedVorinostat
@@ -261,16 +261,14 @@ biomarkers_FC_values = as.data.frame(biomarkers_FC_values)
 
 par(mar=c(5, 4, 5, 9))
 ### visualization in bar plot 
-tissue <- Metadata$tissue
-palette(rainbow(9))
+
 
 # creat boxplot
-barplot( height= biomarkers_FC_values$FC_meanrow,col = tissue, border = NA, 
-         main= "        Gene Expression Change by biomarkers colored according tissues", ylab="mean Fold change", xlab="biomarkers")
-levels <- as.factor(levels(tissue))
-legend("topright", inset = c(-0.4,0.0), legend= levels(tissue), xpd = TRUE, pch=19, col = levels, title = "tissues")
-```
+barplot( height= biomarkers_FC_values$FC_meanrow, 
+         main= "        Gene Expression Change by biomarkers", ylab="mean Fold change", xlab="biomarkers")
 
+```
+We see that most values are very similar to each other and that we have about the same number of genes regulated up and down.
 
 Now we want to further investigate our biomarkers. First, we will see whether the targets for vorinostat in the metadata can also be found in our biomarkers.
 
