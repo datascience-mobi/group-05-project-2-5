@@ -17,8 +17,8 @@ knitr::opts_chunk$set( cache=TRUE)
 Load data:
 ```{r read_data, message = FALSE, warning = FALSE}
 library(readr)
-  Untreated_notnormalized = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
-  Treated_notnormalized = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+  Untreated = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+  Treated = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
 
 ```
 
@@ -40,7 +40,7 @@ In the following code, we use the abbreviation __"BroadAnU"__ representative for
 First we create a new object that contains the Untreated data. Then 2000 most variable genes are selected from the Untreated data.
 
 ```{r, warning=FALSE}
-BroadAnU <- CreateSeuratObject(counts = Untreated_notnormalized, project = "BroadAnU")
+BroadAnU <- CreateSeuratObject(counts = Untreated, project = "BroadAnU")
 BroadAnU <- FindVariableFeatures(BroadAnU, selection.method = "vst", nfeatures= 2000)
 ```
 
@@ -64,7 +64,7 @@ plotUntreatedlabeled
 For a comparison, we do the same procedure with the Treated data:
 
 ```{r, warning = FALSE}
-BroadAnT <- CreateSeuratObject(counts = Treated_notnormalized, project = "BroadAnT")
+BroadAnT <- CreateSeuratObject(counts = Treated, project = "BroadAnT")
 BroadAnT <- FindVariableFeatures(BroadAnT, selection.method = "vst", nfeatures= 2000)
 ```
 

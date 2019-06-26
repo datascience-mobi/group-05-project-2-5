@@ -1,0 +1,562 @@
+---
+title: "Broad Analysis complete documentation."
+author: "Franziska Heinkele and Laura Plutowski"
+date: "26 Juni 2019"
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+```{r setup, include = FALSE}
+knitr::opts_chunk$set( echo=TRUE)
+knitr::opts_chunk$set( cache=TRUE)
+```
+
+## Introduction 
+
+Analyzing big data frames becomes more and more important for working on biological issues. This is the reason why we want to have a look at such an exploratory analysis. 
+Therefore, we focus on data that report different cellular responses to drug perturbations in cancer treatment. First of all, we will perform a broad exploratory analysis over the whole data set. Then we will continue looking at the specific anticancer drug vorinostat.  
+
+
+## 1.Broad Analysis 
+
+First of all, we want to explore the whole data from all 15 drug responses including the treated and untreated data sets. Therefore we perform the following analysis steps:
+
+- Boxplot with treated data 
+- Finding highly variable genes using Seurat
+- Analysis of Fold Change matrix 
+- Different PCAs 
+
+Before we are able to start the broad analysis, we load the needed data. The data sets are taken from the NCI Transcriptional Pharmacodynamics Workbench, including the effect on 13.299 genes from 61 cell lines treated with 15 different anticancer agents.
+
+```{r, include = FALSE}
+wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+``` 
+
+```{r read_data, message = FALSE, warning = FALSE}
+library(readr)
+
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), 
+                      header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+Treated <- as.data.frame(Treated)
+Untreated <- as.data.frame(Untreated)
+```
+
+
+
+### 1.1 BOXPLOT OF TREATED DATA
+
+To visualize our data, we perform a boxplot of the treated data over all 15 drugs. 
+
+```{r, fig.height= 5, fig.width= 7}
+# levels for coloring 
+drug <- Metadata$drug
+# 15 diffrent colors, for each drug one
+palette(rainbow(15))
+# Boxplot 
+par(mar=c(5, 4, 5, 9))
+boxplot(Treated, medcol="black", border = drug, col= drug, 
+        xlab="sampels", ylab="gene expression",
+        main= "Gene expression treated celllines colored by drug",
+        names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
+    
+#add a legend to see which color corresponds to which drug:
+levels <- as.factor(levels(drug))
+legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE, pch=19,
+       col = levels, title = "drugs")
+```
+
+The different colors indicate the 15 different anticancer drugs. We can can clearly identify 15 different boxes, each box belonging to one medicine. This indicates that we have batches between all 15 drugs. One reason for this could be, that the drug treatments were performed on different days under slightly different conditions like air pressure or room temperature. 
+
+If we normalize the data, we can remove the batch effects. Our plot will change in the following way: 
+
+```{r, fig.height= 5, fig.width= 7}
+# normalize the data 
+Untreated_norm <- apply(Untreated, 2, function(x){
+  (x - mean(x)) / sd(x)
+})
+
+
+Treated_norm <- apply(Treated, 2, function(x){
+  (x - mean(x)) / sd(x)
+})
+
+
+# repeat creation of boxplot 
+
+# levels for coloring 
+drug <- Metadata$drug
+# 15 diffrent colors, for each drug one
+palette(rainbow(15))
+# Boxplot 
+par(mar=c(5, 4, 5, 9))
+boxplot(Treated_norm, medcol="black", border = drug, col= drug, 
+        xlab="sampels", ylab="gene expression",
+        main= "Gene expression treated celllines with normalized data", 
+        names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
+    
+#add a legend to see which color corresponds to which drug:
+levels <- as.factor(levels(drug))
+legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE, 
+       pch=19, col = levels, title = "drugs")
+```
+
+We see that after normalization of the data the batches were removed. 
+
+
+
+***
+### 1.2 HIGHLY VARIABLE GENE ANALYSIS
+
+
+We aim to find genes which vary the most in Untreated and Treated celllines.
+Therefore we work with Seurat packages, which need to be installed: install.packages('Seurat')
+For the seurat library to be available, digest packages need to be installed: install.packages("digest")
+
+```{r, message=FALSE, warning=FALSE}
+library(Seurat)
+```
+
+In the following code, we use the abbreviation __"BroadAnU"__ representative for "Broad analysis untreated" to achieve a better readability.
+First we create a new object that contains the Untreated data. Then 2000 most variable genes are selected from the Untreated data.
+
+```{r, warning=FALSE}
+BroadAnU <- CreateSeuratObject(counts = Untreated, project = "BroadAnU")
+BroadAnU <- FindVariableFeatures(BroadAnU, selection.method = "vst", nfeatures= 2000)
+```
+
+Next we want to identify the 10 most highly variable genes.
+
+```{r}
+top10Untreated <- head(VariableFeatures(BroadAnU), 10)
+```
+
+First we plot variable features without labels, in a second step we add labels to the 10 most variable genes.
+
+```{r}
+
+plotUntreated <- VariableFeaturePlot(BroadAnU)
+plotUntreatedlabeled <- LabelPoints(plot = plotUntreated, points = top10Untreated,
+                                    repel = TRUE, xnudge = 0, ynudge = 0)
+
+plotUntreatedlabeled
+```
+
+For a comparison, we do the same procedure with the Treated data:
+
+```{r, warning = FALSE}
+BroadAnT <- CreateSeuratObject(counts = Treated, project = "BroadAnT")
+BroadAnT <- FindVariableFeatures(BroadAnT, selection.method = "vst", nfeatures= 2000)
+```
+
+Identify the 10 most highly variable genes:
+```{r}
+top10Treated <- head(VariableFeatures(BroadAnT), 10)
+```
+
+Plot variable features with and without labels
+```{r}
+plotTreated <- VariableFeaturePlot(BroadAnT)
+plotTreatedlabeled <- LabelPoints(plot = plotTreated, points = top10Treated,
+                                  repel = TRUE, xnudge = 0, ynudge = 0)
+plotTreatedlabeled
+```
+
+Next we test, whether there are matches between Treated and Untreated most variable gene expression:
+
+```{r}
+top10Untreated %in% top10Treated
+```
+
+__7 matches__ were found! 
+Which genes are in the Untreated but not in the Treated top 10?
+
+```{r}
+setdiff(top10Untreated, top10Treated)
+```
+
+Which genes are in the Treated but not in the Untreated top 10?
+
+```{r}
+setdiff(top10Treated, top10Untreated)
+```
+
+
+__We can conclude, that the treatment did not change the high variation for the matching genes. The matching genes might be not clearly affected by the drugs since their expression varies in treated celllines as well as in unterated celllines.__
+
+
+***
+### 1.3 FOLD CHANGE ANALYSIS
+
+The fold change matrix (fold change = FC) describes the changes in gene expression between the treated and the untreated cell lines. First of all we visualize the FC with a bar chart which is colored by different drugs.
+
+```{r, fig.height= 5, fig.width= 7}
+# create FC data 
+FC_all = (Treated - Untreated)
+FC_all_mean = colMeans(FC_all)
+
+# create levels for coloring 
+drug <- Metadata$drug
+palette(rainbow(15))
+
+# create boxplot
+par(mar=c(5, 4, 5, 9))
+barplot( height = FC_all_mean, names= FALSE, col = drug, border = NA,
+         main= "Fold changes by treatment with 15 anticancer drugs",
+         xlab="sampels", ylab="mean Fold Change values")
+
+# create a legend 
+levels <- as.factor(levels(drug))
+legend("topright", inset = c(-0.4,0.0), legend= levels(drug), xpd = TRUE,
+       pch=19, col = levels, title = "drugs")
+```
+
+Here we can see that most FC values are in a similar value range. This becomes even clearer when looking at the following scatter plots. Only 5-Azacytidine and bortezomib have clear outliers. 
+
+```{r, fig.height= 5, fig.width= 7}
+# scatter plot
+par(mar=c(5, 4, 5, 9))
+plot(FC_all_mean, col= Metadata$drug, main="Gene expression change colored by drugs",
+     xlab="samples",ylab="mean Fold Change values")
+
+# creat legend 
+drug <- Metadata$drug
+levels <- as.factor(levels(drug))
+legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE, pch=19,
+       col = levels, title = "drugs")
+```
+
+The shape of the density plot of the mean FC values shows that the data is approximately normally distributed: 
+
+```{r}
+plot(density(FC_all_mean), main= "Distribution of Fold Change Values")
+```
+
+Coloring the scatter plot according to the tissue type shows that there is no correlation between FC values and tissue type, if we look at all drugs:
+
+``` {r, fig.height= 5, fig.width= 7}
+# scatter plot
+par(mar=c(5, 4, 5, 9))
+plot(FC_all_mean, col= Metadata$tissue, main="Gene expression change colored by drugs",
+     xlab="samples",ylab="mean Fold Change values")
+
+# legend 
+tissue <- Metadata$tissue
+levels <- as.factor(levels(tissue))
+legend("topright", inset = c(-0.4,0), legend= levels(tissue), xpd = TRUE, pch=19, col = levels, 
+       title = "tissues")
+```
+
+We can identify the Top 10 values from the FC matrix, which indicate the ten most up and down regulated genes by a specific drug in a specific cell line. 
+
+``` {r include = FALSE}
+#install.packages("knitr")
+library(knitr)
+#install.packages("xtable")
+#library(xtable)
+```
+
+```{r results = "asis"}
+
+### find all min and max 
+FC_all_min= (apply(FC_all,2,min))
+FC_all_max= (apply(FC_all,2,max))
+
+### sort min and max 
+
+# most down regulated genes
+largest10_FC_all_min <- (sort(FC_all_min, decreasing = F)[1:10])
+largest10_FC_all_min =as.data.frame(largest10_FC_all_min)
+knitr::kable(largest10_FC_all_min, caption = "10 smallest FC values")
+
+# most up regulated genes 
+largest10_FC_all_max <- (sort(FC_all_max, decreasing = T)[1:10])
+largest10_FC_all_max =as.data.frame(largest10_FC_all_max)
+knitr::kable(largest10_FC_all_max, caption = "10 highest FC values")
+```
+
+Here we can see, that vorinostat (occurs 3 times for downregulated and 2 times for up regulated), bortezomib (occurs 3 times for downregulated and 6 times for up regulated) seem to have great effects on the gene expression in the celllines. Moreover, the OVCAR-4 cell line, which bellows to the ovarian cancer, occurs the most (3 times) in the down regulated data. 
+
+
+***
+### 1. PCA ANALYSIS
+
+
+> Description of this file:
+
+The PCA analysis was performed for two matrices:
+
+* Treated data
+* Fold change data
+
+For both PCAs, the celllines were colored by 2 different features:
+
+* tissue-type
+* drug-type
+
+##Treated data PCA
+
+Execute the PCA for Treated data:
+```{r}
+treated.pca = prcomp(Treated_norm, center=T, scale. = T)
+```
+
+Hereinafter, we want to use __information from Metadata__ to color different celllines in the PCA. Therefore we need to check, if the celllines in the sample-column of Metadata are in the same order as in the Treated matrix. First of all we test, if the number of samples is equal.
+
+Load Metadata:
+```{r, message = FALSE, warning = FALSE}
+library(readr)
+  Metadata = read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
+```
+
+```{r}
+identical(nrow(Metadata), ncol(Treated_norm))
+nrow(Metadata)
+ncol(Treated)
+```
+
+Metadata consists of twice as much celllines as the Treated matrix since Metadata contains information for treated and untreated celllines.
+We want to print those rows from Metadata which do not contain a zero concentration because they belong to the treated samples.
+
+```{r}
+TreatedrowsMetadata <- grep(Metadata$sample, pattern = "_0nM_", invert = TRUE)
+``` 
+          
+Check, if the sample order is equal in the Treated-matrix and in Metadata:
+
+```{r}
+Metadata <- as.data.frame(Metadata)
+Metadatasamples <- Metadata[TreatedrowsMetadata,"sample"]
+all(colnames(Treated_norm)== Metadatasamples)
+```
+
+Consequently the drug information of the Metadata-matrix can be assigned to the samples in the Treated-matrix sequentially.
+For better readability, we assign the column of interest to the name "Metadatadrugs":
+
+```{r}
+Metadatadrugs <- Metadata[TreatedrowsMetadata,"drug"]
+```
+
+Add Metadatadrugs as a new row to the Treated-matrix:
+
+```{r}
+Treatedwithdrugs <- rbind(Treated_norm, Metadatadrugs)
+```
+
+Save drug information as factors so it can be used for coloring:
+
+```{r}
+drugfactor <- as.factor(Treatedwithdrugs["Metadatadrugs",])
+```
+
+__Now we can go on with coloring!__
+
+***
+
+###PLOT PCA & COLOR ACCORDING TO DRUGS:
+        
+Since we have 15 different drugs we need 15 different colors:
+```{r}
+palette(rainbow(15))
+```
+        
+Plot Principal component 1 and 2 and add a legend to the plot. To see the PCA plot and the legend next to each other, the graphical parameters are setted by the par() function.
+
+```{r plot_data, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9))
+plot(treated.pca$rotation[, 2], treated.pca$rotation[, 3], pch = 19, xlab = "PC2",
+     ylab = "PC3", col= drugfactor, main = "PCA Treated colored by drug")
+druglevels <- as.factor(levels(drugfactor))
+legend("topright", inset = c(-0.4,0),levels(drugfactor), xpd = TRUE, pch=19,
+       col = druglevels, title = "Drug")
+```
+  -> We do not see, that samples treated with the same drug form groups in the plot. However, we did not expect that, since we only look at the final expression and not at the expression change.        
+           
+###PLOT PCA & COLOR ACCORDING TO TISSUE:
+           
+
+The information which is needed for coloring is summarized as Metadatatissue:
+```{r}
+Metadatatissue <- Metadata[TreatedrowsMetadata,"tissue"]
+```
+        
+Bind Metadatatissue as a new row to the Treated matrix:
+```{r}
+Treatedwithtissue <- rbind(Treated_norm, Metadatatissue)
+```
+           
+Save tissue information as factors so it can be used for coloring:
+```{r}
+tissuefactor <- as.factor(Treatedwithtissue["Metadatatissue",])
+```
+           
+Since we have 9 different tissue types we need 9 different colors:
+```{r}
+palette(rainbow(9))
+```
+    
+Plot PC 2 and PC 3 and add a legend:
+```{r, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9))
+plot(treated.pca$rotation[, 2], treated.pca$rotation[, 3], pch = 19, xlab = "PC2",
+     ylab = "PC3", col= tissuefactor, main= "PCA Treated colored by tissue")
+levels <- as.factor(levels(tissuefactor))
+tissuelevels <- as.factor(levels(tissuefactor))
+legend("topright", inset = c(-0.3,0), levels(tissuefactor), xpd = TRUE, pch=19,
+       col = tissuelevels, title = "Tissue") 
+```
+-> PC 2 and PC 3 group the treated celllines as well as other PC combinations. Thus, most of the celllines of the same tissue-type seem to have similarities regarding their gene expression.
+           
+                 
+***
+###################################################################################################
+
+          
+
+##FC data PCA
+
+We execute the PCA with normalized FC data:
+
+```{r}
+FC <- Treated - Untreated
+FC_norm <- apply(FC, 2, function(x){
+  (x - mean(x)) / sd(x)
+})
+```
+
+```{r, warning= FALSE}
+pca.FC = prcomp(FC_norm, center = T, scale. = T)
+```
+
+We want to see how much variance is explained by each principle component:
+
+```{r}
+plot(pca.FC, type = "l", main = "Variances explained by the Principal Components")
+```
+     
+We can interpret, that __PC 1-3__ explain most of the variance because an "elbow" can be seen after the third PC.
+Nevertheless, we should not exclude other PCs from our further analysis.
+      
+          
+          
+###PLOT PCA & COLOR ACCORDING TO TISSUE
+  
+Bind the tissue-information as a new row to the FC matrix:
+
+```{r}
+FCwithtissue <- rbind(FC_norm, Metadatatissue)
+```
+      
+Save tissue information as factors so it can be used for coloring:
+
+```{r}
+tissuefactorFC <- as.factor(FCwithtissue["Metadatatissue",])
+```         
+
+9 different tissue types require 9 different colors:
+
+```{r}
+palette(rainbow(9))
+``` 
+           
+Different PCs are plotted to see which combination groups the samples best. However, different tissues do not seem to group the points in any of the following PC combinations:
+ 
+```{r, eval = FALSE}
+   PC1PC2 <- plot(pca.FC$rotation[, 1], pca.FC$rotation[, 2], col= tissuefactor, pch = 19,
+                 xlab = "PC1", ylab = "PC2")
+   PC2PC3 <- plot(pca.FC$rotation[, 2], pca.FC$rotation[, 3], col= tissuefactor, pch = 19,
+                 xlab = "PC2", ylab = "PC3")
+   PC3PC4 <- plot(pca.FC$rotation[, 3], pca.FC$rotation[, 4], col= tissuefactor, pch = 19,
+                 xlab = "PC3", ylab = "PC4")
+    ```
+
+Example: PC1 and PC2 do not group celllines of same tissue-type:
+
+```{r, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9))   
+plot(pca.FC$rotation[, 1], pca.FC$rotation[, 2], col = tissuefactor, pch = 19, xlab = "PC1",
+     ylab = "PC2", main = "PCA FC colored by tissue")
+levels <- as.factor(levels(tissuefactorFC))
+legend("topright", inset = c(-0.3,0), levels(tissuefactorFC), xpd = TRUE, pch=19,
+       col = tissuelevels, title = "Tissue") 
+```
+    
+-> Since we are not able to identify groups of celllines of the same tissue, fold changes might be not very tissue-specific.   
+    
+    
+###PLOT PCA & COLOR ACCORDING TO DRUGS
+    
+Create a new matrix ("FCwithdrugs") where the druginformation is added as a new row to the FC-matrix:
+
+```{r}
+FCwithdrugs <- rbind(FC_norm, Metadatadrugs)
+```
+    
+Save drug information as factors so it can be used for coloring:
+
+```{r}
+drugfactorFC <- as.factor(FCwithdrugs["Metadatadrugs",])
+```
+
+According to 15 different tissue types we need 15 different colors:
+
+```{r}
+palette(rainbow(15))
+```        
+    
+Plot PC 2 & PC 3:
+```{r, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9))
+plot(pca.FC$rotation[, 2], pca.FC$rotation[, 3], col = drugfactor , pch = 19, xlab = "PC2"
+         , ylab = "PC3", main = "PCA FC colored by drugs")
+levels <- as.factor(levels(drugfactorFC))
+legend("topright", inset = c(-0.4,0), levels(drugfactorFC), xpd = TRUE, pch=19,
+       col = druglevels, title = "Drugs")
+```
+   
+->Plot PC 3 and PC 4:
+
+```{r, fig.height= 5, fig.width= 7}
+par(mar=c(5,4,5,9))
+plot(pca.FC$rotation[, 3], pca.FC$rotation[, 4], col = drugfactor , pch = 19, xlab = "PC3",
+     ylab = "PC4", main = "PCA FC colored by drug")
+levels <- as.factor(levels(drugfactorFC))
+legend("topright", inset = c(-0.4,0), levels(drugfactorFC), xpd = TRUE, pch=19,
+       col = druglevels, title = "Drugs")
+```
+-> Many combinations of Principal Components clearly group celllines treated with the same drug. Consequently, the FC of celllines seems to be drug-specific.
+***
+
+###HIGHLIGHT VORINOSTAT
+
+Since we are going to analyze the effects of Vorinostat in our specific analysis we want to plot a PCA that highlights exclusively those celllines which belong to Vorinostattreatment.
+
+Therefore we use the ifelse-function:
+
+```{r}
+Metadata <-as.data.frame(Metadata)    
+Marking <- ifelse(Metadata$drug == "vorinostat", "yellow", "black")
+```
+
+Add the information, whether samples belong to Vorinostat, to the FC matrix:
+
+```{r}
+HighlightVorinostat <- cbind(`FC_norm` = Marking)
+```
+
+Plot PC 3 and PC 4:
+
+```{r, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9))
+plot(pca.FC$rotation[, 3], pca.FC$rotation[, 4], col = HighlightVorinostat, pch = 19,
+     xlab = "PC3", ylab = "PC4", main = "PCA FC Highlighted Vorinostat samples")
+legend("topright", inset = c(-0.3,0), legend = c("Vorinostat","Other drugs"),
+       xpd = TRUE, pch=19, col = c("yellow", "black")) 
+
+```
+
+
+

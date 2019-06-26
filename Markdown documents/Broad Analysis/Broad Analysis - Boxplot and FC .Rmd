@@ -12,18 +12,18 @@ knitr::opts_chunk$set( cache=TRUE)
 
 ## Introduction 
 
-Analyzing big data frames becomes a more and more important for working on biological issues. This is the reason why we want to take a look at such an exploratory analysis. 
-Therefore, we focus on data that reports different cellular responses to drug perturbations in cancer treatment. First of all, we will perform a board exploratory analysis over the whole data set. Then we will continue looking at the specific anticancer drug vorinostat.  
+Analyzing big data frames becomes more and more important for working on biological issues. This is the reason why we want to have a look at such an exploratory analysis. 
+Therefore, we focus on data that report different cellular responses to drug perturbations in cancer treatment. First of all, we will perform a broad exploratory analysis over the whole data set. Then we will continue looking at the specific anticancer drug vorinostat.  
 
 
 ## 1.Broad Analysis 
 
-First of all, we want to explore the whole data from all 15 drug responses including the treated and untreated data sets. Therefor we perform the following analysis steps:
+First of all, we want to explore the whole data from all 15 drug responses including the treated and untreated data sets. Therefore we perform the following analysis steps:
 
 - Boxplot with treated data 
 - Finding highly variable genes using Seurat
 - Analysis of Fold Change matrix 
-- Different PCA 
+- Different PCAs 
 
 Before being able to start the analysis, we have to load our data. The data set is taken from the NCI Transcriptional Pharmacodynamics Workbench, including the effect on 13.299 genes from 61 cell lines treated with 15 different anticancer agents. Also, different annotation data is loaded.
 
