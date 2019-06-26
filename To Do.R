@@ -5,3 +5,7 @@
 #-	Kreis/Lupe Vorinostat bei PCA (presentation)
 
 #- Vorinostat :Tablle -> Kategorien -> barplot/piechart 
+
+
+# Boxplot batches untreated oder treated 
+# for annotation: Gen, function, tiusse if specific 
