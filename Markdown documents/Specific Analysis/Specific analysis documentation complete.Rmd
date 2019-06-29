@@ -1,5 +1,5 @@
 ---
-title: "Specific Analysis Documentation"
+title: "Specific Analysis complete"
 author: "Laura Plutowski and Franziska Heinkele"
 date: "26 Juni 2019"
 output: pdf_document
@@ -19,7 +19,6 @@ library(readr)
                                header = TRUE, sep ="\t", stringsAsFactors = TRUE)
     
 ```
-
 
 ***
 # SPECIFIC ANALYSIS 
@@ -52,7 +51,7 @@ Until now, the T-cell lymphoma is the only cancer-type which indicates vorinosta
 ###Which tissue types are we dealing with when we work with the vorinostat-treated celllines?
 
 We use tissue information from Metadata and add it to the Treated-matrix, then we select those columns which belong to Vorinostattreatment:
-```{r,  fig.height= 5, fig.width= 7}
+```{r}
 Metadata <- as.matrix(Metadata)
 Metadatatissue <- Metadata[1:819,"tissue"]
 Treatedwithtissue <- rbind(Treated, Metadatatissue)
@@ -68,7 +67,6 @@ pie(table(TreatedVorinostattissue["Metadatatissue",]),
     radius=1, 
     cex=0.8)
 ```
-
 
 ###Density plot: Comparison of gene expression with and without vorinostat treatment:
 ```{r,fig.height= 5, fig.width= 7}
@@ -106,10 +104,11 @@ FC <- TreatedVorinostat - UntreatedVorinostat
 ```
 
 We can check, if FC data are approximately normal distributed by using a qq-plot:
-```{r,  fig.height= 5, fig.width= 7}
+```{r, eval=FALSE}
 qqnorm(FC)
 qqline(FC, col= "red")
 ```
+![](QQplot_notnormalized.png)
 We see, that we have a heavy tailed distribution.
 
 FC data is normalized with a package (install.packages("BBmisc")):
@@ -118,10 +117,11 @@ library(BBmisc)
 FCnorm <- normalize(FC, method= "scale")
 ```
 
-```{r,  fig.height= 5, fig.width= 7}
+```{r, eval=FALSE}
 qqnorm(FCnorm)
 qqline(FCnorm, col= "red")
 ```
+![](QQplot_normalized.png)
 -> After normalization the plot looks more linear than before, altough it is still heavy-tailed.
 
 
