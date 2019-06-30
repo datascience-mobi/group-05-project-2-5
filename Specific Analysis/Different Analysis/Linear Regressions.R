@@ -866,37 +866,28 @@ abline(0, 1, col = "orange1")
 
 
 ##### PART 2 ##################################################################################################################
-####  8.  Using PCA to determine independent variables                                                                      ####
-###   8.1 PCA                                                                                                               ####
+###   8.  Using PCA to determine independent variables                                                                      ####
 
-CN = as.data.frame(BM_Copynumber_meancol)
-
-DT = as.data.frame(Doubling_Time)
-
-DS = as.data.frame(drug_sensitivity)
-
-lm_tab_m = transform(merge(CN, lm_tab,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
-
-lm_tab_m <- na.omit(lm_tab_m)
-
-reg_m <- lm(vorinostat ~ BM_Copynumber_meancol + Doubling_Time, data = lm_tab_m)
-
-summary(reg_m)
+### Data 
 
 lm_tab_pca = lm_tab_m[,c(3,1,2)]
+
+###   8.1 PCA                                                                                                               ####
 
 pca = prcomp(lm_tab_pca[, -1])
 summary(pca)
 
 par(las = 2)
 par(mar = c(1,11,1,2))
-barplot(pca$rotation[, 1], horiz = TRUE, main = "PC1", col = "red")
+barplot(pca$rotation[, 1], horiz = TRUE, main = "PC1", col = "turquoise")
 
 
+###   8.2 Linear Regression                                                                                                 ####
 
-###   8.2 Checking for correlation                                                                                          ####
-###   8.3 Linear Regression                                                                                                 ####
-###   8.4 Visualization: Plots                                                                                              ####
+reg_pca = lm(lm_tab_m$Drug_sensitivity ~ pca$x)
+summary(reg_pca)
+
+###   8.3 Visualization: Plots                                                                                              ####
 
 
 
