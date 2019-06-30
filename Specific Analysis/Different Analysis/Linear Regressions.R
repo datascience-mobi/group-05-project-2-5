@@ -2,6 +2,8 @@
 
 ### Linear Regressions ###
 
+
+## Do not run the entire r script at once. 
 ## Pending: Change log?
 ## No linear relationship: lowess, GAM
 ## Complete until 6
