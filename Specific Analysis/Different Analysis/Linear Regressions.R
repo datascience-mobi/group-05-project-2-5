@@ -189,6 +189,7 @@ boxplot(lm_tab$Doubling_Time, main="Doubling time", sub=paste("Outlier rows: ", 
 
 #A boxplot can help us visualize the amount of outliers in our data. This is relevant as too many (extreme) outliers can
 #have great impact on the results of our analysis and can change the outcome completely. They can easily affect the slope. 
+#Some outliers can be observed.
 
 # (3) Density: Should be expect normality for drug sensitivity?
 
@@ -204,6 +205,7 @@ plot(density(lm_tab$vorinostat),
 
 polygon(density(lm_tab$vorinostat), col="royalblue1")
 
+#Skewness: 0.22 -> Plot is slightly skewed to the right
 
 plot(density(lm_tab$Doubling_Time), 
      main="Density Plot: Doubling time", 
@@ -213,7 +215,7 @@ plot(density(lm_tab$Doubling_Time),
 
 polygon(density(lm_tab$Doubling_Time), col="skyblue1")
 
-#Plot for doubling time seems skewed to the left.
+#Skewness: 1.03 -> Plot is skewed to the right. 
 
 # (4) Correlation: what is the level level of linear dependence between the two variables?
 
@@ -224,7 +226,7 @@ cor(lm_tab$vorinostat, lm_tab$Doubling_Time)
 #that there is a weak relationship.  
 
 
-#These analysis helps us predcit whether a linear regression is or not the best model to describe our data. 
+#These analysis help us predcit whether a linear regression is or not the best model to describe our data. 
 #Taking into consideration all results so far for this part, it is not unreasonable to predict that a linear
 #regression will probably not be the best model to describe the relationships in our data.
 
@@ -316,6 +318,7 @@ DS = as.data.frame(drug_sensitivity)
 ## Table with drug sensitivity and doubling time per cell line
 
 lm_tab2 = transform(merge(CN,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+lm_tab2 <- na.omit(lm_tab2)
 
 
 ###   4.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
@@ -328,7 +331,7 @@ cor(lm_tab2)
 
 # Visualization of doubling time vs drug sensitivity
 
-
+# (1) Scatter Plot
 scatter.smooth(lm_tab2$vorinostat, 
               lm_tab2$BM_Copynumber_meancol, 
               col = "yellowgreen",
@@ -342,7 +345,62 @@ scatter.smooth(lm_tab2$vorinostat,
 #The second problem that one can observe in this graphic, is that the line describing the behaviour
 #is not straight. 
 
-#These analysis helps us predcit whether a linear regression is or not the best model to describe our data.
+
+# (2) Box plot
+
+par(mfrow=c(1, 2))
+boxplot(lm_tab2$vorinostat, main="Drug sensitivity", sub=paste("Outlier rows: ", boxplot.stats(lm_tab2$vorinostat)$out)) 
+boxplot(lm_tab2$BM_Copynumber_meancol, main="Copynumber", sub=paste("Outlier rows: ", boxplot.stats(lm_tab2$BM_Copynumber_meancol)$out)) 
+
+#A boxplot can help us visualize the amount of outliers in our data. This is relevant as too many (extreme) outliers can
+#have great impact on the results of our analysis and can change the outcome completely. They can easily affect the slope. 
+#No outliers can be observed.
+
+# (3) Density: Should be expect normality for drug sensitivity?
+
+library(e1071)
+
+par(mfrow=c(1, 2)) 
+
+plot(density(lm_tab2$vorinostat), 
+     main="Density Plot: Drug Sensitivity", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$vorinostat), 2))
+    )
+
+polygon(density(lm_tab2$vorinostat), col="springgreen3")
+
+#Skewness: 0.03 -> Plot is very slightly skewed to the right. 
+
+plot(density(lm_tab2$BM_Copynumber_meancol), 
+     main="Density Plot: Copynumber", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$BM_Copynumber_meancol), 2))
+    )
+
+polygon(density(lm_tab2$BM_Copynumber_meancol), col="olivedrab1")
+
+#Skewness: -0.29 -> Plot is slightly skewed to the left.
+
+
+# (4) Correlation: what is the level level of linear dependence between the two variables?
+
+cor(lm_tab2$vorinostat, lm_tab2$BM_Copynumber_meancol)
+
+#[1] 0.06404028
+#A good value for correlation lies close to 1 or -1, whilst the value 0 is undesirable. Values closer to 0 indicate
+#that there is a weak relationship.  
+#The value here is extremely low. 
+
+
+#These analysis help us predcit whether a linear regression is or not the best model to describe our data. 
+#Eventhough both the box plots (2) and the density plots (3) results could have been good indicators for a linear 
+#relationship, the lack of a fitting straight line on the scatter plotc(1) and the low value in the result of the 
+#correlation (4) indicate the opposite.
+
+#Taking into consideration all results so far for this part, it is not unreasonable to predict that a linear
+#regression will probably not be the best model to describe the relationships in our data.
+
 
 
 ###   4.2 Linear Regression                                                                                                 ####
@@ -448,7 +506,7 @@ cor(lm_tab_all2)
 
 
 scatter.smooth(lm_tab_all2$vorinostat, 
-               lm_tab_all2$BM_Copynumber_meancol, 
+               lm_tab_all2$CN_meancol, 
                col = "orangered",
                main = "Drug sensitivity & Copynumber Regression",
                xlab = "Drug sensitivity",
@@ -457,11 +515,60 @@ scatter.smooth(lm_tab_all2$vorinostat,
                pch = 1)
 
 #At first look, the points in the plot are so extremely scattered, that a linear relationship seems really unlikely. 
-#The second problem that one can observe in this graphic, is that even though the line describing the behaviour
-#is indeed straight, the points are scattered all over the plane, and not around the line. 
+#The second problem that one can observe in this graphic, is that the line describing the behaviour
+#is not straight. 
 
-#These analysis helps us predcit whether a linear regression is or not the best model to describe our data.
 
+# (2) Box plot
+
+par(mfrow=c(1, 2))
+boxplot(lm_tab_all2$vorinostat, main="Drug sensitivity", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_all2$vorinostat)$out)) 
+boxplot(lm_tab_all2$CN_meancol, main="Copynumber", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_all2$CN_meancol)$out)) 
+
+#A boxplot can help us visualize the amount of outliers in our data. This is relevant as too many (extreme) outliers can
+#have great impact on the results of our analysis and can change the outcome completely. They can easily affect the slope. 
+#No outliers can be observed.
+
+# (3) Density: Should be expect normality for drug sensitivity?
+
+library(e1071)
+
+par(mfrow=c(1, 2)) 
+
+plot(density(lm_tab_all2$vorinostat), 
+     main="Density Plot: Drug Sensitivity", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab_all2$vorinostat), 2))
+    )
+
+polygon(density(lm_tab_all2$vorinostat), col="orangered")
+
+#Skewness: 0.03 -> Plot is very slightly skewed to the right. 
+
+plot(density(lm_tab_all2$CN_meancol), 
+     main="Density Plot: Copynumber", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab_all2$CN_meancol), 2))
+    )
+
+polygon(density(lm_tab_all2$CN_meancol), col="lightcoral")
+
+#Skewness: -0.42 -> Plot is skewed to the left.
+
+
+# (4) Correlation: what is the level level of linear dependence between the two variables?
+
+cor(lm_tab2$vorinostat, lm_tab_all2$CN_meancol)
+
+#[1] 0.1534729
+#A good value for correlation lies close to 1 or -1, whilst the value 0 is undesirable. Values closer to 0 indicate
+#that there is a weak relationship.  
+#The value here is too low. 
+
+
+#These analysis help us predcit whether a linear regression is or not the best model to describe our data. 
+#Although no outliers were observed in the box plot results, all ther results seem to indicate that a linear 
+#regression is most likely not the best model to describe our data. 
 
 
 ###   5.2 Linear Regression                                                                                                 ####
