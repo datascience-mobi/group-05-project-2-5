@@ -146,10 +146,6 @@ Doubling_Time
 # Can we predict drug sensitivity using doubling time?
 # How much of the variance of the data can be explained using the doubling time?
 
-###   3.1 Linear Regression                                                                                                 ####
-
-# l.g = lm(predicted ~ predictor, data = dat) 
-
 ## Data frames
 DT = as.data.frame(Doubling_Time)
 
@@ -158,6 +154,39 @@ DS = as.data.frame(drug_sensitivity)
 ## Table with drug sensitivity and doubling time per cell line
 
 lm_tab = transform(merge(DT,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+
+
+###   3.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
+
+
+## Checking for correlation 
+
+cor(lm_tab)
+
+## Ploting the data: can a linear relationship be observed? Should we expect a high value for R-squared?
+
+# Visualization of doubling time vs drug sensitivity
+
+scatter.smooth(lm_tab$vorinostat, 
+               lm_tab$Doubling_Time, 
+               col = "dodgerblue1",
+               main = "Drug sensitivity & Doubling time Regression",
+               xlab = "Drug sensitivity",
+               ylab = "Doubling time",
+               cex = 1.3,
+               pch = 1)
+
+#At first look, the points in the plot are so scattered, that a linear relationship seems unlikely. 
+#The second problem that one can observe in this graphic, is that the line describing the behaviour
+#is not straight. 
+
+#These analysis helps us predcit whether a linear regression is or not the best model to describe our data. 
+
+
+###   3.2 Linear Regression                                                                                                 ####
+
+# l.g = lm(predicted ~ predictor, data = dat) 
+
 
 ## Linear Regression
 
@@ -180,7 +209,7 @@ summary(reg1)
 confint(reg1)
 
 
-###   3.2 Checking the normalization of residuals                                                                           ####
+###   3.3 Checking the normalization of residuals                                                                           ####
 
 hist(reg1$residuals, 
      breaks = 20, 
@@ -195,30 +224,9 @@ qqnorm(reg1$residuals)
 qqline(reg1$residuals, col = "red")
 
 
-###   3.3 Visualization: Plots                                                                                              ####
+###   3.4 Visualization: Plots that describe the linear regression                                                          ####
 
-## Checking for correlation
-
-cor(lm_tab)
-
-## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
-
-# Visualization of doubling time vs drug sensitivity
-
-
-plot(lm_tab$vorinostat, 
-     lm_tab$Doubling_Time, 
-     col = "dodgerblue1",
-     main = "Drug sensitivity & Doubling time Regression",
-     xlab = "Drug sensitivity",
-     ylab = "Doubling time",
-     cex = 1.3,
-     pch = 1)
-
-#At first look, the points in the plot are so scattered, that a linear relationship seems unlikely. 
-
-
-# Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
+## Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
 
 library(lattice)
 
@@ -249,13 +257,10 @@ qqmath( ~ resid(reg1),
 par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
 plot(reg1, which = c(1, 2))
 
-
 ####  4.  SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber                                    ####
 
 # Can we predict drug sensitivity using the copynumber data?
 # How much of the variance of the data can be explained using the copynumber data?
-
-###   4.1 Linear Regression                                                                                                 ####
 
 ## Data frames
 
@@ -266,6 +271,36 @@ DS = as.data.frame(drug_sensitivity)
 ## Table with drug sensitivity and doubling time per cell line
 
 lm_tab2 = transform(merge(CN,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+
+
+###   4.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
+
+## Checking for correlation
+
+cor(lm_tab2)
+
+## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
+
+# Visualization of doubling time vs drug sensitivity
+
+
+scatter.smooth(lm_tab2$vorinostat, 
+              lm_tab2$BM_Copynumber_meancol, 
+              col = "yellowgreen",
+              main = "Drug sensitivity & Copynumber Regression",
+              xlab = "Drug sensitivity",
+              ylab = "Copynumber",
+              cex = 1.3,
+              pch = 1)
+
+#At first look, the points in the plot are so scattered, that a linear relationship seems unlikely.
+#The second problem that one can observe in this graphic, is that the line describing the behaviour
+#is not straight. 
+
+#These analysis helps us predcit whether a linear regression is or not the best model to describe our data.
+
+
+###   4.2 Linear Regression                                                                                                 ####
 
 ## Linear Regression
 
@@ -287,7 +322,7 @@ summary(reg2)
 # More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
 confint(reg2)
 
-###   4.2 Checking the normalization of residuals                                                                           ####
+###   4.3 Checking the normalization of residuals                                                                           ####
 
 hist(reg2$residuals, 
      breaks = 20,
@@ -302,30 +337,10 @@ qqnorm(reg2$residuals)
 qqline(reg2$residuals)
 
 
-###   4.3 Visualization: Plots                                                                                              #### 
+###   4.4 Visualization: Plots that describe the linear regression                                                          #### 
 
 
-## Checking for correlation
-
-cor(lm_tab)
-
-## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
-
-# Visualization of doubling time vs drug sensitivity
-
-
-plot(lm_tab2$vorinostat, 
-     lm_tab2$BM_Copynumber_meancol, 
-     col = "yellowgreen",
-     main = "Drug sensitivity & Copynumber Regression",
-     xlab = "Drug sensitivity",
-     ylab = "Copynumber",
-     cex = 1.3,
-     pch = 1)
-
-#At first look, the points in the plot are so scattered, that a linear relationship seems unlikely. 
-
-# Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
+## Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
 
 library(lattice)
 
@@ -363,9 +378,6 @@ plot(reg2, which = c(1, 2))
 
 # Can we predict drug sensitivity using the copynumber data?
 # How much of the variance of the data can be explained using the copynumber data?
-
-###   5.1 Linear Regression                                                                                                 ####
-
 ## Data frames
 
 CN_all = as.data.frame(CN_meancol)
@@ -376,6 +388,38 @@ DS = as.data.frame(drug_sensitivity)
 
 lm_tab_all2 = transform(merge(CN_all,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
 lm_tab_all2 <- na.omit(lm_tab_all2)
+
+
+###   5.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
+
+## Checking for correlation
+
+cor(lm_tab_all2)
+
+
+## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
+
+# Visualization of doubling time vs drug sensitivity
+
+
+scatter.smooth(lm_tab_all2$vorinostat, 
+               lm_tab_all2$BM_Copynumber_meancol, 
+               col = "orangered",
+               main = "Drug sensitivity & Copynumber Regression",
+               xlab = "Drug sensitivity",
+               ylab = "Copynumber",
+               cex = 1.3,
+               pch = 1)
+
+#At first look, the points in the plot are so extremely scattered, that a linear relationship seems really unlikely. 
+#The second problem that one can observe in this graphic, is that even though the line describing the behaviour
+#is indeed straight, the points are scattered all over the plane, and not around the line. 
+
+#These analysis helps us predcit whether a linear regression is or not the best model to describe our data.
+
+
+
+###   5.2 Linear Regression                                                                                                 ####
 
 ## Linear Regression
 
@@ -397,7 +441,7 @@ summary(reg_all2)
 # More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
 confint(reg_all2)
 
-###   5.2 Checking the normalization of residuals                                                                           ####
+###   5.3 Checking the normalization of residuals                                                                           ####
 
 
 hist(reg_all2$residuals, 
@@ -412,29 +456,8 @@ hist(reg_all2$residuals,
 qqnorm(reg_all2$residuals)
 qqline(reg_all2$residuals)
 
-###   5.3 Visualization: Plots                                                                                              ####
+###   5.4 Visualization: Plots that describe the linear regression                                                          ####
 
-
-## Checking for correlation
-
-cor(lm_tab_all2)
-
-
-## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
-
-# Visualization of doubling time vs drug sensitivity
-
-
-plot(lm_tab_all2$vorinostat, 
-     lm_tab_all2$BM_Copynumber_meancol, 
-     col = "orangered",
-     main = "Drug sensitivity & Copynumber Regression",
-     xlab = "Drug sensitivity",
-     ylab = "Copynumber",
-     cex = 1.3,
-     pch = 1)
-
-#At first look, the points in the plot are so extremely scattered, that a linear relationship seems really unlikely. 
 
 # Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
 
@@ -472,7 +495,8 @@ plot(reg_all2, which = c(1, 2))
 ####  6.  MULTIPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time and copynumber                ####
 
 
-###   6.1 Linear Regression                                                                                                 ####
+###   6.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
+###   6.2 Linear Regression                                                                                                 ####
 
 CN = as.data.frame(BM_Copynumber_meancol)
 
@@ -487,8 +511,8 @@ lm_tab_m <- na.omit(lm_tab_m)
 reg_m <- lm(vorinostat ~ BM_Copynumber_meancol + Doubling_Time, data = lm_tab_m)
 
 summary(reg_m)
-###   6.2 Checking the normalization of residuals                                                                           ####
-###   6.3 Visualization: Plots                                                                                              ####
+###   6.3 Checking the normalization of residuals                                                                           ####
+###   6.4 Visualization: Plots that describe the linear regression                                                          ####
 
 plot(lm_tab_m)
 
