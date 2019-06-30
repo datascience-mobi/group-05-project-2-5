@@ -167,6 +167,8 @@ cor(lm_tab)
 
 # Visualization of doubling time vs drug sensitivity
 
+# (1) Scatter Plot
+
 scatter.smooth(lm_tab$vorinostat, 
                lm_tab$Doubling_Time, 
                col = "dodgerblue1",
@@ -180,8 +182,51 @@ scatter.smooth(lm_tab$vorinostat,
 #The second problem that one can observe in this graphic, is that the line describing the behaviour
 #is not straight. 
 
-#These analysis helps us predcit whether a linear regression is or not the best model to describe our data. 
+# (2) Box plot
+par(mfrow=c(1, 2))
+boxplot(lm_tab$vorinostat, main="Drug sensitivity", sub=paste("Outlier rows: ", boxplot.stats(lm_tab$vorinostat)$out)) 
+boxplot(lm_tab$Doubling_Time, main="Doubling time", sub=paste("Outlier rows: ", boxplot.stats(lm_tab$Doubling_Time)$out)) 
 
+#A boxplot can help us visualize the amount of outliers in our data. This is relevant as too many (extreme) outliers can
+#have great impact on the results of our analysis and can change the outcome completely. They can easily affect the slope. 
+
+# (3) Density: Should be expect normality for drug sensitivity?
+
+library(e1071)
+
+par(mfrow=c(1, 2)) 
+
+plot(density(lm_tab$vorinostat), 
+     main="Density Plot: Drug Sensitivity", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab$vorinostat), 2))
+     )
+
+polygon(density(lm_tab$vorinostat), col="royalblue1")
+
+
+plot(density(lm_tab$Doubling_Time), 
+     main="Density Plot: Doubling time", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab$Doubling_Time), 2))
+    )
+
+polygon(density(lm_tab$Doubling_Time), col="skyblue1")
+
+#Plot for doubling time seems skewed to the left.
+
+# (4) Correlation: what is the level level of linear dependence between the two variables?
+
+cor(lm_tab$vorinostat, lm_tab$Doubling_Time)
+
+#[1] -0.2057795
+#A good value for correlation lies close to 1 or -1, whilst the value 0 is undesirable. Values closer to 0 indicate
+#that there is a weak relationship.  
+
+
+#These analysis helps us predcit whether a linear regression is or not the best model to describe our data. 
+#Taking into consideration all results so far for this part, it is not unreasonable to predict that a linear
+#regression will probably not be the best model to describe the relationships in our data.
 
 ###   3.2 Linear Regression                                                                                                 ####
 
