@@ -2,11 +2,17 @@
 title: "Specific Analysis complete"
 author: "Laura Plutowski and Franziska Heinkele"
 date: "26 Juni 2019"
-output: pdf_document
+output:
+  html_document:
+    df_print: paged
 ---
 
 ```{r, include = FALSE}
-wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+# Franzi
+# wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+
+# Laura 
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 Load data:
@@ -340,9 +346,19 @@ while(i<=100) {
 Bind the information about up/downregulation as a new column to the biomarkermatrix:
 ```{r}
 top100generalbiomarkers_withUporDown <- cbind(top100generalbiomarkers, Generalchange)
+# rename
 colnames(top100generalbiomarkers_withUporDown)[1] <- "FCmean"
 ```
 
+```{r,fig.height= 5, fig.width= 7}
+#visualizations
+top100generalbiomarkers_withUporDown=as.data.frame(top100generalbiomarkers_withUporDown)
+change=top100generalbiomarkers_withUporDown$Generalchange
+col=palette(rainbow(2))
+barplot(table(change), ylab="counts", main="Number of up and down regulated genes", col=col)
+```
+
+We see that we have approximately the same number of up and down regulated genes.
 
 ##Visualizations of biomarkers: 
 
@@ -386,7 +402,7 @@ barplot( height= biomarkers_FC_values$FC_meanrow,
          ylab="mean Fold change", xlab="biomarkers")
 
 ```
-We see that most values are very similar to each other and that we have approximately the same number of genes regulated up and down.
+We see that most values are very similar to each other and that we have approximately the same number of genes regulated up and down as we already have visualized above.
 
 
 __Visualization of biomarkers with Vulcanoplot:__
