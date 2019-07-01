@@ -26,8 +26,12 @@ Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
 Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 
+###########################################################################
+### load vorinostat annotation data from excel
+# must have the format: CSV UTF-8 (durch Trennzeichen getrennte datei)
+vorinostat_annotation=read.csv2(paste0(wd,"/data/biomarker.csv"),header = TRUE, quote="\"")
+###########################################################################
 
-test=read.csv(paste0(wd,"/data/Biomarker.csv"))
 #######################################################################
 
 #daten umwandeln
