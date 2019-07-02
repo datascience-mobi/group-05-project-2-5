@@ -251,6 +251,15 @@ cor1_tab_norm <- t(apply(cor1_tab, 1, cal_z_score))
 pheatmap(cor1_tab_norm)
 
 
+colnames(cor1_tab_norm) == Metadata_V_after$cell
+
+# Create an extra file with cell lines names exchanged with tissue name
+cor1_tab_norm_tissue = cor1_tab_norm
+colnames(cor1_tab_norm_tissue) = Metadata_V_after$tissue
+pheatmap(cor1_tab_norm_tissue)
+
+
+
 # Ploting a dendogram and cutting the tree
 cor1_hclust <- hclust(dist(cor1_tab), method = "complete")
 
