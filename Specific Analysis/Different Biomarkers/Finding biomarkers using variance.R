@@ -10,6 +10,9 @@ install.packages("ggpubr")       # ggpubr for an easy ggplot2-based data visuali
 library("dplyr")
 library("ggpubr")
 library("dendextend")  
+library(pheatmap)
+library("DESeq")
+
 
 
 Untreated   = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
@@ -278,6 +281,19 @@ Biomarkers_Variance      =  Biomarkers_Treated - Biomarkers_Untreated
 
 dim(Biomarkers_Variance)   #  [1] 50  59
 
+# We can check with a heatmap if that really kakes sense:
+
+pheatmap(Biomarkers_Variance)
+
+
+BM_var_tissue = Biomarkers_Variance
+colnames(BM_var_tissue)  == Metadata_V_after$cell
+
+colnames(BM_var_tissue) = Metadata_V_after$tissue
+pheatmap(BM_var_tissue)
+
+
+# It clearly does not show a high change in expression rates of the selected genes
 
 # 3 -     PART 3     =>        NO Biomarkers_t_test data, see: 3.2                                ####
 
