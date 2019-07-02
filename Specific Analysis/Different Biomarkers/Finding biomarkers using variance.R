@@ -204,13 +204,20 @@ lower_quartile_VC   = quantile(Variance_Change$Var_Change, probs = 0.025)
 
 Most_pos_var_change  = Variance_Change[-which(Variance_Change$Var_Change < upper_quartile_VC),, drop= FALSE] 
 Most_neg_var_change  = Variance_Change[-which(Variance_Change$Var_Change > lower_quartile_VC),, drop= FALSE] 
+
+# We focus on the negative part of the variance change, as we expect treatment to normalize the variance
 Most_neg_var_change  = Most_neg_var_change[ order(Most_neg_var_change$Var_Change), ,drop = FALSE ] 
+
+Most_neg_var_change = head(Most_neg_var_change, 50)
 
 Highest_VC = append(rownames(Most_neg_var_change) , rownames(Most_neg_var_change))
 
 # Which genes whose variance changed strongly were in the highly variant group before treatment
 Biomarker_candidates = intersect( Highest_VC, rownames(Most_Variances_Unt)  )
 Biomarker_candidates # 242 out of 666
+
+
+
 
 
 # 2.1.3b- High Variance change in genes which showed LOW variance before treatment                ####
@@ -253,23 +260,23 @@ rownames(Most_Variances_DR)
 # by chemotherapic agents. 
 # (Chemotherapic agents tend to attack the highly dividing cells the most strongly)
 
-Biomarker_candidates     #     247 
+Biomarker_candidates     #     50 
 nrow(Most_Variances_DR)  # [1] 665
 Biomarkers_1= as.data.frame(intersect( Biomarker_candidates, rownames(Most_Variances_DR)) ) 
-Biomarkers_1  # 169 biomarkers, this number will decrease after the comparison with t-test values !
+Biomarkers_1  # 50 biomarkers.
 
 # Changing row names
-rownames(Biomarkers)     =  Biomarkers$`intersect(Biomarker_candidates, rownames(Most_Variances_DR))`
+rownames(Biomarkers_1)     =  Biomarkers_1$`intersect(Biomarker_candidates, rownames(Most_Variances_DR))`
 # This long name was name of the column name:
 # =>   $`intersect(Biomarker_candidates, rownames(Most_Variances_DR))`
 
 
 # Now I create data frame Vorinostat_Treated and Vorinostat_Untreated only with the biomarker genes
-Biomarkers_Untreated     =  Vorinostat_Untreated[ which(row.names(Vorinostat_Untreated) %in% rownames(Biomarkers)),]
-Biomarkers_Treated       =  Vorinostat_Treated  [ which(row.names(Vorinostat_Treated) %in% rownames(Biomarkers)),  ]
+Biomarkers_Untreated     =  Vorinostat_Untreated[ which(row.names(Vorinostat_Untreated) %in% rownames(Biomarkers_1)),]
+Biomarkers_Treated       =  Vorinostat_Treated  [ which(row.names(Vorinostat_Treated) %in% rownames(Biomarkers_1)),  ]
 Biomarkers_Variance      =  Biomarkers_Treated - Biomarkers_Untreated
 
-dim(Biomarkers_Variance)   #  [1] 169  59
+dim(Biomarkers_Variance)   #  [1] 50  59
 
 
 # 3 -     PART 3     =>        NO Biomarkers_t_test data, see: 3.2                                ####
