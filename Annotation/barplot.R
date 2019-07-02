@@ -14,7 +14,7 @@ tissue=vorinostat_annotation$affected.Tissue..if.specific.
 
 col=palette(rainbow(6))
 table(tissue)
-barplot(table(tissue), ylab="counts", main="affected tissues by biomarker", col=col)
+barplot(table(tissue), ylab="counts", main="affected tissues by biomarker", col=col, las=3)
 
 
 ######### with nones 
@@ -24,4 +24,4 @@ tissue=vorinostat_annotation$affected.Tissue..if.specific.
 
 col=palette(rainbow(7))
 table(tissue)
-barplot(table(tissue), ylab="counts", main="affected tissues by biomarker", col=col)
+barplot(table(tissue), ylab="counts", main="affected tissues by biomarker", col=col, las=3)
