@@ -197,6 +197,27 @@ cnetplot(ego2.3)
 emapplot(ego2.3)
 ```
 
+Enrichment with "enrichPathway": 
+
+```{r}
+library(ReactomePA)
+
+# biomarkers
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+
+x <- enrichPathway(gene=gene.df$ENTREZID, pvalueCutoff = 0.05, readable = T )
+head(as.data.frame(x))
+
+# visualization
+barplot(x,showCategory=12)
+dotplot(x, showCategory=12)
+cnetplot(x,categorySize="geneNum")
+emapplot(x)
+```
+
+
 ```{r}
 library(KEGG.db)
 library(org.Hs.eg.db)
@@ -229,7 +250,7 @@ dotplot(kk, showCategory=12)
 cnetplot(kk,categorySize="geneNum",foldChange = FC)
 cnetplot(kk,categorySize="geneNum",circular=TRUE)
 emapplot(kk)
-heatplot(kk,foldChange = F)
+heatplot(kk,foldChange = FC)
 upsetplot(kk)
 
 

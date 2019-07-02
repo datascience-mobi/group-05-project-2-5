@@ -1,0 +1,263 @@
+---
+title: "Biomarkers general"
+author: "Laura Plutowski"
+date: "2 7 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+``` 
+
+```{r read_data, message = FALSE, warning = FALSE,include = FALSE}
+library(readr)
+
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+
+Treated <- as.data.frame(Treated)
+Untreated <- as.data.frame(Untreated)
+
+```
+
+```{r, include = FALSE}
+################## Creat Vorinostat data ####################
+
+#Find cell lines, which belong to vorinostat:
+#Untreated matrix:
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+
+
+#Same with treated matrix:
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+
+
+#Create Vorinostat Untreated matrix:
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+#fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#normalization 
+#For normalization, a package needs to be installed: install.packages("BBmisc")
+
+```
+
+Biomarkers with absolute values: 
+
+
+
+```{r}
+#We need a FC matrix that contains only the data from Vorinostat-treated celllines:
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+FCVorinostat <- TreatedVorinostat - UntreatedVorinostat
+
+
+# work with mean of the rows because we only want to compare the genes:
+FCVorinostatabs= abs(FCVorinostat)
+FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
+
+# sort the values to get the 100 largest values:
+sortedgeneralbiomarker <- sort(FCVorinostatmean, decreasing = TRUE)
+sortedgeneralbiomarker <- as.matrix(sortedgeneralbiomarker)
+
+#select the top 100 general biomarkers:
+top100generalbiomarkers = sortedgeneralbiomarker[1:100,]
+top100generalbiomarkers <- as.matrix(top100generalbiomarkers)
+
+#create vector with gene names:
+generalbiomarkergenes = row.names(top100generalbiomarkers)
+```
+
+
+Gene Ontology analysis, more plots and information, but inconclusive
+```{r}
+library(clusterProfiler)
+library(org.Hs.eg.db)
+```
+
+
+```{r}
+# do the translation 
+# index 2 because already done analysis with biomarkers from p.values 
+
+translated.genes2= bitr(generalbiomarkergenes,fromType="SYMBOL", toType="ENTREZID",OrgDb = org.Hs.eg.db) 
+head(translated.genes2)
+
+#################################################################################################################
+
+#### Gene Ontology Classification
+# Notes: BP for Biological Process, MF for Molecular Function, and CC for Cellular Component
+
+library(DOSE)
+
+# take the needed gene ID
+gene2=translated.genes2$ENTREZID
+head(gene2)
+
+### do classification
+
+## 1. Biological Process
+ggo2.1 <- groupGO(gene= gene2, OrgDb = org.Hs.eg.db,  ont = "BP", level = 3, readable = FALSE)
+head(summary(ggo2.1))
+# visualization 
+barplot(ggo2.1, drop=TRUE, showCategory=12)
+
+## 2. Molecular Function
+ggo2.2 <- groupGO(gene= gene2, OrgDb = org.Hs.eg.db,  ont = "MF", level = 3, readable = FALSE)
+head(summary(ggo2.2))
+# visualization 
+barplot(ggo2.2, drop=TRUE, showCategory=12)
+
+## 3. Cellular Component
+ggo2.3 <- groupGO(gene= gene2, OrgDb = org.Hs.eg.db,  ont = "CC", level = 3, readable = FALSE)
+head(summary(ggo2.3))
+# visualization 
+barplot(ggo2.3, drop=TRUE, showCategory=12)
+
+#################################################################################################################
+
+### enrich GO 
+
+# only works with gene id ENSEMBL 
+
+library(org.Hs.eg.db)
+
+# create gene data frame ans translate it 
+
+gene.df2 <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+
+##############################################################################################################
+### Cellular Component
+ego2.1 <- enrichGO(gene         = gene.df2$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "CC",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego2.1))
+
+# visualization 
+#dotplot(ego2.1, showCategory=3)
+cnetplot(ego2.1)
+emapplot(ego2.1)
+
+##############################################################################################################
+
+### Biological Process
+ego2.2 <- enrichGO(gene         = gene.df2$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "BP",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego2.2))
+
+# visualization 
+#dotplot(ego2.2, showCategory=10)
+cnetplot(ego2.2)
+emapplot(ego2.2)
+
+##############################################################################################################
+
+### Molecular Function
+ego2.3 <- enrichGO(gene         = gene.df2$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "MF",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego2.3))
+
+# visualization 
+#dotplot(ego2.3, showCategory=10)
+cnetplot(ego2.3)
+emapplot(ego2.3)
+```
+
+Enrichment with "enrichPathway": 
+
+```{r}
+library(ReactomePA)
+
+# biomarkers
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+
+x <- enrichPathway(gene=gene.df$ENTREZID, pvalueCutoff = 0.05, readable = T )
+head(as.data.frame(x))
+
+# visualization
+barplot(x,showCategory=12)
+dotplot(x, showCategory=12)
+cnetplot(x,categorySize="geneNum")
+emapplot(x)
+```
+
+
+```{r}
+library(KEGG.db)
+library(org.Hs.eg.db)
+library(enrichplot)
+```
+
+```{r}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+
+kk <- enrichKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05,pAdjustMethod = "none")
+head(summary(kk))
+
+# visualization
+
+# FC
+library(enrichplot)
+library(DOSE)
+top100generalbiomarkers=as.data.frame(top100generalbiomarkers)
+colnames(top100generalbiomarkers)[1] <- "fold Change"
+top100generalbiomarkers=cbind(top100generalbiomarkers,generalbiomarkergenes)
+colnames(top100generalbiomarkers)[2] <- "genes"
+
+FC <- top100generalbiomarkers$`fold Change`
+names(FC) <- gene.df$ENTREZID
+
+barplot(kk,showCategory=100)
+dotplot(kk, showCategory=100)
+cnetplot(kk,categorySize="geneNum",foldChange = FC)
+cnetplot(kk,categorySize="geneNum",circular=TRUE)
+emapplot(kk)
+heatplot(kk,foldChange = FC)
+upsetplot(kk)
+
+
+# path 
+library(pathview)
+pathview(gene.data = FC, 
+         pathway.id = "hsa05202", 
+         species = "hsa", 
+         limit = list(gene=5, cpd=1))
+```
