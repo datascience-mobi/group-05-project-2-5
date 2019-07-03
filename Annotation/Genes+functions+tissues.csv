@@ -1,0 +1,26 @@
+gene;function;function;tissue
+DHRS2;dehydrogenase/reductase enzyme;;
+ABAT;GABA reduction;neurotransmitter;brain
+SERPINI1;synaptic plasticity;axon growth;brain
+MIR612///NEAT1;transcription regulator of oncogenes;;
+HBA2///HBA1;globin for hemoglobin;;blood
+CLU;immune system;;brain
+STC1;ion transport;;kidney
+NMI;interacts with oncogenes;;blood
+AREG;growth factor;mitogen for astrocytes + schwann cells;brain
+CRISPLD2;immune system;;
+NSMAF;binds phospholipids;inflammation;
+HIST1H1C;histone cluster;chromatin-binding;
+SERPINH1;serine protease inhibitor in ER ;kollagen synthesis;
+HIST1H2BJ///HIST1H2BG;histone cluster;chromatin-binding;
+SLC17A7;ion transport;GABA-synapses;brain 
+TYMS;DNA-replication + repair;;
+ASMTL;o-methyltransferase;;
+TNFSF9;TNF, cytokine;immune system;blood
+FAIM;apoptose protection, regulates B-cell signals + differentiation;immune system;blood
+ADI1;downregulation of cell migration, HepC-Virus replication;mRNA processing in nucleus;
+TUBB2B;Tubulin (microtubuli-component), neuronal migration;axon growth;brain
+HMGA2;transcription regulator, chromosome-condensation;chromatin-binding;
+RGL1;cytoskeleton remodeling;;
+NEU1;neuraminidase;;
+HIST1H2BD;histone cluster;chromatin-binding;
