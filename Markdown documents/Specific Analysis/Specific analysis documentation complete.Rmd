@@ -2,9 +2,8 @@
 title: "Specific Analysis complete"
 author: "Laura Plutowski and Franziska Heinkele"
 date: "26 Juni 2019"
-output:
-  html_document:
-    df_print: paged
+output: html_document
+ 
 ---
 
 ```{r, include = FALSE}
@@ -81,12 +80,12 @@ TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
     UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
 UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
 
-
-plot(density(UntreatedVorinostat) ,xlab = "Gene expression",
+par(mar=c(5, 4, 5, 9))
+plot(density(UntreatedVorinostat), col="blue" ,xlab = "Gene expression",
      main = "Effects of Vorinostat on overall gene expression")
 lines(density(TreatedVorinostat), col = "red")
-legend(x = 1, y = 1, legend = c("Untreated", "Treated"),
-       bty = "n", lty = 1, col = c("black", "red"), x.intersp = 0.5)
+legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
+       pch=19, col = c("blue", "red"))
 ```
 Altough Vorinostats working mechanism as a HDAC inhibitor should lead to a better access to genes, we do not see a higher expression in terms of all genes. We are interested in how this plot changes when we plot only our biomarkers, so we are going to repeat the density plot later when we identified them.
 
@@ -368,14 +367,14 @@ Now we can repeat the the __gene-expression density plot__ from the beginning of
 Treated_Vorinostat_biomarker <- Treated[generalbiomarkergenes,TreatedVorinostatcolumns]
 Untreated_Vorinostat_biomarker <- Untreated[generalbiomarkergenes,UntreatedVorinostatcolumns]
 
-
-plot(density(Untreated_Vorinostat_biomarker) ,xlab = "Gene expression",
+par(mar=c(5, 4, 5, 9))
+plot(density(Untreated_Vorinostat_biomarker),col="blue" ,xlab = "Gene expression",
      main = "Effects of Vorinostat on biomarker gene expression")
 
 lines(density(Treated_Vorinostat_biomarker), col = "red")
 
-legend(x = 1, y = 1, legend = c("Untreated", "Treated"),
-       bty = "n", lty = 1, col = c("black", "red"), x.intersp = 0.5)
+legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
+       pch=19, col = c("blue", "red"))
 ```
 
 We visualized the __FC__ of our biomarkers as well:
@@ -600,11 +599,11 @@ biomarkersLeukemiaGenes[biomarkersLeukemiaGenes == generalbiomarkergenes]
 Treated_Leukemiabiomarker <- Treated[biomarkersLeukemiaGenes ,TreatedVorinostatcolumns]
 Untreated_Leukemiabiomarker <- Untreated[biomarkersLeukemiaGenes,UntreatedVorinostatcolumns]
 
-
+par(mar=c(5, 4, 5, 9))
 plot(density(Untreated_Leukemiabiomarker) ,xlab = "Gene expression",
      main = "Effects of Vorinostat on Leukemiabiomarker gene expression")
 lines(density(Treated_Leukemiabiomarker), col = "red")
-legend(x = 1, y = 1, legend = c("Untreated", "Treated"), bty = "n",
-       lty = 1, col = c("black", "red"), x.intersp = 0.5)
+legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
+       pch=19, col = c("blue", "red"))
 ```
 The plot looks quite similar to the plot before which contained the general biomarkers. Since the biomarkers of leukemia are partly the same as the general biomarkers(38 out of 100 biomarkers), the similarity of the plots is not surprising.
