@@ -2,10 +2,10 @@
 
 # Loading Data                                                                                    ######
 
-install.packages("BBmisc")       #For normalization
+install.packages("BBmisc")       # For normalization
 library(BBmisc)     
 
-install.packages("dplyr")        #   dplyr for data manipulation
+install.packages("dplyr")        # dplyr for data manipulation
 install.packages("ggpubr")       # ggpubr for an easy ggplot2-based data visualization
 library("dplyr")
 library("ggpubr")
