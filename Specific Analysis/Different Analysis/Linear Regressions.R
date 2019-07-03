@@ -882,7 +882,7 @@ barplot(pca$rotation[, 1], horiz = TRUE, main = "PC1", col = "turquoise")
 
 ###   8.2 Linear Regression                                                                                                 ####
 
-reg_pca = lm(lm_tab_m$Drug_sensitivity ~ pca$x)
+reg_pca = lm(lm_tab_m$Drug_Sensitivity ~ pca$x)
 summary(reg_pca)
 
 ##### PART 3 ##################################################################################################################
