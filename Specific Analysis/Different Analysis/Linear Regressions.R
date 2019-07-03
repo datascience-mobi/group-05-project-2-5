@@ -3,8 +3,7 @@
 ### Linear Regressions ###
 
 
-## Do not run the entire r script at once. 
-## Pending: Change log?
+## Do not run the entire R script at once. 
 ## No linear relationship: lowess, GAM
 ## Complete until 7
 
@@ -107,24 +106,7 @@ biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
 
 
 ####  2.  PREPARING THE DATA                                                                                                ####
-###   2.1 log change                                                                                                        ####
-
-# Copynumber with log2 to -log10
-
-CN_log10
-
-
-# Drug sensitivity with -10log to log 2
-
-DS_log2
-
-
-## Log removal 
-
-DS_nolog 
-
-CN_nolog
-###   2.2 Creating the necessary tables (Copynumber with biomarkers/all genes and Cell lines with drug sensitivity)         ####
+###   2.1 Creating the necessary tables (Copynumber with biomarkers/all genes and Cell lines with drug sensitivity)         ####
 
 ## (1) Table 1: Selection of 100 Biomarkers in copynumber 
 
@@ -159,7 +141,7 @@ Doubling_Time[1] <- NULL
 Doubling_Time
 
 
-####  3.  SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time                                 ####
+####  3.  SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with doubling time                                      ####
 
 # Can we predict drug sensitivity using doubling time?
 # How much of the variance of the data can be explained using the doubling time?
@@ -677,11 +659,11 @@ abline(0, 1, col = "royalblue1")
 
 
 
-####  6.  MULTIPLE REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time and copynumber                       ####
+####  6.  MULTIPLE REGRESSION WITH ALL GENES: Drug sensitivity with doubling time and copynumber                            ####
 
 ## Data frames
 
-CN = as.data.frame(BM_Copynumber_meancol)
+CN_all = as.data.frame(CN_meancol)
 
 DT = as.data.frame(Doubling_Time)
 
@@ -689,11 +671,11 @@ DS = as.data.frame(drug_sensitivity)
 
 ## Table with drug sensitivity, copynumber and doubling time per cell line
 
-lm_tab_m = transform(merge(CN, lm_tab,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+lm_tab_m = transform(merge(CN_all, lm_tab,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
 
 lm_tab_m <- na.omit(lm_tab_m)
 
-names(lm_tab_m)[names(lm_tab_m) == "BM_Copynumber_meancol"] <- "Copynumber"
+names(lm_tab_m)[names(lm_tab_m) == "CN_meancol"] <- "Copynumber"
 names(lm_tab_m)[names(lm_tab_m) == "vorinostat"] <- "Drug_Sensitivity"
 
 
@@ -773,7 +755,7 @@ polygon(density(lm_tab_m$Copynumber), col="olivedrab1")
 
 ## Linear Regression
 
-reg_m <- lm(Drug_sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
+reg_m <- lm(Drug_Sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
 
 ## Details about the linear regression: what we need draw some conclusions
 
@@ -894,14 +876,74 @@ pca = prcomp(lm_tab_pca[, -1])
 summary(pca)
 
 par(las = 2)
-par(mar = c(1,11,1,2))
 barplot(pca$rotation[, 1], horiz = TRUE, main = "PC1", col = "turquoise")
 
+###   8.2 A little correlation exploration                                                                                  ####
 
-###   8.2 Linear Regression                                                                                                 ####
+pairs(lm_tab_pca, col = "turquoise2", pch = 20)
 
-reg_pca = lm(lm_tab_m$Drug_sensitivity ~ pca$x)
+cor_pca = cor(lm_tab_pca)
+heatmap(cor_pca, col = cm.colors(256), margins = c(15, 10))
+
+#As expected, we observe a higher correlation between doubling time and drug sensitivity than
+#between copynumber and drug sensitivity
+
+## What are exact values for the correlations?
+
+cor(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Doubling_Time)
+
+#[1] -0.2360583
+
+cor(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Copynumber)
+
+#[1] 0.1534729
+
+#Here we confirm that there is indeed a stronger relationship between drug sensitivity and doubling 
+#time. 
+
+cor(lm_tab_pca$Doubling_Time, lm_tab_pca$Copynumber)
+#[1] -0.275499
+
+#Surprisingly, the strongest correlation that we can observe happens to be the one between doubling 
+#time and copynumber. 
+
+## How significatn are these values?
+
+cor.test(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Doubling_Time)
+
+#p-value = 0.08881
+
+cor.test(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Copynumber)
+
+#p-value = 0.2726
+
+cor.test(lm_tab_pca$Doubling_Time, lm_tab_pca$Copynumber)
+
+#p-value = 0.04586
+
+#Considering these results, the validity of the correlation comes into questions. 
+#However, in would still be interesting to explore linear regression with 
+#PCA. Therefore, we carry on. 
+
+###   8.3 Linear Regression                                                                                                 ####
+
+reg_pca = lm(lm_tab_m$Drug_Sensitivity ~ pca$x)
 summary(reg_pca)
+
+# Multiple R-squared: 0.06419 -> This indicates that only 6.419% percent of the variation in the data (drug sensitivity)
+#can be explained by the relationship between drug sensitivity, doubling time and copynumber. In other words, there is a 
+#6.419% variance reduction when we take the both the doubling time and the copynumber into account. 
+
+
+# p-value: 0.1904
+#As the p-value for reg_m is significantly larger than 0.05 and R-squared tells us the copynumber only explains 2.355% 
+#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
+#copynumer, a.k.a copynumber cannot predict drug sensitivity.
+
+
+
+# The comparison of the results when we carry out a regular multiple regression vs when we carry out one using the principal
+#component, shows us that while R-squared has a higher value when using PCA, the p-value decreases. 
 
 ##### PART 3 ##################################################################################################################
 ####  9.  Other models for regression

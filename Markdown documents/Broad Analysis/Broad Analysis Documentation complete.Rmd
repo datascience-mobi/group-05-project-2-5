@@ -2,7 +2,7 @@
 title: "Broad Analysis complete documentation"
 author: "Franziska Heinkele and Laura Plutowski"
 date: "26 Juni 2019"
-output:html_document
+output: html_document
 ---
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set( echo=TRUE)
@@ -20,6 +20,7 @@ Therefore, we focus on data that report different cellular responses to drug per
 First of all, we want to explore the whole data from all 15 drug responses including the treated and untreated data sets. Therefore we perform the following analysis steps:
 
 - Boxplot with treated data 
+- comparison of treated and untreated gene expression 
 - Finding highly variable genes using Seurat
 - Analysis of Fold Change matrix 
 - Different PCAs 
@@ -117,7 +118,28 @@ We see that after normalization of the data the batches were removed.
 
 
 ***
-### 1.2 HIGHLY VARIABLE GENE ANALYSIS
+
+### 1.2 COMPARISON OF TREATED AND UNTREATED GENE EXPRESSION 
+
+```{r,fig.height= 5, fig.width= 7}
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+
+par(mar=c(5, 4, 5, 9))
+plot(density(Untreated),col="blue" ,xlab = "Gene expression",
+     main = "comparison of treated and untreated gene expression ")
+
+lines(density(Treated), col = "red")
+
+
+legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
+       pch=19, col = c("blue", "red"))
+```
+
+
+***
+
+### 1.3 HIGHLY VARIABLE GENE ANALYSIS
 
 
 We aim to find genes which vary the most in Untreated and Treated celllines.
@@ -197,7 +219,7 @@ __We can conclude, that the treatment did not change the high variation for the 
 
 
 ***
-### 1.3 FOLD CHANGE ANALYSIS
+### 1.4 FOLD CHANGE ANALYSIS
 
 The fold change matrix (fold change = FC) describes the changes in gene expression between the treated and the untreated cell lines. First of all we visualize the FC with a bar chart which is colored by different drugs.
 
@@ -222,7 +244,7 @@ legend("topright", inset = c(-0.4,0.0), legend= levels(drug), xpd = TRUE,
        pch=19, col = levels, title = "drugs")
 ```
 
-Here we can see that most FC values are in a similar value range. Only 5-Azacytidine and bortezomib have clear outliers. Moreover brotezomib 
+Here we can see that most FC values are in a similar value range. Only 5-Azacytidine and bortezomib have clear outliers. Moreover brotezomib and geldanamycin show mostly downregulated genes. 
 
 The shape of the density plot of the mean FC values shows that the data is approximately normally distributed: 
 
@@ -235,7 +257,7 @@ Coloring the scatter plot according to the tissue type shows that there is no co
 ``` {r, fig.height= 5, fig.width= 7}
 # scatter plot
 par(mar=c(5, 4, 5, 9))
-plot(FC_all_mean, col= Metadata$tissue, main="Gene expression change colored by drugs",
+plot(FC_all_mean, col= Metadata$tissue, main="Gene expression change colored by tissues",
      xlab="samples",ylab="mean Fold Change values")
 
 # legend 
@@ -265,7 +287,7 @@ FC_all_max= (apply(FC_all,2,max))
 # most down regulated genes
 largest10_FC_all_min <- (sort(FC_all_min, decreasing = F)[1:10])
 largest10_FC_all_min =as.data.frame(largest10_FC_all_min)
-knitr::kable(largest10_FC_all_min, caption = "10 smallest FC values")
+knitr::kable(largest10_FC_all_min, caption = "10 lowest FC values")
 
 # most up regulated genes 
 largest10_FC_all_max <- (sort(FC_all_max, decreasing = T)[1:10])
@@ -277,7 +299,7 @@ Here we can see, that vorinostat (occurs 3 times for downregulated and 2 times f
 
 
 ***
-### 1. PCA ANALYSIS
+### 1.5 PCA ANALYSIS
 
 
 > Description of this file:

@@ -9,3 +9,6 @@ Pathways/hsa05202.xml
 *.RData
 *.rdb
 Markdown documents/Broad Analysis/Broad_Analysis_Documentation_complete_cache/latex/__packages
+Markdown documents/Broad Analysis/Broad_Analysis_Documentation_complete_cache/html/__packages
+Markdown documents/Broad Analysis/Broad_Analysis_Documentation_complete_files/figure-html/plot_data-1.png
+*.png

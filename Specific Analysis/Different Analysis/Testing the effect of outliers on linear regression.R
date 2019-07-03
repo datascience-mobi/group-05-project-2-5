@@ -123,7 +123,7 @@ Doubling_Time[1] <- NULL
 Doubling_Time
 
 
-####  3.  SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time                                 ####
+####  3.  SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with doubling time                                      ####
 
 # Can we predict drug sensitivity using doubling time?
 # How much of the variance of the data can be explained using the doubling time?
