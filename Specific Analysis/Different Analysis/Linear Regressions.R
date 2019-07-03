@@ -107,24 +107,7 @@ biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
 
 
 ####  2.  PREPARING THE DATA                                                                                                ####
-###   2.1 log change                                                                                                        ####
-
-# Copynumber with log2 to -log10
-
-CN_log10
-
-
-# Drug sensitivity with -10log to log 2
-
-DS_log2
-
-
-## Log removal 
-
-DS_nolog 
-
-CN_nolog
-###   2.2 Creating the necessary tables (Copynumber with biomarkers/all genes and Cell lines with drug sensitivity)         ####
+###   2.1 Creating the necessary tables (Copynumber with biomarkers/all genes and Cell lines with drug sensitivity)         ####
 
 ## (1) Table 1: Selection of 100 Biomarkers in copynumber 
 
@@ -159,7 +142,7 @@ Doubling_Time[1] <- NULL
 Doubling_Time
 
 
-####  3.  SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time                                 ####
+####  3.  SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with doubling time                                      ####
 
 # Can we predict drug sensitivity using doubling time?
 # How much of the variance of the data can be explained using the doubling time?
@@ -681,7 +664,7 @@ abline(0, 1, col = "royalblue1")
 
 ## Data frames
 
-CN = as.data.frame(BM_Copynumber_meancol)
+CN_all = as.data.frame(CN_meancol)
 
 DT = as.data.frame(Doubling_Time)
 
@@ -689,11 +672,11 @@ DS = as.data.frame(drug_sensitivity)
 
 ## Table with drug sensitivity, copynumber and doubling time per cell line
 
-lm_tab_m = transform(merge(CN, lm_tab,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+lm_tab_m = transform(merge(CN_all, lm_tab,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
 
 lm_tab_m <- na.omit(lm_tab_m)
 
-names(lm_tab_m)[names(lm_tab_m) == "BM_Copynumber_meancol"] <- "Copynumber"
+names(lm_tab_m)[names(lm_tab_m) == "CN_meancol"] <- "Copynumber"
 names(lm_tab_m)[names(lm_tab_m) == "vorinostat"] <- "Drug_Sensitivity"
 
 
@@ -773,7 +756,7 @@ polygon(density(lm_tab_m$Copynumber), col="olivedrab1")
 
 ## Linear Regression
 
-reg_m <- lm(Drug_sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
+reg_m <- lm(Drug_Sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
 
 ## Details about the linear regression: what we need draw some conclusions
 
