@@ -125,13 +125,15 @@ We see that after normalization of the data the batches were removed.
 Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
 Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
 
-plot(density(Untreated) ,xlab = "Gene expression",
+par(mar=c(5, 4, 5, 9))
+plot(density(Untreated),col="blue" ,xlab = "Gene expression",
      main = "comparison of treated and untreated gene expression ")
 
 lines(density(Treated), col = "red")
 
-legend(x = 1, y = 1, legend = c("Untreated", "Treated"),
-       bty = "n", lty = 1, col = c("black", "red"), x.intersp = 0.5)
+
+legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
+       pch=19, col = c("blue", "red"))
 ```
 
 
