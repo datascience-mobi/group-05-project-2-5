@@ -131,9 +131,16 @@ mean_Drug_Response = as.data.frame(apply(abs_Drug_Response,1, mean))
 mean_Drug_Response = mean_Drug_Response[ order(-mean_Drug_Response[,1]), , drop= FALSE ]
 
 # Get the hundert highes changes
-Biomarkers_Highest_Mean_DR  =  mean_Drug_Response[ order(-mean_Drug_Response)[1:100], , drop = FALSE ]
+Biomarkers_Highest_Mean_Drug_Response  =  mean_Drug_Response[ order(-mean_Drug_Response), , drop = FALSE ]
+Biomarkers_Highest_Mean_Drug_Response  =  head(Biomarkers_Highest_Mean_Drug_Response, 100)
+dim(Biomarkers_Highest_Mean_Drug_Response)
+colnames(Biomarkers_Highest_Mean_Drug_Response) = "Abs_Mean_of_DR" 
+head(Biomarkers_Highest_Mean_Drug_Response)
+
+# Now we create an new data frame from the Drug Response, only including the biomarker genes
 Biomarkers_Highest_Mean_DR  =  Drug_Response[ which(row.names(Vorinostat_Untreated) %in% rownames(Biomarkers_Highest_Mean_Drug_Response)),]
 dim(Biomarkers_Highest_Mean_DR)
+
 
 
 
