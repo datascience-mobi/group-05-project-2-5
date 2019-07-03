@@ -5,3 +5,7 @@ Markdown documents/Broad Analysis/Broad_Analysis_-_Boxplot_and_FC__cache
 Pathways/hsa05202.png
 Pathways/hsa05202.pathview.png
 Pathways/hsa05202.xml
+*.rdx
+*.RData
+*.rdb
+Markdown documents/Broad Analysis/Broad_Analysis_Documentation_complete_cache/latex/__packages

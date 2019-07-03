@@ -2,10 +2,10 @@
 
 # Loading Data                                                                                    ######
 
-install.packages("BBmisc")       #For normalization
+install.packages("BBmisc")       # For normalization
 library(BBmisc)     
 
-install.packages("dplyr")        #   dplyr for data manipulation
+install.packages("dplyr")        # dplyr for data manipulation
 install.packages("ggpubr")       # ggpubr for an easy ggplot2-based data visualization
 library("dplyr")
 library("ggpubr")
@@ -48,11 +48,6 @@ Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TR
 Vorinostat_Untreated   =  as.data.frame (Untreated [, which(grepl  ( "vorinostat" ,colnames(Untreated) )  )] )
 Vorinostat_Treated     =  Treated   [, which(grepl  ( "vorinostat" ,colnames(Treated) )  )] 
 
-# Calculate the amount of the difference in expression levels => Drug Response
-Drug_Response =  Vorinostat_Treated - Vorinostat_Untreated
-
-colnames(Vorinostat_Untreated)
-
 # Cleaning the column names
 colnames(Vorinostat_Untreated)
 col_names_VU    = as.data.frame(strsplit(x=colnames(Vorinostat_Untreated),split="_"))
@@ -61,6 +56,10 @@ Vorinostat_Untreated[1:5,1:5]
 
 col_names_VT    = as.data.frame(strsplit(x=colnames(Vorinostat_Treated),split="_"))
 colnames (Vorinostat_Treated) = as.data.frame (t(col_names_VT[1,]))[,1]
+
+# Calculate the amount of the difference in expression levels => Drug Response
+Drug_Response =  Vorinostat_Treated - Vorinostat_Untreated
+
 
 
 
@@ -121,20 +120,27 @@ colnames (Vorinostat_Treated) = as.data.frame (t(col_names_VT[1,]))[,1]
 # in gene expression levels after treatment
 # => Genes whose expression level changed strongly in many cell types
 
-# Mean values of drug response
-mean_Drug_Response = as.data.frame(apply(Drug_Response,1, mean))
-
 # We want the highest changes, regardless of their positivity or negativity
 # => We will use absolute values
-mean_Drug_Response = abs(mean_Drug_Response)
+abs_Drug_Response = abs(Drug_Response)
+
+# Mean values of drug response
+mean_Drug_Response = as.data.frame(apply(abs_Drug_Response,1, mean))
 
 # Now list in decreasing order
 mean_Drug_Response = mean_Drug_Response[ order(-mean_Drug_Response[,1]), , drop= FALSE ]
 
 # Get the hundert highes changes
-Biomarkers_Highest_Mean_DR  =  mean_Drug_Response[ order(-mean_Drug_Response)[1:100], , drop = FALSE ]
+Biomarkers_Highest_Mean_Drug_Response  =  mean_Drug_Response[ order(-mean_Drug_Response), , drop = FALSE ]
+Biomarkers_Highest_Mean_Drug_Response  =  head(Biomarkers_Highest_Mean_Drug_Response, 100)
+dim(Biomarkers_Highest_Mean_Drug_Response)
+colnames(Biomarkers_Highest_Mean_Drug_Response) = "Abs_Mean_of_DR" 
+head(Biomarkers_Highest_Mean_Drug_Response)
+
+# Now we create an new data frame from the Drug Response, only including the biomarker genes
 Biomarkers_Highest_Mean_DR  =  Drug_Response[ which(row.names(Vorinostat_Untreated) %in% rownames(Biomarkers_Highest_Mean_Drug_Response)),]
 dim(Biomarkers_Highest_Mean_DR)
+
 
 
 
@@ -378,7 +384,7 @@ dim(p_values_EC)   #   [1] 8480    2
 
 # Order data frame according to p values
 p_values_EC = p_values_EC[ order(p_values_EC$` p_values`), ,drop = FALSE ]
-p_values_EC
+p_values_EC[1:7,]
 hist(p_values_EC[,1])
 
 Biomarker_candidates_t_test_2 =  p_values_EC
