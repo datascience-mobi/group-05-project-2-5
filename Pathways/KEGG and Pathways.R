@@ -44,13 +44,9 @@ kk3 <- enrichKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05,pAdjustMethod = "non
 head(summary(kk3))
 barplot(kk3,showCategory=100)
 dotplot(kk3, showCategory=12)
-cnetplot(kk3,categorySize="geneNum",foldChange=top100generalbiomarkers$`fold Change`)
+cnetplot(kk3,categorySize="geneNum")
 emapplot(kk3)
 
-
-
-####
-browseKEGG(kk, 'hsa05202')
 
 
 # colored FC 
@@ -66,13 +62,15 @@ names(FC) <- gene.df$ENTREZID
 
 cnetplot(kk3,categorySize="pvalue",foldChange=FC)
 heatplot(kk3, foldChange=FC)
+upsetplot(kk3)
 
 
 ## view pathway
-if (!requireNamespace("BiocManager", quietly = TRUE))
+'if (!requireNamespace("BiocManager", quietly = TRUE))
   install.packages("BiocManager")
 
-BiocManager::install("pathview")
+BiocManager::install("pathview")'
+
 library(pathview)
 pathview(gene.data = FC, 
          pathway.id = "hsa05202", 
