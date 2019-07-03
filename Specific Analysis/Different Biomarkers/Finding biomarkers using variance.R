@@ -130,7 +130,7 @@ mean_Drug_Response = as.data.frame(apply(abs_Drug_Response,1, mean))
 # Now list in decreasing order
 mean_Drug_Response = mean_Drug_Response[ order(-mean_Drug_Response[,1]), , drop= FALSE ]
 
-# Get the hundert highes changes
+# Get the hundert highest changes
 Biomarkers_Highest_Mean_Drug_Response  =  mean_Drug_Response[ order(-mean_Drug_Response), , drop = FALSE ]
 Biomarkers_Highest_Mean_Drug_Response  =  head(Biomarkers_Highest_Mean_Drug_Response, 100)
 dim(Biomarkers_Highest_Mean_Drug_Response)
@@ -140,6 +140,68 @@ head(Biomarkers_Highest_Mean_Drug_Response)
 # Now we create an new data frame from the Drug Response, only including the biomarker genes
 Biomarkers_Highest_Mean_DR  =  Drug_Response[ which(row.names(Vorinostat_Untreated) %in% rownames(Biomarkers_Highest_Mean_Drug_Response)),]
 dim(Biomarkers_Highest_Mean_DR)
+
+
+pheatmap(Biomarkers_Highest_Mean_DR)
+
+# Heatmap cannot be depicted proberly as the name of gene [43] is too long:
+# "HIST1H3F///HIST1H3B///HIST1H3H///HIST1H3J///HIST1H3G///HIST1H3I///HIST1H3E///HIST1H3C///HIST1H3D///HIST1H3A"
+
+rownames(Biomarkers_Highest_Mean_DR)
+row_names_BM_HM_DR    = as.data.frame(strsplit(x=rownames(Biomarkers_Highest_Mean_DR_30),split="///HIST"))
+rownames (Biomarkers_Highest_Mean_DR) = as.data.frame (t(row_names_BM_HM_DR[1,]))[,1]
+
+# Let's try again:
+pheatmap(Biomarkers_Highest_Mean_DR)
+
+
+Biomarkers_Highest_Mean_DR_tissue = Biomarkers_Highest_Mean_DR
+colnames(Biomarkers_Highest_Mean_DR_tissue)  == Metadata_V_after$cell
+
+colnames(Biomarkers_Highest_Mean_DR_tissue) = Metadata_V_after$tissue
+pheatmap(Biomarkers_Highest_Mean_DR_tissue)
+
+# 100 genes are too many for a heatmap so we make a 30 gene version
+
+
+
+Biomarkers_Highest_Mean_DR_30  =  mean_Drug_Response[ order(-mean_Drug_Response), , drop = FALSE ]
+Biomarkers_Highest_Mean_DR_30  =  head(Biomarkers_Highest_Mean_Drug_Response, 30)
+
+dim(Biomarkers_Highest_Mean_DR_30)
+colnames(Biomarkers_Highest_Mean_DR_30) = "Abs_Mean_of_DR" 
+head(Biomarkers_Highest_Mean_DR_30)
+
+# Now we create an new data frame from the Drug Response, only including the biomarker genes
+Biomarkers_Highest_Mean_DR_30  =  Drug_Response[ which(row.names(Drug_Response) %in% rownames(Biomarkers_Highest_Mean_DR_30)),]
+dim(Biomarkers_Highest_Mean_DR_30)
+
+
+pheatmap(Biomarkers_Highest_Mean_DR_30)
+
+# Heatmap cannot be depicted proberly as the name of gene [43] is too long:
+# "HIST1H3F///HIST1H3B///HIST1H3H///HIST1H3J///HIST1H3G///HIST1H3I///HIST1H3E///HIST1H3C///HIST1H3D///HIST1H3A"
+
+rownames(Biomarkers_Highest_Mean_DR_30)
+row_names_BM_HM_DR_30    = as.data.frame(strsplit(x=rownames(Biomarkers_Highest_Mean_DR_30),split="///HIST"))
+ncol(row_names_BM_HM_DR_30)
+rownames (Biomarkers_Highest_Mean_DR_30)  = as.data.frame (t(row_names_BM_HM_DR_30[1,]))[,1]
+Biomarkers_Highest_Mean_DR_30
+
+
+pheatmap(Biomarkers_Highest_Mean_DR_30)
+
+# Adding tissue names
+
+Biomarkers_Highest_Mean_DR_30_tissue = Biomarkers_Highest_Mean_DR_30
+colnames(Biomarkers_Highest_Mean_DR_30_tissue)  == Metadata_V_after$cell
+
+colnames(Biomarkers_Highest_Mean_DR_30_tissue) = Metadata_V_after$tissue
+pheatmap(Biomarkers_Highest_Mean_DR_30_tissue)
+
+
+#Melanoma cell lines show high change rates 
+
 
 
 
