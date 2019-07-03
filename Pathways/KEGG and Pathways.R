@@ -52,12 +52,11 @@ emapplot(kk3)
 # colored FC 
 library(enrichplot)
 library(DOSE)
-top100generalbiomarkers=as.data.frame(top100generalbiomarkers)
-colnames(top100generalbiomarkers)[1] <- "fold Change"
-top100generalbiomarkers=cbind(top100generalbiomarkers,generalbiomarkergenes)
-colnames(top100generalbiomarkers)[2] <- "genes"
 
-FC <- top100generalbiomarkers$`fold Change`
+
+FC=TreatedVorinostat-UntreatedVorinostat
+FC<-FC[generalbiomarkergenes,]
+#FC <- top100generalbiomarkers$`fold Change`
 names(FC) <- gene.df$ENTREZID
 
 cnetplot(kk3,categorySize="pvalue",foldChange=FC)
