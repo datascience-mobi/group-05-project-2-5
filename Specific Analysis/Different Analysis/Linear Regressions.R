@@ -876,14 +876,74 @@ pca = prcomp(lm_tab_pca[, -1])
 summary(pca)
 
 par(las = 2)
-par(mar = c(1,11,1,2))
 barplot(pca$rotation[, 1], horiz = TRUE, main = "PC1", col = "turquoise")
 
+###   8.2 A little correlation exploration                                                                                  ####
 
-###   8.2 Linear Regression                                                                                                 ####
+pairs(lm_tab_pca, col = "turquoise2", pch = 20)
+
+cor_pca = cor(lm_tab_pca)
+heatmap(cor_pca, col = cm.colors(256), margins = c(15, 10))
+
+#As expected, we observe a higher correlation between doubling time and drug sensitivity than
+#between copynumber and drug sensitivity
+
+## What are exact values for the correlations?
+
+cor(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Doubling_Time)
+
+#[1] -0.2360583
+
+cor(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Copynumber)
+
+#[1] 0.1534729
+
+#Here we confirm that there is indeed a stronger relationship between drug sensitivity and doubling 
+#time. 
+
+cor(lm_tab_pca$Doubling_Time, lm_tab_pca$Copynumber)
+#[1] -0.275499
+
+#Surprisingly, the strongest correlation that we can observe happens to be the one between doubling 
+#time and copynumber. 
+
+## How significatn are these values?
+
+cor.test(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Doubling_Time)
+
+#p-value = 0.08881
+
+cor.test(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Copynumber)
+
+#p-value = 0.2726
+
+cor.test(lm_tab_pca$Doubling_Time, lm_tab_pca$Copynumber)
+
+#p-value = 0.04586
+
+#Considering these results, the validity of the correlation comes into questions. 
+#However, in would still be interesting to explore linear regression with 
+#PCA. Therefore, we carry on. 
+
+###   8.3 Linear Regression                                                                                                 ####
 
 reg_pca = lm(lm_tab_m$Drug_Sensitivity ~ pca$x)
 summary(reg_pca)
+
+# Multiple R-squared: 0.06419 -> This indicates that only 6.419% percent of the variation in the data (drug sensitivity)
+#can be explained by the relationship between drug sensitivity, doubling time and copynumber. In other words, there is a 
+#6.419% variance reduction when we take the both the doubling time and the copynumber into account. 
+
+
+# p-value: 0.1904
+#As the p-value for reg_m is significantly larger than 0.05 and R-squared tells us the copynumber only explains 2.355% 
+#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
+#copynumer, a.k.a copynumber cannot predict drug sensitivity.
+
+
+
+# The comparison of the results when we carry out a regular multiple regression vs when we carry out one using the principal
+#component, shows us that while R-squared has a higher value when using PCA, the p-value decreases. 
 
 ##### PART 3 ##################################################################################################################
 ####  9.  Other models for regression
