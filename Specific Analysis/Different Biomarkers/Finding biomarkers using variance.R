@@ -189,7 +189,6 @@ rownames (Biomarkers_Highest_Mean_DR_30)  = as.data.frame (t(row_names_BM_HM_DR_
 Biomarkers_Highest_Mean_DR_30
 
 
-
 pheatmap(Biomarkers_Highest_Mean_DR_30)
 
 # Adding tissue names
