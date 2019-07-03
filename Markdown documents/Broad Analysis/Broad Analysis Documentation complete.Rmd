@@ -1,11 +1,8 @@
 ---
-title: "Broad Analysis complete documentation."
+title: "Broad Analysis complete documentation"
 author: "Franziska Heinkele and Laura Plutowski"
 date: "26 Juni 2019"
-output:
-  pdf_document: default
-  html_document:
-    df_print: paged
+output:html_document
 ---
 ```{r setup, include = FALSE}
 knitr::opts_chunk$set( echo=TRUE)
@@ -30,7 +27,9 @@ First of all, we want to explore the whole data from all 15 drug responses inclu
 Before we are able to start the broad analysis, we load the needed data. The data sets are taken from the NCI Transcriptional Pharmacodynamics Workbench, including the effect on 13.299 genes from 61 cell lines treated with 15 different anticancer agents.
 
 ```{r, include = FALSE}
-wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 ```{r read_data, message = FALSE, warning = FALSE}
@@ -50,6 +49,15 @@ Untreated <- as.data.frame(Untreated)
 ### 1.1 BOXPLOT OF TREATED DATA
 
 To visualize our data, we perform a boxplot of the treated data over all 15 drugs. 
+
+```{r, fig.height= 5, fig.width= 7}
+boxplot(Treated,  
+        xlab="sampels", ylab="gene expression",
+        main= "Gene expression treated celllines",
+        names= FALSE, xaxt= "n")
+```
+
+Looking at this plot, we are able to identify diffrent "boxes". This indicates that we have batches in our data. We assume that the each box belongs to one drug. In order to check this, we now colour the boxes according to the drugs.
 
 ```{r, fig.height= 5, fig.width= 7}
 # levels for coloring 
@@ -214,20 +222,7 @@ legend("topright", inset = c(-0.4,0.0), legend= levels(drug), xpd = TRUE,
        pch=19, col = levels, title = "drugs")
 ```
 
-Here we can see that most FC values are in a similar value range. This becomes even clearer when looking at the following scatter plots. Only 5-Azacytidine and bortezomib have clear outliers. 
-
-```{r, fig.height= 5, fig.width= 7}
-# scatter plot
-par(mar=c(5, 4, 5, 9))
-plot(FC_all_mean, col= Metadata$drug, main="Gene expression change colored by drugs",
-     xlab="samples",ylab="mean Fold Change values")
-
-# creat legend 
-drug <- Metadata$drug
-levels <- as.factor(levels(drug))
-legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE, pch=19,
-       col = levels, title = "drugs")
-```
+Here we can see that most FC values are in a similar value range. Only 5-Azacytidine and bortezomib have clear outliers. Moreover brotezomib 
 
 The shape of the density plot of the mean FC values shows that the data is approximately normally distributed: 
 

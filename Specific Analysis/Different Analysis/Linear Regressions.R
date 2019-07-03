@@ -108,6 +108,22 @@ biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
 
 ####  2.  PREPARING THE DATA                                                                                                ####
 ###   2.1 log change                                                                                                        ####
+
+# Copynumber with log2 to -log10
+
+CN_log10
+
+
+# Drug sensitivity with -10log to log 2
+
+DS_log2
+
+
+## Log removal 
+
+DS_nolog 
+
+CN_nolog
 ###   2.2 Creating the necessary tables (Copynumber with biomarkers/all genes and Cell lines with drug sensitivity)         ####
 
 ## (1) Table 1: Selection of 100 Biomarkers in copynumber 
@@ -886,13 +902,6 @@ barplot(pca$rotation[, 1], horiz = TRUE, main = "PC1", col = "turquoise")
 
 reg_pca = lm(lm_tab_m$Drug_sensitivity ~ pca$x)
 summary(reg_pca)
-
-###   8.3 Visualization: Plots                                                                                              ####
-
-
-
-
-
 
 ##### PART 3 ##################################################################################################################
 ####  9.  Other models for regression
