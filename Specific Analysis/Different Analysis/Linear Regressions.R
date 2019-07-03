@@ -660,7 +660,7 @@ abline(0, 1, col = "royalblue1")
 
 
 
-####  6.  MULTIPLE REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time and copynumber                       ####
+####  6.  MULTIPLE REGRESSION WITH ALL GENES: Drug sensitivity with doubling time and copynumber                            ####
 
 ## Data frames
 
