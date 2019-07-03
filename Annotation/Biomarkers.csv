@@ -1,0 +1,52 @@
+﻿Gene;Function;affected Tissue (if specific);general Function 
+FAM57A                                                                                                     ;amino acid transport and glutathione metabolism;lung;transport
+HIST1H2BD                                                                                                  ;histone cluster ;NA;chromatin binding
+ PMF1                                                                                                    ;chromosome segregation;NA;DNA replication
+JADE2                                                                                                      ;histone acetyltransferase activity;NA;chromatin binding
+LMNB1                                                                                                      ;lamin protein;brain;cytoskeleton
+AQP3                                                                                                       ;water channel protein ;NA;ion regulator
+KIAA0368                                                                                                   ;proteasome adaptor and scaffold;NA;proteinbiosynthesis 
+ENPP2                                                                                                      ;ectonucleotide pyrophosphatase/phosphodiesterase ;germ cells;phosphorylation
+SYT11                                                                                                    ;calcium sensor;brain;neurotransmitter regulation 
+HIST1H3F;histone cluster ;brain;chromatin binding
+VWA5A                                                                                                    ;von Willebrand Factor ;blood;coagulation 
+LOC728392                                                                                                ;NA;NA;NA
+TRIP6                                                                                                  ;hormone receptor ;NA;NA
+RUNDC3B                                                                                               ;NA;NA;NA
+TMEM35B, ZMYM6                                                                                     ;transmembrane protein ;NA;membrane
+MCM5                                                                                                    ;initiation of DNA replication;skin;chromatin binding
+ZMYND11                                                                                                   ;transcriptional repressor;brain;regulation of transcritption 
+NFKB1                                                                                                   ;transcription factor;immue system;regulation of transcritption 
+PSMB10                                                                                                    ;proteasome;NA;proteinbiosynthesis 
+HIST2H2BE                                                                                                ;histone cluster ;immue system;chromatin binding
+AVEN                                                                                                       ;apoptosis and caspase activation inhibitor;brain;cell growth
+PHF11                                                                                              ;PHD Finger Protein;immue system;chromatin binding
+KIF5C                                                                                                   ;transport processes ;brain;transport
+CORO1A                                                                                                   ;cell cycle progression, signal transduction, apoptosis, and gene regulation;immue system;cell growth
+MPDU1                                                                                                      ;Mannose-P-Dolichol utilization;brain;metabolism 
+FOS;transcription factor subunit;bones ;regulation of transcritption 
+DHRS2;dehydrogenase/reductase enzyme;NA;NA
+ABAT;GABA reduction;brain;neurotransmitter regulation 
+SERPINI1;synaptic plasticity;brain;neurotransmitter regulation 
+MIR612///NEAT1;transcription regulator of oncogenes;NA;regulation of transcritption 
+HBA2///HBA1;globin for hemoglobin;blood;oxygen transport
+CLU;chaperone;brain;proteinbiosynthesis 
+STC1;ion transport;kidney;ion regulator
+NMI;interacts with oncogenes;blood;regulation of transcritption 
+AREG;growth factor;brain;cell growth
+CRISPLD2;heparin binding and glycosaminoglycan binding;immue system;NA
+NSMAF;binds phospholipids;NA;NA
+HIST1H1C;histone cluster;NA;chromatin binding
+SERPINH1;serine protease inhibitor in ER ;NA;NA
+HIST1H2BJ///HIST1H2BG;histone cluster;NA;chromatin binding
+SLC17A7;ion transport;brain ;ion regulator
+TYMS;DNA-replication + repair;NA;DNA replication
+ASMTL;o-methyltransferase;NA;NA
+TNFSF9;TNF, cytokine;blood;infammation
+FAIM;apoptose protection, regulates B-cell signals + differentiation;blood;cell growth
+ADI1;downregulation of cell migration, HepC-Virus replication;NA;cell migration
+TUBB2B;Tubulin (microtubuli-component), neuronal migration;brain;cytoskeleton
+HMGA2;transcription regulator, chromosome-condensation;NA;regulation of transcritption 
+RGL1;cytoskeleton remodeling;NA;cytoskeleton
+NEU1;neuraminidase;NA;NA
+HIST1H2BD;histone cluster;NA;chromatin binding
