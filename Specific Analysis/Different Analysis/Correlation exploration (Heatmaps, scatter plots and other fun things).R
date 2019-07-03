@@ -54,6 +54,21 @@ Treated   = normalize(Treated,   method= "scale")
 Untreated = normalize(Untreated, method= "scale")
 
 
+# Preparing metadata
+
+# Exclude rows, that are treated with other drugs
+Metadata_Vorinostat   =  Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
+Metadata_Vorinostat   =  Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
+
+# => Discover cell line to tissue relations
+unique(sort(Metadata$tissue)) # [1] Breast   CNS      Colon    Leukemia Lung     Melanoma Ovarian  Prostate Renal
+
+
+Metadata_V_after = subset(Metadata_Vorinostat, Metadata_Vorinostat$dose == "5000nM")
+Metadata_V_after = Metadata_V_after [, -which(colnames(Metadata_V_after) %in% c( "time", "drug", "sample", "dose" ))]
+rownames(Metadata_V_after) = Metadata_V_after$cell
+Metadata_V_after
+
 ##  1.1   Creating Vorinostat                                                                                 ####
 
 
@@ -219,6 +234,12 @@ library(dendextend)
 
 pheatmap(cor1_tab)
 
+cor1.1_tab = cor1_tab
+colnames(cor1_tab)  == Metadata_V_after$cell
+
+colnames(cor1.1_tab) = Metadata_V_after$tissue
+pheatmap(cor1.1_tab)
+
 
 # Scaling the rows
 
@@ -228,6 +249,15 @@ cal_z_score <- function(x){
 
 cor1_tab_norm <- t(apply(cor1_tab, 1, cal_z_score))
 pheatmap(cor1_tab_norm)
+
+
+colnames(cor1_tab_norm) == Metadata_V_after$cell
+
+# Create an extra file with cell lines names exchanged with tissue name
+cor1_tab_norm_tissue = cor1_tab_norm
+colnames(cor1_tab_norm_tissue) = Metadata_V_after$tissue
+pheatmap(cor1_tab_norm_tissue)
+
 
 
 # Ploting a dendogram and cutting the tree
