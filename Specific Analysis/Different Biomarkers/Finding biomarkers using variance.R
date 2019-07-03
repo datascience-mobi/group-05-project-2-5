@@ -176,15 +176,15 @@ head(Biomarkers_Highest_Mean_DR_30)
 Biomarkers_Highest_Mean_DR_30  =  Drug_Response[ which(row.names(Drug_Response) %in% rownames(Biomarkers_Highest_Mean_DR_30)),]
 dim(Biomarkers_Highest_Mean_DR_30)
 
-
+# Depicting the resulting genes with a heatmap
 pheatmap(Biomarkers_Highest_Mean_DR_30)
 
 # Heatmap cannot be depicted proberly as the name of gene [43] is too long:
 # "HIST1H3F///HIST1H3B///HIST1H3H///HIST1H3J///HIST1H3G///HIST1H3I///HIST1H3E///HIST1H3C///HIST1H3D///HIST1H3A"
 
 rownames(Biomarkers_Highest_Mean_DR_30)
-row_names_BM_HM_DR_30    = as.data.frame(strsplit(x=rownames(Biomarkers_Highest_Mean_DR_30),split="///HIST"))
-ncol(row_names_BM_HM_DR_30)
+row_names_BM_HM_DR_30    = as.data.frame(strsplit(x=rownames(Biomarkers_Highest_Mean_DR_30),split="///"))
+head(row_names_BM_HM_DR_30)
 rownames (Biomarkers_Highest_Mean_DR_30)  = as.data.frame (t(row_names_BM_HM_DR_30[1,]))[,1]
 Biomarkers_Highest_Mean_DR_30
 
@@ -199,10 +199,7 @@ colnames(Biomarkers_Highest_Mean_DR_30_tissue)  == Metadata_V_after$cell
 colnames(Biomarkers_Highest_Mean_DR_30_tissue) = Metadata_V_after$tissue
 pheatmap(Biomarkers_Highest_Mean_DR_30_tissue)
 
-
-#Melanoma cell lines show high change rates 
-
-
+# Melanoma cell lines show high change rates 
 
 
 
@@ -269,26 +266,37 @@ Variance_Change = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1]
 row.names(Variance_Change)   = rownames(Variances_Treated)
 colnames(Variance_Change)[1] = "Var_Change"
 Variance_Change = Variance_Change[ order(-Variance_Change$Var_Change), ,drop = FALSE ] 
+head(Variance_Change)
+tail(Variance_Change)
 
-upper_quartile_VC   = quantile(Variance_Change$Var_Change, probs = 0.975)
-lower_quartile_VC   = quantile(Variance_Change$Var_Change, probs = 0.025)
+# upper_quartile_VC   = quantile(Variance_Change$Var_Change, probs = 0.975)
+lower_quartile_VC   = quantile(Variance_Change$Var_Change, probs = 0.05)
+head(lower_quartile_VC)
 
-Most_pos_var_change  = Variance_Change[-which(Variance_Change$Var_Change < upper_quartile_VC),, drop= FALSE] 
-Most_neg_var_change  = Variance_Change[-which(Variance_Change$Var_Change > lower_quartile_VC),, drop= FALSE] 
+# Most_pos_var_change  = Variance_Change[-which(Variance_Change$Var_Change < upper_quartile_VC),, drop= FALSE] 
+  Most_neg_var_change  = Variance_Change[-which(Variance_Change$Var_Change > lower_quartile_VC),, drop= FALSE] 
 
-# We focus on the negative part of the variance change, as we expect treatment to normalize the variance
+# We focus on the negative part of the variance change, as we expect treatment to diminish the variance
 Most_neg_var_change  = Most_neg_var_change[ order(Most_neg_var_change$Var_Change), ,drop = FALSE ] 
 
-Most_neg_var_change = head(Most_neg_var_change, 50)
+head(Most_neg_var_change)
+tail(Most_neg_var_change)
 
-Highest_VC = append(rownames(Most_neg_var_change) , rownames(Most_neg_var_change))
+Highest_VC = head(Most_neg_var_change, 40)
 
-# Which genes whose variance changed strongly were in the highly variant group before treatment
-Biomarker_candidates = intersect( Highest_VC, rownames(Most_Variances_Unt)  )
-Biomarker_candidates # 242 out of 666
+Highest_VC_Biomarkers     =  Drug_Response[ which(row.names(Drug_Response) %in% rownames(Highest_VC)),]
 
+dim(Highest_VC_Biomarkers)   #  [1] 40  59
 
+# We can check with a heatmap if that really makes sense:
 
+pheatmap(Highest_VC_Biomarkers)
+
+BM_VC_tissue = Highest_VC_Biomarkers
+colnames(BM_VC_tissue)  == Metadata_V_after$cell
+
+colnames(BM_VC_tissue) = Metadata_V_after$tissue
+pheatmap(BM_VC_tissue)
 
 
 # 2.1.3b- High Variance change in genes which showed LOW variance before treatment                ####
@@ -316,43 +324,55 @@ nintyfive_quartile_VC  = quantile(Variances_DR$var, probs = 0.95)
 Most_Variances_DR = Variances_DR[-which(Variances_DR$var < nintyfive_quartile_VC),, drop= FALSE ]
 rownames(Most_Variances_DR)
 
-# 2.3-    Comparison of Biomarkers from 3 and 4 =>  Biomarkers_Variance*                          ####
+DR_most_var     =  Drug_Response[ which(row.names(Drug_Response) %in% rownames(Most_Variances_DR)),]
 
-# In 3, I selected the genes, which I think are responsible for oncological character
+DR_most_var = head(DR_most_var,30)
+
+pheatmap(DR_most_var)
+
+DR_most_var_tissue = DR_most_var
+colnames(DR_most_var)  == Metadata_V_after$cell
+
+colnames(DR_most_var) = Metadata_V_after$tissue
+pheatmap(DR_most_var)
+
+
+# 2.3-    Comparison of Biomarkers from 2.1.3a and 2.2 =>  Biomarkers_Variance*                   ####
+
+# In 2.1.3a, I selected the genes, which I think are responsible for oncological character
 # and also respond to the treatment.
 
-# In 4, I focused on the genes with the highest variance in drug response.
+# In 2.2, I focused on the genes with the highest variance in drug response.
 
 # Higher variance in drug response means, that a gene responded differently to the treatment
 # in different cell lines. This would be a sign for differing drug responses. 
 
 # These genes could be cancerogenic or not, however I expect the cancerogenic genes to show 
-# higher variance, as regular genes probably would not have reason to be affected differently
-# by chemotherapic agents. 
+# higher variance, as regular genes probably would not have a reason to be affected differently
+# by chemotherapic agents.
 # (Chemotherapic agents tend to attack the highly dividing cells the most strongly)
 
-Biomarker_candidates     #     50 
+head(Highest_VC)       
+dim(Highest_VC)          #     40 1
 nrow(Most_Variances_DR)  # [1] 665
-Biomarkers_1= as.data.frame(intersect( Biomarker_candidates, rownames(Most_Variances_DR)) ) 
-Biomarkers_1  # 50 biomarkers.
+Biomarkers_1= as.data.frame(intersect( rownames(Highest_VC), rownames(Most_Variances_DR)) ) 
+Biomarkers_1  # 40 biomarkers.
 
 # Changing row names
-rownames(Biomarkers_1)     =  Biomarkers_1$`intersect(Biomarker_candidates, rownames(Most_Variances_DR))`
-# This long name was name of the column name:
-# =>   $`intersect(Biomarker_candidates, rownames(Most_Variances_DR))`
+rownames(Biomarkers_1)     =  Biomarkers_1[,1]
+
+head(Biomarkers_1)
 
 
 # Now I create data frame Vorinostat_Treated and Vorinostat_Untreated only with the biomarker genes
-Biomarkers_Untreated     =  Vorinostat_Untreated[ which(row.names(Vorinostat_Untreated) %in% rownames(Biomarkers_1)),]
-Biomarkers_Treated       =  Vorinostat_Treated  [ which(row.names(Vorinostat_Treated) %in% rownames(Biomarkers_1)),  ]
-Biomarkers_Variance      =  Biomarkers_Treated - Biomarkers_Untreated
+Biomarkers_Variance     =  Drug_Response[ which(row.names(Drug_Response) %in% rownames(Biomarkers_1)),]
 
-dim(Biomarkers_Variance)   #  [1] 50  59
 
-# We can check with a heatmap if that really kakes sense:
+dim(Biomarkers_Variance)   #  [1] 40  59
+
+# We can check with a heatmap if that really makes sense:
 
 pheatmap(Biomarkers_Variance)
-
 
 BM_var_tissue = Biomarkers_Variance
 colnames(BM_var_tissue)  == Metadata_V_after$cell
@@ -360,8 +380,11 @@ colnames(BM_var_tissue)  == Metadata_V_after$cell
 colnames(BM_var_tissue) = Metadata_V_after$tissue
 pheatmap(BM_var_tissue)
 
+# It clearly does not show a high change in expression rates of the selected genes.
 
-# It clearly does not show a high change in expression rates of the selected genes
+# However, an overall downregulation in a breast cell line and high upregulation of
+# a small of genes in melanoma can be observed
+
 
 # 3 -     PART 3     =>        NO Biomarkers_t_test data, see: 3.2                                ####
 
