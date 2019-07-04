@@ -9,10 +9,10 @@ output:
 
 ```{r, include = FALSE}
 # Franzi
-wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
 
 # Laura 
-#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 Load data:
@@ -600,7 +600,8 @@ FC_HDAC =na.omit(FC_HDAC)
 
 Now we plot a boxplot in order to visualize the much lower effect on HDAC-gene-expression compared to some of our biomarkers: 
 ```{r, fig.height= 5, fig.width= 7}
-boxplot(t(FC_HDAC), las=3, col = palette(rainbow(17)), ylab="Fold Change Values", cex.axis= 0.65,  main="Comparison of Biomarker and target gene expression change ")
+palette(rainbow(17))
+boxplot(t(FC_HDAC), las=3, col = col, ylab="Fold Change Values", cex.axis= 0.65,  main="Comparison of Biomarker and target gene expression change ")
 abline(v=7.5, col="blue", lty=5)
 ```
 
