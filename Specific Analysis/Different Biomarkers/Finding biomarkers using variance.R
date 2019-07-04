@@ -30,7 +30,7 @@ colnames(Untreated)
 
 # Drug sensitivity assay
 Sensitivity = readRDS(paste0(wd,"/data/NegLogGI50.rds"))
-
+ 
 # Basal molecular profiles of cancer cell lines 
 Basal       = readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
 Copynumber  = readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
