@@ -90,7 +90,6 @@ library(clusterProfiler)
 library(org.Hs.eg.db)
 ```
 
-
 ```{r}
 # do the translation 
 # index 2 because already done analysis with biomarkers from p.values 
@@ -194,8 +193,9 @@ head(summary(ego2.3))
 # visualization 
 #dotplot(ego2.3, showCategory=10)
 cnetplot(ego2.3)
-emapplot(ego2.3)
+emapplot(ego2.3)'
 ```
+
 
 Enrichment with "enrichPathway": 
 
@@ -261,3 +261,4 @@ pathview(gene.data = FC,
          species = "hsa", 
          limit = list(gene=5, cpd=1))
 ```
+![](hsa05202.png)
