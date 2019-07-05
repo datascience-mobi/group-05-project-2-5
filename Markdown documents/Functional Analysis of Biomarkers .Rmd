@@ -1,0 +1,313 @@
+---
+title: "Functional Analysis of Biomarkers"
+author: "Laura Plutowski and Franziska Heinkele"
+date: "2 July 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+``` 
+
+Load Data: 
+
+```{r read_data, message = FALSE, warning = FALSE}
+library(readr)
+
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+```
+
+Filter Vorinistat data: 
+
+```{r, include = FALSE}
+
+#Find cell lines, which belong to vorinostat:
+
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+
+#Create Vorinostat matrix:
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+# Create Vorinostat Fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+```
+
+Find Biomarkers via absolute values of Fold Change: 
+
+```{r}
+
+# work with mean of the rows because we only want to compare the genes:
+FCVorinostatabs= abs(FCVorinostat)
+FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
+
+# sort the values to get the 100 largest values:
+sortedgeneralbiomarker <- sort(FCVorinostatmean, decreasing = TRUE)
+sortedgeneralbiomarker <- as.matrix(sortedgeneralbiomarker)
+
+#select the top 100 general biomarkers:
+top100generalbiomarkers = sortedgeneralbiomarker[1:100,]
+top100generalbiomarkers <- as.matrix(top100generalbiomarkers)
+
+#create vector with gene names:
+generalbiomarkergenes = row.names(top100generalbiomarkers)
+```
+
+***
+# Functional Analysis of Biomarkers
+***
+
+In the specific analysis, we have already filtered out the biomarkers for treatment with Vorinostat and carried out first analyses with them. For example, we have investigated whether the biomarkers also include the targets of vorinostat indicated in the drug annotation. However, this was not the case. So it is of interest to investigate which functions our biomarkers have and in which pathways they are involved. 
+
+First, the functions of the biomarkers will be selected by hand, stored in a table and then examined. Next, we will present and apply some of the numerous enrichment methods. For this purpose we will use the R package "cluster profiler". Here we will perform and compare enrichment analyses on "Gene Ontology", "Reactome Pathway" and "KEGG (Kyoto Encyclopedia of Genes and Genomes) Pathway". Finally, we will briefly discuss Gene Set Variation Analysis. 
+
+
+#Table of content
+
+[1. Functional Analysis "by hand"](#anchor1)
+
+* [1.1. ](#anchor2)
+
+* [1.2. ](#anchor3)
+
+[2. Functional Analysis using "cluster profiler"](#anchor4)
+
+* [2.1.Gene Ontology Analysis](#anchor5)
+
+* [2.2.Reactome Pathway Analysis](#anchor6)
+
+* [2.3. KEGG Pathway Analysis](#anchor7)
+
+[3. Gene Set Variation Analysis](#anchor8)
+
+[4. Conclusion/Discussion ](#anchor9)
+
+***
+
+## 1. Functional Analysis "by hand" {#anchor1}
+
+### 1.1.  {#anchor2}
+
+### 1.2.  {#anchor3}
+
+***
+
+## 2. Functional Analysis using "cluster profiler" {#anchor4}
+
+The R package "cluster profiler", created by Guangchuang Yu *et al.* allows the user to create and visualize different functional profiles of genes and gene clusters using different enrichment methods. Here, we will focus on "Gene Ontology", "Reactome Pathway" and "KEGG Pathway" methodes.
+
+### 2.1.Gene Ontology Analysis {#anchor5}
+
+Gene Ontology is an enrichment Analysis, which hierarchically classifies genes or gene products to terms organized in an "Gene Ontology" system. The genes can be identified and ordered in three different ways (Yon Rhee et al., 2008): 
+
+1. Biological Process: describing a general cellular or physiological role 
+2. Molecular Function: describing the molecular activity
+3. Cellular Component: describing the location in the cell where the function of the gene is executed 
+
+In addition, a statistical test can be carried out on the assignment, which outputs a p-value. This value then indicates how significant the assignment has been. The smaller the value, the better the gene could be assigned to a group. For example, almost all genes can be assigned to a biological process. This assignment would therefore not be significant. In contrast, there are only a few genes that belong to the group "DNA repair". The smaller the pValue of the assigned gene, the larger the association with this group.  (http://geneontology.org/docs/go-enrichment-analysis/) 
+
+First of all, we need to load the libraries, we will work with: 
+
+```{r}
+library(clusterProfiler)
+library(org.Hs.eg.db)
+```
+
+To be able to work with our biomarker genes in cluster profiler, we need to translate them into another Gene ID: 
+
+```{r}
+
+translated.genes= bitr(generalbiomarkergenes,
+                        fromType="SYMBOL", 
+                        toType="ENTREZID",
+                        OrgDb = org.Hs.eg.db) 
+head(translated.genes)
+```
+
+As a first step, we will assign the biomarkers to the groups described above. First we define the "input genes" with with the correct Gene ID:  
+
+````{r}
+# load the needed library
+library(DOSE)
+
+# take the needed gene ID
+gene=translated.genes2$ENTREZID
+head(gene)
+```
+
+Now we can group them, using all 3 categories: 
+
+````{r}
+
+## 1. Biological Process
+ggo.bp <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "BP", level = 3, readable = FALSE)
+head(summary(ggo.bp))
+
+
+## 2. Molecular Function
+ggo.mf <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "MF", level = 3, readable = FALSE)
+head(summary(ggo.mf))
+
+
+## 3. Cellular Component
+ggo.cc <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "CC", level = 3, readable = FALSE)
+head(summary(ggo.cc))
+
+````
+
+````{r}
+# visualization 
+barplot(ggo.bp, drop=TRUE, showCategory=12)
+barplot(ggo.mf, drop=TRUE, showCategory=12)
+barplot(ggo.cc, drop=TRUE, showCategory=12)
+```
+
+````{r}
+### enrich GO 
+
+# only works with gene id ENSEMBL 
+
+library(org.Hs.eg.db)
+
+# create gene data frame ans translate it 
+
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+
+##############################################################################################################
+### Cellular Component
+ego2.1 <- enrichGO(gene         = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "CC",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego2.1))
+
+# visualization 
+#dotplot(ego2.1, showCategory=3)
+cnetplot(ego2.1)
+emapplot(ego2.1)
+
+##############################################################################################################
+
+### Biological Process
+ego2.2 <- enrichGO(gene         = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "BP",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego2.2))
+
+# visualization 
+#dotplot(ego2.2, showCategory=10)
+cnetplot(ego2.2)
+emapplot(ego2.2)
+
+##############################################################################################################
+
+### Molecular Function
+ego2.3 <- enrichGO(gene         = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "MF",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego2.3))
+
+# visualization 
+#dotplot(ego2.3, showCategory=10)
+cnetplot(ego2.3)
+emapplot(ego2.3)'
+```
+
+
+Enrichment with "enrichPathway": 
+
+```{r}
+library(ReactomePA)
+
+# biomarkers
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+
+x <- enrichPathway(gene=gene.df$ENTREZID, pvalueCutoff = 0.05, readable = T )
+head(as.data.frame(x))
+
+# visualization
+barplot(x,showCategory=12)
+dotplot(x, showCategory=12)
+cnetplot(x,categorySize="geneNum")
+emapplot(x)
+```
+
+
+```{r}
+library(KEGG.db)
+library(org.Hs.eg.db)
+library(enrichplot)
+```
+
+```{r}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENSEMBL", "ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+
+kk <- enrichKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05,pAdjustMethod = "none")
+head(summary(kk))
+
+# visualization
+
+# FC
+library(enrichplot)
+library(DOSE)
+top100generalbiomarkers=as.data.frame(top100generalbiomarkers)
+colnames(top100generalbiomarkers)[1] <- "fold Change"
+top100generalbiomarkers=cbind(top100generalbiomarkers,generalbiomarkergenes)
+colnames(top100generalbiomarkers)[2] <- "genes"
+
+FC <- top100generalbiomarkers$`fold Change`
+names(FC) <- gene.df$ENTREZID
+
+barplot(kk,showCategory=100)
+dotplot(kk, showCategory=100)
+cnetplot(kk,categorySize="geneNum",foldChange = FC)
+cnetplot(kk,categorySize="geneNum",circular=TRUE)
+emapplot(kk)
+heatplot(kk,foldChange = FC)
+upsetplot(kk)
+
+
+# path 
+library(pathview)
+pathview(gene.data = FC, 
+         pathway.id = "hsa05202", 
+         species = "hsa", 
+         limit = list(gene=5, cpd=1))
+```
+![](hsa05202.png)
+
+
+
+
+# 4. Literatur 
+
+Yon Rhee, S., Wood, V., Dolinski, K., and Draghici, S. (2008). Use and misuse of the gene ontology annotations. Nature Reviews Genetics 9, 509.
+
