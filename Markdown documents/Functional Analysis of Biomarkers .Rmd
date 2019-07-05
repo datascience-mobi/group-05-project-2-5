@@ -46,7 +46,7 @@ Find Biomarkers via absolute values of Fold Change:
 ```{r}
 
 # work with mean of the rows because we only want to compare the genes:
-FCVorinostatabs= abs(FCVorinostat)
+FCVorinostatabs= abs(FC)
 FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
 
 # sort the values to get the 100 largest values:
@@ -116,14 +116,14 @@ In addition, a statistical test can be carried out on the assignment, which outp
 
 First of all, we need to load the libraries, we will work with: 
 
-```{r}
+```{r,warning=FALSE, results='hide',message=FALSE}
 library(clusterProfiler)
 library(org.Hs.eg.db)
 ```
 
 To be able to work with our biomarker genes in cluster profiler, we need to translate them into another Gene ID: 
 
-```{r}
+```{r,warning=FALSE,message=FALSE}
 
 translated.genes= bitr(generalbiomarkergenes,
                         fromType="SYMBOL", 
@@ -134,18 +134,22 @@ head(translated.genes)
 
 As a first step, we will assign the biomarkers to the groups described above. First we define the "input genes" with with the correct Gene ID:  
 
-````{r}
+```{r,warning=FALSE, results='hide',message=FALSE}
 # load the needed library
 library(DOSE)
 
+```
+
+```{r}
 # take the needed gene ID
-gene=translated.genes2$ENTREZID
+gene=translated.genes$ENTREZID
 head(gene)
 ```
 
 Now we can group them, using all 3 categories: 
 
-````{r}
+
+```{r,warning=FALSE,message=FALSE}
 
 ## 1. Biological Process
 ggo.bp <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "BP", level = 3, readable = FALSE)
@@ -162,48 +166,38 @@ ggo.cc <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "CC", level = 3, read
 head(summary(ggo.cc))
 
 ````
+The result of the assignment can be visualized via a bar plot.
 
-````{r}
+```{r, fig.height= 5, fig.width= 7}
 # visualization 
+par(mar=c(5, 4, 5, 9))
+par(mfrow=c(1,3))
 barplot(ggo.bp, drop=TRUE, showCategory=12)
 barplot(ggo.mf, drop=TRUE, showCategory=12)
 barplot(ggo.cc, drop=TRUE, showCategory=12)
 ```
 
-````{r}
-### enrich GO 
+We see that we have assignments in all Barplots in which almost all belong. In biological process, for example, we have an excessive number of genes involved in the "nitrogen compound metabolic process", in molecular function we have a large number with "hydrolase activity" and all genes localised in the "cell part". Consequently, these bar plots are not very informative. 
+For this reason we will now additionally check the statistical parameters by an enrichment analysis to see how significant our allocations are. 
 
-# only works with gene id ENSEMBL 
+Here we also need to translate the Gene IDs first: 
 
-library(org.Hs.eg.db)
-
-# create gene data frame ans translate it 
-
+```{r}
 gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
-                toType = c("ENSEMBL", "ENTREZID"),
+                toType = c("ENSEMBL"),
                 OrgDb = org.Hs.eg.db)
+```
 
-##############################################################################################################
-### Cellular Component
-ego2.1 <- enrichGO(gene         = gene.df$ENSEMBL,
-                 OrgDb         = org.Hs.eg.db,
-                 keyType       = 'ENSEMBL',
-                 ont           = "CC",
-                 pAdjustMethod = "BH",
-                 pvalueCutoff  = 0.01,
-                 qvalueCutoff  = 0.05)
+For the enrichment analysis we have to set some important statistical parameters. As we expect to have small pValues we set the significance level to 0.1. Because we have multiple compairisons, we also have to use the Adjust p.Value Method. Here we use the Benjamini-Hochberg Method, which controls the false discovery rate and guarantees a powerful test. As limit for our q-value we have chosen 0.05, which is used by default. 
 
-head(summary(ego2.1))
+```{r, inculde=FALSE}
+# f??r uns zum nachlesen 
+#http://www.nonlinear.com/support/progenesis/comet/faq/v2.0/pq-values.aspx
+```
 
-# visualization 
-#dotplot(ego2.1, showCategory=3)
-cnetplot(ego2.1)
-emapplot(ego2.1)
-
-##############################################################################################################
-
-### Biological Process
-ego2.2 <- enrichGO(gene         = gene.df$ENSEMBL,
+```{r}
+## 1. Biological Process
+ego.bp <- enrichGO(gene        = gene.df$ENSEMBL,
                  OrgDb         = org.Hs.eg.db,
                  keyType       = 'ENSEMBL',
                  ont           = "BP",
@@ -211,17 +205,10 @@ ego2.2 <- enrichGO(gene         = gene.df$ENSEMBL,
                  pvalueCutoff  = 0.01,
                  qvalueCutoff  = 0.05)
 
-head(summary(ego2.2))
+head(summary(ego.bp))
 
-# visualization 
-#dotplot(ego2.2, showCategory=10)
-cnetplot(ego2.2)
-emapplot(ego2.2)
-
-##############################################################################################################
-
-### Molecular Function
-ego2.3 <- enrichGO(gene         = gene.df$ENSEMBL,
+## 2. Molecular Function
+ego.mf <- enrichGO(gene        = gene.df$ENSEMBL,
                  OrgDb         = org.Hs.eg.db,
                  keyType       = 'ENSEMBL',
                  ont           = "MF",
@@ -229,83 +216,58 @@ ego2.3 <- enrichGO(gene         = gene.df$ENSEMBL,
                  pvalueCutoff  = 0.01,
                  qvalueCutoff  = 0.05)
 
-head(summary(ego2.3))
+head(summary(ego.mf))
 
-# visualization 
-#dotplot(ego2.3, showCategory=10)
-cnetplot(ego2.3)
-emapplot(ego2.3)'
+##  3. Cellular Component
+ego.cc <- enrichGO(gene        = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "CC",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego.cc))
+
 ```
 
+The results of the enrichment can be visualized in many different ways. We will now present some possible plots based on biological function:  
 
-Enrichment with "enrichPathway": 
-
-```{r}
-library(ReactomePA)
-
-# biomarkers
-gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
-                toType = c("ENSEMBL", "ENTREZID"),
-                OrgDb = org.Hs.eg.db)
-
-x <- enrichPathway(gene=gene.df$ENTREZID, pvalueCutoff = 0.05, readable = T )
-head(as.data.frame(x))
-
-# visualization
-barplot(x,showCategory=12)
-dotplot(x, showCategory=12)
-cnetplot(x,categorySize="geneNum")
-emapplot(x)
+```{r,fig.height= 5, fig.width= 7}
+# Dot Plot 
+dotplot(ego.bp, showCategory=12)
 ```
 
+This plot is similar to a bar plot, except that the bars were replaced by points. The size of the points indicates how many genes there are in this category and the color gives information about the pValue. In contrast to the barplot, less genes per category are displayed here. Since we have defined a p and q value, these are only "significant" categories.We see that categories with fewer genes have a smaller pValue and have therefore been better assigned. 
 
-```{r}
-library(KEGG.db)
-library(org.Hs.eg.db)
-library(enrichplot)
+```{r,fig.height= 5, fig.width= 7}
+# Gene-Concept Network
+cnetplot(ego.bp)
 ```
 
-```{r}
-gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
-                toType = c("ENSEMBL", "ENTREZID"),
-                OrgDb = org.Hs.eg.db)
+The Gene-Concept Network shows us in which categories a gene occurs. Also here the size of the points is proportional to the number of genes in the corresponding category.
 
-kk <- enrichKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05,pAdjustMethod = "none")
-head(summary(kk))
-
-# visualization
-
-# FC
-library(enrichplot)
-library(DOSE)
-top100generalbiomarkers=as.data.frame(top100generalbiomarkers)
-colnames(top100generalbiomarkers)[1] <- "fold Change"
-top100generalbiomarkers=cbind(top100generalbiomarkers,generalbiomarkergenes)
-colnames(top100generalbiomarkers)[2] <- "genes"
-
-FC <- top100generalbiomarkers$`fold Change`
-names(FC) <- gene.df$ENTREZID
-
-barplot(kk,showCategory=100)
-dotplot(kk, showCategory=100)
-cnetplot(kk,categorySize="geneNum",foldChange = FC)
-cnetplot(kk,categorySize="geneNum",circular=TRUE)
-emapplot(kk)
-heatplot(kk,foldChange = FC)
-upsetplot(kk)
-
-
-# path 
-library(pathview)
-pathview(gene.data = FC, 
-         pathway.id = "hsa05202", 
-         species = "hsa", 
-         limit = list(gene=5, cpd=1))
+```{r,fig.height= 5, fig.width= 7}
+# Enrichment Map for enrichment result of over-representation test or gene set enrichment analysis
+emapplot(ego.bp)
 ```
-![](hsa05202.png)
 
+The enrichment map connects the two plots seen befor. We see the related pathways and how many genes with which pValues are allocated in one category. 
 
+Since we believe that dot plots are the easiest to interpret and show the most important information at first glance, we will now only display the other two GO enrichment results with these. 
 
+```{r,fig.height= 5, fig.width= 7}
+# Dot Plot Molecular Function
+dotplot(ego.mf, showCategory=12)
+```
+
+Here we see the diffrent molecular functions of our biomarkers. Like in the plots above, the result here is diffrent from the result from the Gene Ontology grouping. Nevertheless, these results are not very meaningful as the listed modifications are not assigned to specific molecules.Consequently, we cannot say anything about their effects. 
+
+```{r,fig.height= 5, fig.width= 7}
+# Dot Plot Cellular Component 
+dotplot(ego.cc, showCategory=12)
+```
+This plot shows the location of the biomarkers in the different cellular componets. Also here we see other categories than in the Barplot. But even like the polt before it, this does not give us any important information about the influence on cancer. 
 
 # 4. Literatur 
 
