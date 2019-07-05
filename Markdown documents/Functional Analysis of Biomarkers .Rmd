@@ -352,6 +352,18 @@ cnetplot(kk,categorySize="pvalue",foldChange=FC)
 heatplot(kk, foldChange=FC)
 ```
 
+```{r,warning=FALSE, results='hide',message=FALSE}
+library(pathview)
+```
+
+```{r}
+pathview(gene.data = FC, 
+         pathway.id = "hsa05202", 
+         species = "hsa", 
+         limit = list(gene=5, cpd=1))
+```
+![](hsa05202.png)
+
 # 4. Literatur 
 
 Fabregat, A., Jupe, S., Matthews, L., Sidiropoulos, K., Gillespie, M., Garapati, P., Haw, R., Jassal, B., Korninger, F., May, B., et al. (2018). The Reactome Pathway Knowledgebase. Nucleic Acids Res 46, D649-d655.
