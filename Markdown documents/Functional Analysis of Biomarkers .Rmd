@@ -104,7 +104,7 @@ First, the functions of the biomarkers will be selected by hand, stored in a tab
 
 The R package "cluster profiler", created by Guangchuang Yu *et al.* allows the user to create and visualize different functional profiles of genes and gene clusters using different enrichment methods. Here, we will focus on "Gene Ontology", "Reactome Pathway" and "KEGG Pathway" methodes.
 
-### 2.1.Gene Ontology Analysis {#anchor5}
+### 2.1. Gene Ontology Analysis {#anchor5}
 
 Gene Ontology is an enrichment Analysis, which hierarchically classifies genes or gene products to terms organized in an "Gene Ontology" system. The genes can be identified and ordered in three different ways (Yon Rhee et al., 2008): 
 
@@ -165,7 +165,7 @@ head(summary(ggo.mf))
 ggo.cc <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "CC", level = 3, readable = FALSE)
 head(summary(ggo.cc))
 
-````
+```
 The result of the assignment can be visualized via a bar plot.
 
 ```{r, fig.height= 5, fig.width= 7}
@@ -182,20 +182,20 @@ For this reason we will now additionally check the statistical parameters by an 
 
 Here we also need to translate the Gene IDs first: 
 
-```{r}
+```{r,warning=FALSE,message=FALSE}
 gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
                 toType = c("ENSEMBL"),
                 OrgDb = org.Hs.eg.db)
 ```
 
-For the enrichment analysis we have to set some important statistical parameters. As we expect to have small pValues we set the significance level to 0.1. Because we have multiple compairisons, we also have to use the Adjust p.Value Method. Here we use the Benjamini-Hochberg Method, which controls the false discovery rate and guarantees a powerful test. As limit for our q-value we have chosen 0.05, which is used by default. 
+For the enrichment analysis we have to set some important statistical parameters. As we expect to have small pValues we set the significance level to 0.1. Because we have multiple compairisons, we also have to use the Adjust p.Value Method. Here we use the Benjamini-Hochberg Method, which controls the false discovery rate (FDR) and guarantees a powerful test. As limit for our q-value we have chosen 0.05, which is used by default. 
 
 ```{r, inculde=FALSE}
 # f??r uns zum nachlesen 
 #http://www.nonlinear.com/support/progenesis/comet/faq/v2.0/pq-values.aspx
 ```
 
-```{r}
+```{r,warning=FALSE,message=FALSE}
 ## 1. Biological Process
 ego.bp <- enrichGO(gene        = gene.df$ENSEMBL,
                  OrgDb         = org.Hs.eg.db,
@@ -269,7 +269,92 @@ dotplot(ego.cc, showCategory=12)
 ```
 This plot shows the location of the biomarkers in the different cellular componets. Also here we see other categories than in the Barplot. But even like the polt before it, this does not give us any important information about the influence on cancer. 
 
+
+### 2.2. Reactome Pathway Analysis {#anchor6}
+
+Reactome Pathway contains a big database of biological processes like signal transduction, DNA repair and metabolism. Thus it can be used as analysis tool for discovering functional relationships between genes from expression data (Fabregat et al., 2018). It returns enriched pathways from a given vector of genes, thereby also performing FDR control. The statistical part works similar to the one of Gene Ontology (GO) Analysis. 
+
+Here, as well, we have to translate the gene ID of our biomarkers into the ENTREZID form: 
+
+```{r, warning=FALSE,message=FALSE}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+```
+
+```{r,warning=FALSE, results='hide',message=FALSE}
+library(ReactomePA)
+```
+
+```{r,warning=FALSE,message=FALSE}
+x <- enrichPathway(gene=gene.df$ENTREZID,
+                   pvalueCutoff = 0.05,
+                   readable = T )
+head(as.data.frame(x))
+```
+
+For visualization we can use the same type of plots as for GO Analysis. 
+
+```{r, fig.height= 5, fig.width= 7}
+barplot(x,showCategory=12)
+```
+
+The color of the bars is associated with the pValue. The smaller the value, the better the assignment. Morover, we see categories that are crealy associated with cancer growth like "TP53 Regulates Transcription of Genes Involved in G1 Cell Cycle Arrest". 
+Now it would be interesting to see if these genes are regulated up or down. This can be visualized in a cnet plot where the FC is stained. 
+
+```{r, fig.height= 5, fig.width= 7}
+# FC data for coloring 
+FC=TreatedVorinostat-UntreatedVorinostat
+FC<-FC[generalbiomarkergenes,]
+names(FC) <- gene.df$ENTREZID
+
+cnetplot(x,categorySize="geneNum",foldChange = FC)
+```
+We see that there are both highly and down-regulated genes in the same pathways. Unfortunately, the plot does not show whether the whole pathway is activated or inactivated. 
+
+The whole enrichment analysis can be summarized in the enrichment map. However, due to the numerous connecting lines it is no longer clear and the Fold Change is also missing in this plot. 
+
+```{r, fig.height= 5, fig.width= 7}
+emapplot(x)
+```
+
+### 2.3. KEGG Pathway Analysis (#anchor7)
+
+```{r,warning=FALSE, results='hide',message=FALSE}
+library(KEGG.db)
+library(org.Hs.eg.db)
+library(enrichplot)
+library(DOSE)
+```
+
+````{r,warning=FALSE,message=FALSE}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+```
+
+```{r,warning=FALSE,message=FALSE}
+kk <- enrichKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05,pAdjustMethod = "none")
+head(summary(kk))
+```
+
+````{r}
+# FC data for coloring 
+FC=TreatedVorinostat-UntreatedVorinostat
+FC<-FC[generalbiomarkergenes,]
+names(FC) <- gene.df$ENTREZID
+```
+
+```{r, fig.height= 5, fig.width= 7}
+par(mar=c(5, 4, 5, 9), mfrow=c(2,2))
+barplot(kk,showCategory=100)
+cnetplot(kk,categorySize="pvalue",foldChange=FC)
+heatplot(kk, foldChange=FC)
+```
+
 # 4. Literatur 
+
+Fabregat, A., Jupe, S., Matthews, L., Sidiropoulos, K., Gillespie, M., Garapati, P., Haw, R., Jassal, B., Korninger, F., May, B., et al. (2018). The Reactome Pathway Knowledgebase. Nucleic Acids Res 46, D649-d655.
 
 Yon Rhee, S., Wood, V., Dolinski, K., and Draghici, S. (2008). Use and misuse of the gene ontology annotations. Nature Reviews Genetics 9, 509.
 
