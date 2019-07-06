@@ -324,7 +324,7 @@ The whole enrichment analysis can be summarized in the enrichment map. However, 
 emapplot(x)
 ```
 
-### 2.3. KEGG Pathway Analysis (#anchor7)
+### 2.3. KEGG Pathway Analysis {#anchor7}
 
 The next enrichment method we use is KEGG Pathway Analysis. KEGG stands for Kyoto Encyclopedia of Genes and Genomes. It is a freely accessible database that contains information on various drugs, metabolic pathways and genes, among other things (Kanehisa and Goto, 2000). The enrichment process is the same as for the other two methods presented here. 
 
@@ -395,6 +395,7 @@ pathview(gene.data = FC,
 ```
 ![](hsa05202.png)
 
+
 Here we see the pathway "Transcriptional misregulation in cancer - Homo sapiens (human)". There are diffent flow charts with the corresponding genes for dirffent cancer types. 
 With this information one could possibly make predictions in individual cancer therapy. If a patient's gene expression is known, it can be compared with our biomarkers and a prediction can be made of the ways in which vorinostat might work. In the pathway graphs, individual genes and reaction pathways can be specifically observed. 
 
@@ -406,7 +407,7 @@ Finally, we performed the Gene Set Variation Analysis, short GSVA. GSVA is an an
 
 First we perform the GSVA enrichment, resulting in an enrichment score for each gene and each sample: 
 
-```{r}
+```{r,warning=FALSE, message=FALSE,results='hide'}
 # create data needed for GSVA Analysis 
 generalbiomarkergenes=as.list(generalbiomarkergenes)
 FC=TreatedVorinostat-UntreatedVorinostat
@@ -420,17 +421,22 @@ g<- gsva(FC,
 ```
 The enrichment results can be visualized by an heatmap : 
 
-```{r}
+```{r, fig.height= 5, fig.width= 7, warning=FALSE, message=FALSE}
 heat <- t(scale(t(g)))
 
 myCol <- colorRampPalette(c("dodgerblue", "black", "yellow"))(100)
 myBreaks <- seq(-1.5, 1.5, length.out=101)
 
+
+
 library(gplots)
-heatmap.2(heat,
+png(filename = "GSVAheat.png")
+GSVAheat= heatmap.2(heat,
           col=myCol,
           breaks=myBreaks,
           main="GSVA Enrichment Score of Biomarker",
+          xlab="genes",
+          ylab="samples",
           labRow="", 
           labCol="",
           key=TRUE,
@@ -445,14 +451,24 @@ heatmap.2(heat,
           cexCol=1.0,
           distfun=function(x) dist(x, method="euclidean"),
           hclustfun=function(x) hclust(x, method="ward.D2"))
+
+ 
 ```
+![](GSVAheat.png)
+
 
 The enrichement score summarizes the gene expression of each single genes and is given als the maximum derivation of zero. In our heatmap we can see two big gene groups looking on the left side, which also can be found in the dendogram of the heatmap. 
 
 Since we have a mapping of a gene and a sample, we see that the gsva enrichment did not work properly, because we were supposed to get groups of genes in a particular pathway. 
 Such a heatmap with pathways would look like the following. It was created by Haenzelmann et al. with leukemia data. 
+
+
 ![](normalGSVAheatmap.png)
+
+
 We can see the diffrent samples grouped by pathways. The pictures shows the diffrentially activated pathways in the Leukemia data set. 
+
+***
 
 ## 4. Conclusion/Discussion {#anchor9} 
 
@@ -461,6 +477,7 @@ Gene Ontology Analysis provides only very superficial enrichment results and is 
 The Reactome Pathway Analysis had provided us with more specific analysis results, including cancer-specific metabolic pathways. However, in contrast to KEGG, the information about the progression of the pathways and the more precise function of individual genes was missing. 
 Since the GSVA enrichment did not work properly with us, no statement can be made about this method. 
 
+***
 
 ## 5. Literatur {#anchor10}
 
