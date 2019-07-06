@@ -854,6 +854,13 @@ abline(0, 1, col = "orange1")
 #data for drug sensitivity than copynumber. 
 
 
+# Trying to use a different regression model, would be most likely futile if we take into consideration
+#the results and visualizations of our predictors. Take loess, for example, and think of our scatter plots,
+#a curve does not seem much better fitted to predict our data. Even using other regression models, such as Ridge,
+#that allow more complex curves to be fitted to data, finding a model with both high R-squared and low p-value
+#when we consider our predictors, in particular the scatter plot, seems unlikely. 
+
+
 ##### PART 2 ##################################################################################################################
 ###   8.  Using PCA to determine independent variables                                                                      ####
 
