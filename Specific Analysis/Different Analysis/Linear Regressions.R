@@ -157,10 +157,6 @@ lm_tab = transform(merge(DT,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NU
 ###   3.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
 
 
-## Checking for correlation 
-
-cor(lm_tab)
-
 ## Ploting the data: can a linear relationship be observed? Should we expect a high value for R-squared?
 
 # Visualization of doubling time vs drug sensitivity
@@ -327,9 +323,6 @@ lm_tab2 <- na.omit(lm_tab2)
 
 ###   4.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
 
-## Checking for correlation
-
-cor(lm_tab2)
 
 ## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
 
@@ -503,10 +496,6 @@ lm_tab_all2 <- na.omit(lm_tab_all2)
 
 ###   5.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
 
-## Checking for correlation
-
-cor(lm_tab_all2)
-
 
 ## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
 
@@ -679,9 +668,6 @@ names(lm_tab_m)[names(lm_tab_m) == "vorinostat"] <- "Drug_Sensitivity"
 
 ###   6.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
 
-## Checking for correlation
-
-cor(lm_tab_m)
 
 ## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
 
@@ -743,6 +729,10 @@ polygon(density(lm_tab_m$Copynumber), col="olivedrab1")
 
 #Skewness: -0.29 -> Plot is slightly skewed to the left.
 
+
+## Checking for correlation
+
+cor(lm_tab_m)
 
 #These analysis help us predcit whether a linear regression is or not the best model to describe our data. 
 #Thanks to the outliers, considerably spread plots and skewed density plots, it is not unreasonable to predict that a 
@@ -852,13 +842,16 @@ abline(0, 1, col = "orange1")
 
 ####  7.  General Conclusions                                                                                               ####
 
+# The predictions made with the scatter plot, boxplot, density plot and the correlations between the predicted 
+#and predicting variable were generally speaking good, as most of these statistical analyses predicted 
+#that building a model using linear regression would prove to be not ideal. Once we tested for R-squared and p-value,
+#every regression had extremely low R-quared values, and extremely high p-values. This is of course an undesired
+#result. 
+# Considering the complexity of the process of gene expression, is not entirely surprising that we cannot predict 
+#drug sensitivity in a satisfactory way just by relying on copynumber and/or doubling time. 
 
-
-
-
-
-
-
+# Eventhough no linear relationships were found, we did discover that doubling time is a better tool to predict our
+#data for drug sensitivity than copynumber. 
 
 
 ##### PART 2 ##################################################################################################################
