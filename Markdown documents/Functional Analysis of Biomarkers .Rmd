@@ -90,6 +90,9 @@ First, the functions of the biomarkers will be selected by hand, stored in a tab
 
 [4. Conclusion/Discussion ](#anchor9)
 
+[5. Literatur ](#anchor9)
+
+
 ***
 
 ## 1. Functional Analysis "by hand" {#anchor1}
@@ -191,7 +194,7 @@ gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
 For the enrichment analysis we have to set some important statistical parameters. As we expect to have small pValues we set the significance level to 0.1. Because we have multiple compairisons, we also have to use the Adjust p.Value Method. Here we use the Benjamini-Hochberg Method, which controls the false discovery rate (FDR) and guarantees a powerful test. As limit for our q-value we have chosen 0.05, which is used by default. 
 
 ```{r, inculde=FALSE}
-# f??r uns zum nachlesen 
+# zum nachlesen 
 #http://www.nonlinear.com/support/progenesis/comet/faq/v2.0/pq-values.aspx
 ```
 
@@ -274,6 +277,12 @@ This plot shows the location of the biomarkers in the different cellular compone
 
 Reactome Pathway contains a big database of biological processes like signal transduction, DNA repair and metabolism. Thus it can be used as analysis tool for discovering functional relationships between genes from expression data (Fabregat et al., 2018). It returns enriched pathways from a given vector of genes, thereby also performing FDR control. The statistical part works similar to the one of Gene Ontology (GO) Analysis. 
 
+As a first step, we need to load the Reactome library:
+
+```{r,warning=FALSE, results='hide',message=FALSE}
+library(ReactomePA)
+```
+
 Here, as well, we have to translate the gene ID of our biomarkers into the ENTREZID form: 
 
 ```{r, warning=FALSE,message=FALSE}
@@ -282,9 +291,6 @@ gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
                 OrgDb = org.Hs.eg.db)
 ```
 
-```{r,warning=FALSE, results='hide',message=FALSE}
-library(ReactomePA)
-```
 
 ```{r,warning=FALSE,message=FALSE}
 x <- enrichPathway(gene=gene.df$ENTREZID,
@@ -320,6 +326,10 @@ emapplot(x)
 
 ### 2.3. KEGG Pathway Analysis (#anchor7)
 
+The next enrichment method we use is KEGG Pathway Analysis. KEGG stands for Kyoto Encyclopedia of Genes and Genomes. It is a freely accessible database that contains information on various drugs, metabolic pathways and genes, among other things (Kanehisa and Goto, 2000). The enrichment process is the same as for the other two methods presented here. 
+
+First, we need to load the libaries we will work with:
+
 ```{r,warning=FALSE, results='hide',message=FALSE}
 library(KEGG.db)
 library(org.Hs.eg.db)
@@ -327,34 +337,55 @@ library(enrichplot)
 library(DOSE)
 ```
 
+The gene IDs must also be translated:
+
 ````{r,warning=FALSE,message=FALSE}
 gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
                 toType = c("ENTREZID"),
                 OrgDb = org.Hs.eg.db)
 ```
 
+Now we can perform the enrichment. We did not choose a Adjust p.Value method because we could find more categories this way. When setting a specific pAdjustMethod, we would only be able to identify 5 categories. 
+
 ```{r,warning=FALSE,message=FALSE}
-kk <- enrichKEGG(gene=gene.df$ENTREZID,pvalueCutoff = 0.05,pAdjustMethod = "none")
+kk <- enrichKEGG(gene=gene.df$ENTREZID,
+                 pvalueCutoff = 0.05,
+                 pAdjustMethod = "none")
 head(summary(kk))
 ```
 
-````{r}
+For the visualization of the results, we use the same plots as before, except for an additional heatplot that is based on a heatmap. 
+
+```{r, fig.height= 5, fig.width= 7}
+par(mfrow=c(2,1))
+barplot(kk,showCategory=12)
+
 # FC data for coloring 
 FC=TreatedVorinostat-UntreatedVorinostat
 FC<-FC[generalbiomarkergenes,]
 names(FC) <- gene.df$ENTREZID
+
+cnetplot(kk,categorySize="pvalue",foldChange=FC)
 ```
 
+We see that the KEGG database has found pathways that can be directly linked to vorinostat, such as the category "Human T-cell leukemia virus 1 infection". As already mentioned in the introduction of the board and specific analysis, vorinostat is used in leukaemia diseases. Thus, in comparison KEGG provides the best drug-specific enrichment results. 
+These are summarized in the following heatplot. Here we can see the single genes on the x-axis and on the y-axis the pathways they are involved in  marked by small boxes. Since boxes are stained with the Fold Change, we can also read here whether a gene has been down or upregulated. 
+
 ```{r, fig.height= 5, fig.width= 7}
-par(mar=c(5, 4, 5, 9), mfrow=c(2,2))
-barplot(kk,showCategory=100)
-cnetplot(kk,categorySize="pvalue",foldChange=FC)
 heatplot(kk, foldChange=FC)
 ```
+
+In addition, the KEGG data can be used to create so-called pathway graphs. 
+For this the library "pathview" is needed. A pathway ID from the KEGG Pathway enrichment result is entered into the function and the graphic is created. 
+This will be demonstrated in the following using the first listed pathway from the previous KEGG enrichment analysis.  
+
+Load the library: 
 
 ```{r,warning=FALSE, results='hide',message=FALSE}
 library(pathview)
 ```
+
+Load the pathway graph:  
 
 ```{r, warning=FALSE, message=FALSE}
 pathview(gene.data = FC, 
@@ -364,9 +395,22 @@ pathview(gene.data = FC,
 ```
 ![](hsa05202.png)
 
-# 4. Literatur 
+Here we see the pathway "Transcriptional misregulation in cancer - Homo sapiens (human)". There are diffent flow charts with the corresponding genes for dirffent cancer types. 
+With this information one could possibly make predictions in individual cancer therapy. If a patient's gene expression is known, it can be compared with our biomarkers and a prediction can be made of the ways in which vorinostat might work. In the pathway graphs, individual genes and reaction pathways can be specifically observed. 
+
+***
+
+## 3. Gene Set Variation Analysis
+
+Finally, we performed the Gene Set Variation Analysis, short GSVA. GSVA is an analysis method that exports gene expression profiles into pathway or siganture summary. Consequently, it allows easier interpretation of the data and helps to model the pathway activation (H??nzelmann et al., 2013). 
+
+## 4. Literatur 
 
 Fabregat, A., Jupe, S., Matthews, L., Sidiropoulos, K., Gillespie, M., Garapati, P., Haw, R., Jassal, B., Korninger, F., May, B., et al. (2018). The Reactome Pathway Knowledgebase. Nucleic Acids Res 46, D649-d655.
+
+H??nzelmann, S., Castelo, R., and Guinney, J. (2013). GSVA: gene set variation analysis for microarray and RNA-Seq data. BMC Bioinformatics 14, 7.
+
+Kanehisa, M., and Goto, S. (2000). KEGG: kyoto encyclopedia of genes and genomes. Nucleic acids research 28, 27-30.
 
 Yon Rhee, S., Wood, V., Dolinski, K., and Draghici, S. (2008). Use and misuse of the gene ontology annotations. Nature Reviews Genetics 9, 509.
 
