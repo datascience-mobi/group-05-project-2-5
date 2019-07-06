@@ -356,7 +356,7 @@ heatplot(kk, foldChange=FC)
 library(pathview)
 ```
 
-```{r}
+```{r, warning=FALSE, message=FALSE}
 pathview(gene.data = FC, 
          pathway.id = "hsa05202", 
          species = "hsa", 
