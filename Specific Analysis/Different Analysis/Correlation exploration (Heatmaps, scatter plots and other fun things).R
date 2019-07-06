@@ -705,78 +705,7 @@ qplot(cor1_tab, bins = 30)
 
 
 ### 4.    Comparing the biomarkers obtained using the variance and the mean                                   ####
-### 5.    Comparing mean expression of 'biomarker candidates' before and after treatment                      ####
 
-TreatedVorinostat_meanrow= rowMeans(TreatedVorinostat)
-UntreatedVorinostat_meanrow= rowMeans(UntreatedVorinostat)
-
-
-TV_abs= abs(TreatedVorinostat_meanrow)
-UV_abs= abs(UntreatedVorinostat_meanrow)
-
-TV_sorted <- sort(TV_abs, decreasing = TRUE)
-UV_sorted <- sort(UV_abs, decreasing = TRUE)
-
-TV_matrix <- as.matrix(TV_sorted)
-UV_matrix <- as.matrix(UV_sorted)
-
-
-TV_biomarkers = TV_matrix[1:30,]
-UV_biomarkers = UV_matrix[1:30,]
-
-TV_biomarkers <- as.matrix(TV_biomarkers)
-UV_biomarkers <- as.matrix(UV_biomarkers)
-
-#Merging the two tables
-
-comp_biomarkers= merge(UV_biomarkers, TV_biomarkers, by = "row.names", all = TRUE)
-summary(comp_biomarkers)
-
-# We can observe there are 7 NA's, which means most genes that have a high mean for their 
-# expression value before treatment, also have a high mean for their expression value after
-# treatment. 
-# Therefore, the expression of these genes was already high (high can mean both very upregulated or 
-# downregulated) before treatment
-
-
-# It would be interesting to see if the biomarkers where up- or downregulated after treatment
-# Untreated
-
-com_reg_UV = cbind(UntreatedVorinostat_meanrow,UV_sorted)
-com_reg_UV = as.data.frame(com_reg_UV)
-
-
-sort_comp_reg_UV <- com_reg_UV[order(com_reg_UV$UV_sorted, decreasing = TRUE),]
-
-
-bm_comp_reg_UV = sort_comp_reg_UV[1:30,]
-
-
-bm_comp_reg_UV <- subset( bm_comp_reg_UV, select = -UV_sorted)
-bm_comp_reg_UV = as.matrix(bm_comp_reg_UV)
-
-# Treated
-
-com_reg_TV = cbind(TreatedVorinostat_meanrow,TV_sorted)
-com_reg_TV = as.data.frame(com_reg_TV)
-
-
-sort_comp_reg_TV <- com_reg_TV[order(com_reg_TV$TV_sorted, decreasing = TRUE),]
-
-
-bm_comp_reg_TV = sort_comp_reg_TV[1:30,]
-
-
-bm_comp_reg_TV <- subset( bm_comp_reg_TV, select = -TV_sorted)
-bm_comp_reg_TV = as.matrix(bm_comp_reg_TV)
-
-
-#Merge
-
-bm_comp_reg= merge(bm_comp_reg_UV, bm_comp_reg_TV, by = "row.names", all = TRUE)
-
-
-#Something went wrong and the first ten genes are being displayed, not the idea, I must fix it!!!!
 
 
 
