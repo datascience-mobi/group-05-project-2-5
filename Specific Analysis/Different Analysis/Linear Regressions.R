@@ -4,13 +4,11 @@
 
 
 ## Do not run the entire R script at once. 
-## No linear relationship: lowess, GAM
-## Complete until 7
+
 
 ##### PART 1 ##################################################################################################################
 ####  1.  LOADING DATA                                                                                                      ####
-###   1.1 Packages                                                                                                          ####
-###   1.2 Biomarkers                                                                                                        ####
+###   1.1 Biomarkers                                                                                                        ####
 ##  (1)  Creating Vorinostat
 
 
@@ -945,6 +943,5 @@ summary(reg_pca)
 # The comparison of the results when we carry out a regular multiple regression vs when we carry out one using the principal
 #component, shows us that while R-squared has a higher value when using PCA, the p-value decreases. 
 
-##### PART 3 ##################################################################################################################
-####  9.  Other models for regression
+
 
