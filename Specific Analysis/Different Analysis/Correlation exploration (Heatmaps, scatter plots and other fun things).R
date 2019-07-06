@@ -287,27 +287,16 @@ row_names_cor1_t    = as.data.frame(strsplit(x=rownames(cor1_tissue),split="_vor
 colnames(cor1_tissue)[colnames(cor1_tissue)=="X786.0"] <- "786.0"
 rownames (cor1_tissue) = as.data.frame (t(row_names_cor1_t[1,]))[,1]
 
-cor1_tissue = as.matrix(t(cor1_tissue))
+names(cor1_tissue)[names(cor1_tissue)=="V1"] <- "Tissue"
 
+cor1_tissue = as.matrix(cor1_tissue)
 
 
 #Tissue Annotation: Creating the function for the annotation
 
-cor1_tissue <- data.frame(sample = rep(c("Renal", "Lung", "Breast", "Leukemia", "Colon", "Prostate", "Ovarian", "Melanoma", "CNS"), c(4,2)))
-row.names(cor1_tissue) <- colnames(cor1_tab)
+cor1_tissue_an <- data.frame(V1 = rep(c("Renal", "Lung", "Breast", "Leukemia", "Colon", "Prostate", "Ovarian", "Melanoma", "CNS"), c(8,9,6,5,7,2,7,9,6)))
 
-cor1_tissue <- data.frame(cor1_tissue)
-row.names(cor1_tissue) <- colnames(cor1_tab)
-
-
-
-meta <- data.frame(
-  c(rep("Breast", ncol(cor1_tissue)/9), rep("CNS", ncol(cor1_tissue)/9), rep("Colon", ncol(cor1_tissue)/9), rep("Leukemia", ncol(cor1_tissue)/9),
-    rep("Lung", ncol(cor1_tissue)/9), rep("Melanoma", ncol(cor1_tissue)/9), rep("Ovarian", ncol(cor1_tissue)/9), rep("Prostate", ncol(cor1_tissue)/9)
-  ),
-  row.names=colnames(cor1_tab))
-colnames(metadata) <- c("Tissue")
-
+row.names(cor1_tissue_an) <- colnames(cor1_tab)
 
 
 
@@ -319,18 +308,29 @@ cor1_tab_breaks
 
 #Heatmap
 
-cor1_colour = list(cluster = c("Cluster 1" = "#68f9f1", "Cluster 2" = "#c9ff87"))
+cor1_colour = list(
+                cluster = c("Cluster 1" = "#68f9f1", "Cluster 2" = "#c9ff87"),
+                V1 = c("Renal" = "#A0E862", 
+                       "Lung" = "#29C0DE", 
+                       "Breast" = "#005BF8", 
+                       "Leukemia" = "#845EC2", 
+                       "Colon" = "#CA009E", 
+                       "Prostate" = "#FF88CB", 
+                       "Ovarian" = "#F1903D", 
+                       "Melanoma" = "#FFC75F", 
+                       "CNS" = "#F9F871"))
 
 
 cor1 = pheatmap(cor1_tab,
                 annotation_colors = cor1_colour,
                 annotation_row = cor1_hclust_tree,
+                annotation_col = cor1_tissue_an,
                 fontsize = 6.5,
                 fontsize_row= 5, 
                 fontsize_col = 6,
                 gaps_col=50,
                 info = TRUE
-)
+                )
 
 
 
@@ -458,6 +458,7 @@ cor1.2 = pheatmap(cor1.2_tab,
                   info = TRUE
 )
 
+cor1.2
 
 
 #Heatmap with breaks
