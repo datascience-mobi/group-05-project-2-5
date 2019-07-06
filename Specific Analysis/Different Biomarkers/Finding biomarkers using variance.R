@@ -30,7 +30,7 @@ colnames(Untreated)
 
 # Drug sensitivity assay
 Sensitivity = readRDS(paste0(wd,"/data/NegLogGI50.rds"))
-
+ 
 # Basal molecular profiles of cancer cell lines 
 Basal       = readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
 Copynumber  = readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
@@ -134,7 +134,7 @@ mean_Drug_Response = mean_Drug_Response[ order(-mean_Drug_Response[,1]), , drop=
 Biomarkers_Highest_Mean_Drug_Response  =  mean_Drug_Response[ order(-mean_Drug_Response), , drop = FALSE ]
 Biomarkers_Highest_Mean_Drug_Response  =  head(Biomarkers_Highest_Mean_Drug_Response, 100)
 dim(Biomarkers_Highest_Mean_Drug_Response)
-colnames(Biomarkers_Highest_Mean_Drug_Response) = "Abs_Mean_of_DR" 
+colnames(Biomarkers_Highest_Mean_Drug_Response) = "Mean_of_abs_DR" 
 head(Biomarkers_Highest_Mean_Drug_Response)
 
 # Now we create an new data frame from the Drug Response, only including the biomarker genes
