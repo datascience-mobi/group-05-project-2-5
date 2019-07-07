@@ -10,8 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, include = FALSE}
-#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
-wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05")
+#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 Load Data: 
@@ -23,7 +23,7 @@ Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
 Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
 ```
 
-Filter Vorinistat data: 
+Filter Vorinostat data: 
 
 ```{r, include = FALSE}
 
@@ -38,12 +38,6 @@ TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
 
 # Create Vorinostat Fold change matrix 
 FC <- TreatedVorinostat - UntreatedVorinostat
-
-```
-
-Find Biomarkers via absolute values of Fold Change: 
-
-```{r}
 
 # work with mean of the rows because we only want to compare the genes:
 FCVorinostatabs= abs(FC)
@@ -74,9 +68,9 @@ First, the functions of the biomarkers will be selected by hand, stored in a tab
 
 [1. Functional Analysis "by hand"](#anchor1)
 
-* [1.1. ](#anchor2)
+* [1.1. Create a table with biomarker features](#anchor2)
 
-* [1.2. ](#anchor3)
+* [1.2. Barplots of biomarker tissue and function](#anchor3)
 
 [2. Functional Analysis using "cluster profiler"](#anchor4)
 
@@ -97,9 +91,56 @@ First, the functions of the biomarkers will be selected by hand, stored in a tab
 
 ## 1. Functional Analysis "by hand" {#anchor1}
 
-### 1.1.  {#anchor2}
+We used human gene-databases such as "GeneCards" to do research about our biomarkers. We collected information about the __gene-function__ as well as about the __tissue__ in which the respective genes are mainly expressed. Unfortunately, we were not able to assign a function and tissue to each of the biomarkers since some genes were not sufficiently researched yet. That lead to quite a lot NA-values in our table.
+On the other hand, we found great numbers of different functions for single genes. We tried to summarize the functions but were not able to consider them all. Consequently, our table is only suitable for the purpose to get a general overview and to investigate, whether we have biomarkers with partly similar features.
 
-### 1.2.  {#anchor3}
+
+### 1.1. Create a table with biomarker features {#anchor2}
+
+We used Excel to create a table with our top 50 biomarkers and their features, a part of the table can be seen below:
+![](table.png)
+
+Then we imported the annotation data in R and definded the tissue- and function-column for better readability:
+```{r}
+vorinostat_annotation = read.csv2(paste0(wd,"/Biomarkers.csv"),header = TRUE, quote="\"")
+
+tissue = vorinostat_annotation$affected.Tissue..if.specific.
+general.function = vorinostat_annotation$general.Function
+```
+
+### 1.2. Barplots of biomarker tissue and function {#anchor3}
+
+The following barplot shows the prevalence of tissues, in which 50 of our biomarkers are preferentially expressed.
+```{r, fig.height= 5, fig.width= 7}
+col=palette(rainbow(9))
+table(tissue)
+barplot(table(tissue), ylab="counts", main="Affected tissues by biomarkers", col=col, las=3, cex.names = 0.7)
+```
+
+Vorinostat is used against T-cell lymphomas. They origin from T-cells which are a subgroup of white blood cells and of high importance for the immune defense. Thus, we expected Vorinostat to affect preferentially those areas. Some of our biomarkers are indeed mainly active in blood cells and in the immune system but we also found, that quite a lot of the biomarkers show activity in the brain.
+
+```{r, fig.height= 5, fig.width= 7}
+col=palette(rainbow(16))
+table(general.function) 
+barplot(table(general.function), ylab="counts", main="General functions of biomarkers", col=col, las=3, cex.names = 0.7)
+```
+
+In order to get a better overview of the function, we can plot only those functions which occur with a frequency greater or equal to two:
+
+```{r, fig.height= 5, fig.width= 7}
+highfrequencyfunctions <- table(general.function)[table(general.function)>2]
+
+col=palette(rainbow(7))
+barplot(highfrequencyfunctions, ylab="counts", main="Prevalent functions of biomarkers", col=col, las=3, cex.names = 0.7)
+```
+
+The plot indicates, that Vorinostat affects amongst other things especially genes which are involved in chromatin binding and transcription regulation. We already knew, that the drugs working mechanism is to create an altered chromatin structure and gene accessibility. However, we did not know, that those altered structures have a high impact on genes involved in chromatin-organisation as well.
+
+In an other column in the self created annotation table we specified the function of some biomarkers more precise. Some of the chromatin-binding biomarkers function as histone components.
+```{r}
+length(grep(vorinostat_annotation$Function, pattern = "histone cluster"))
+```
+In 50 researched biomarkers we found six histone genes which show a clearly altered expression after Vorinostat treatment. That leads to the assumption, that beside Vorinistats working mechanism as a histone modification regulator it might affect the number or composition of histones as well.
 
 ***
 
@@ -140,7 +181,6 @@ As a first step, we will assign the biomarkers to the groups described above. Fi
 ```{r,warning=FALSE, results='hide',message=FALSE}
 # load the needed library
 library(DOSE)
-
 ```
 
 ```{r}
@@ -150,7 +190,6 @@ head(gene)
 ```
 
 Now we can group them, using all 3 categories: 
-
 
 ```{r,warning=FALSE,message=FALSE}
 
