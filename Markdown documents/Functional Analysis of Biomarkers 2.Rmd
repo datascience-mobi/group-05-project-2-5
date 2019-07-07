@@ -10,8 +10,8 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 ```{r, include = FALSE}
-wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05")
-#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05")
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 Load Data: 
@@ -98,11 +98,11 @@ On the other hand, we found great numbers of different functions for single gene
 ### 1.1. Create a table with biomarker features {#anchor2}
 
 We used Excel to create a table with our top 50 biomarkers and their features, a part of the table can be seen below:
-![](table.png)
+!*[](table.png)
 
 Then we imported the annotation data in R and definded the tissue- and function-column for better readability:
 ```{r}
-vorinostat_annotation = read.csv2(paste0(wd,"/Biomarkers.csv"),header = TRUE, quote="\"")
+vorinostat_annotation = read.csv2(paste0(wd,"/data/Biomarkers.csv"),header = TRUE, quote="\"")
 
 tissue = vorinostat_annotation$affected.Tissue..if.specific.
 general.function = vorinostat_annotation$general.Function
