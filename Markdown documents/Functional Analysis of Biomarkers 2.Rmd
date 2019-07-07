@@ -97,15 +97,20 @@ On the other hand, we found great numbers of different functions for single gene
 
 ### 1.1. Create a table with biomarker features {#anchor2}
 
-We used Excel to create a table with our top 50 biomarkers and their features, a part of the table can be seen below:
-!*[](table.png)
+``` {r include = FALSE}
+#install.packages("knitr")
+library(knitr)
+#install.packages("xtable")
+#library(xtable)
+```
 
+We used Excel to create a table with our top 50 biomarkers and their features, a part of the table can be seen below.
 Then we imported the annotation data in R and definded the tissue- and function-column for better readability:
 ```{r}
 vorinostat_annotation = read.csv2(paste0(wd,"/data/Biomarkers.csv"),header = TRUE, quote="\"")
-
 tissue = vorinostat_annotation$affected.Tissue..if.specific.
 general.function = vorinostat_annotation$general.Function
+knitr::kable(vorinostat_annotation, caption = "vorinostat annotation")
 ```
 
 ### 1.2. Barplots of biomarker tissue and function {#anchor3}
