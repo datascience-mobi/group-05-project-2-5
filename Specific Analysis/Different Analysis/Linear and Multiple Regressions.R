@@ -666,10 +666,10 @@ DS = as.data.frame(drug_sensitivity)
 
 lm_tab_m = transform(merge(CN_all, lm_tab,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
 
-lm_tab_m <- na.omit(lm_tab_m)
-
 names(lm_tab_m)[names(lm_tab_m) == "CN_meancol"] <- "Copynumber"
 names(lm_tab_m)[names(lm_tab_m) == "vorinostat"] <- "Drug_Sensitivity"
+
+lm_tab_m <- na.omit(lm_tab_m)
 
 
 ###   6.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
@@ -705,13 +705,13 @@ library(e1071)
 
 par(mfrow=c(1, 3)) 
 
-plot(density(lm_tab_m$Drug_sensitivity), 
+plot(density(lm_tab_m$Drug_Sensitivity), 
      main="Density Plot: Drug sensitivity", 
      ylab="Frequency", 
      sub=paste("Skewness:", round(e1071::skewness(lm_tab_m$Drug_sensitivity), 2))
      )
 
-polygon(density(lm_tab_m$Drug_sensitivity), col="darkorchid1")
+polygon(density(lm_tab_m$Drug_Sensitivity), col="darkorchid1")
 
 #Skewness: 0.03 -> Plot is very slightly skewed to the right.
 
@@ -843,7 +843,7 @@ plot(reg_m, which = c(1, 2))
 
 # Comparing prediction and real values for drug sensitivity
 
-plot(lm_tab_m$Drug_sensitivity, reg_m$fitted.values, pch = 20, col = "orchid1", xlab = "Real values", ylab = "Predicted values")
+plot(lm_tab_m$Drug_Sensitivity, reg_m$fitted.values, pch = 20, col = "orchid1", xlab = "Real values", ylab = "Predicted values")
 abline(0, 1, col = "orange1")
 
 ####  7.  General Conclusions                                                                                               ####
