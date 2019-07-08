@@ -110,6 +110,10 @@ Then we imported the annotation data in R and definded the tissue- and function-
 vorinostat_annotation = read.csv2(paste0(wd,"/data/Biomarkers.csv"),header = TRUE, quote="\"")
 tissue = vorinostat_annotation$affected.Tissue..if.specific.
 general.function = vorinostat_annotation$general.Function
+# rename 
+names(vorinostat_annotation)[names(vorinostat_annotation)=="X...Gene"] <- "Gene" 
+names(vorinostat_annotation)[names(vorinostat_annotation)=="affected.Tissue..if.specific."] <- "affected Tissue (if specific)" 
+
 knitr::kable(vorinostat_annotation, caption = "vorinostat annotation")
 ```
 
