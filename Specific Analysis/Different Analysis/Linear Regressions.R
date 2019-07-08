@@ -138,6 +138,11 @@ Doubling_Time[1] <- NULL
 
 Doubling_Time
 
+## (4) Table 4: Selection of vorinostat row from Sensitivity
+
+drug_sensitivity <- Sensitivity[-c(1:14),] 
+
+drug_sensitivity = t(drug_sensitivity)
 
 ####  3.  SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with doubling time                                      ####
 
@@ -148,6 +153,7 @@ Doubling_Time
 DT = as.data.frame(Doubling_Time)
 
 DS = as.data.frame(drug_sensitivity)
+
 
 ## Table with drug sensitivity and doubling time per cell line
 
@@ -685,7 +691,7 @@ plot(lm_tab_m ,
 # (2) Box plot
 
 par(mfrow=c(1, 3))
-boxplot(lm_tab_m$Drug_sensitivity, main="Drug sensitivity", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Drug_sensitivity)$out)) 
+boxplot(lm_tab_m$Drug_Sensitivity, main="Drug sensitivity", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Drug_Sensitivity)$out)) 
 boxplot(lm_tab_m$Doubling_Time, main="Doubling time", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Doubling_Time)$out)) 
 boxplot(lm_tab_m$Copynumber, main="Copynumber", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Copynumber)$out)) 
 
