@@ -9,7 +9,21 @@
 ## Loading packages
 library(readr)
 library(rstudioapi)
-library(BBmisc)     
+library(BBmisc)  
+
+#Packages needed for the heatmap
+library(pheatmap)
+library("DESeq")
+library(dendextend)
+
+#Packages for the dendogram
+library(dendextend)
+library(ggplot2)
+library(circlize)
+
+#Packages for the correlogram
+library(corrgram)
+library(ggplot2)
 
 ## Finding local directory
 wd = dirname(rstudioapi::getSourceEditorContext()$path)
@@ -226,11 +240,6 @@ is.numeric(cor1.2_tab)
 
 #   2.2.1 Heatmap with 30 Biomarkers and 59 cell lines                                                        #####
 
-# load packages
-library(pheatmap)
-library("DESeq")
-library(dendextend)
-
 pheatmap(cor1_tab)
 
 cor1.1_tab = cor1_tab
@@ -277,8 +286,15 @@ cor1_hclust_tree <- data.frame(cluster = ifelse(test = cor1_hclust_tree == 1, ye
 head(cor1_hclust_tree)
 
 #Tissue Annotation: Creating a table with the tissue that corresponds to each cell line
+
+tissue <- Metadata[,-c(2:5)] 
+
+row.names(tissue) <- tissue$sample
+tissue <- tissue[-c(1)]
+
+
 tissue = as.data.frame(tissue)
-cor1_tissue <- tissue[-c(1:760),] 
+cor1_tissue <- tissue[-c(1:1579), , drop=FALSE] 
 cor1_tissue = as.matrix(cor1_tissue)
 
 rownames(cor1_tissue)
@@ -404,28 +420,9 @@ cor1.2_hclust_tree <- data.frame(cluster = ifelse(test = cor1.2_hclust_tree == 1
 
 head(cor1.2_hclust_tree)
 
-#Tissue Annotation: Creating a table with the tissue that corresponds to each cell line
-tissue = as.data.frame(tissue)
-cor1.2_tissue <- tissue[-c(1:760),] 
-cor1.2_tissue = as.matrix(cor1.2_tissue)
+#Tissue Annotation:
 
-rownames(cor1.2_tissue)
-row_names_cor1.2_t    = as.data.frame(strsplit(x=rownames(cor1.2_tissue),split="_vorinostat"))
-colnames(cor1.2_tissue)[colnames(cor1.2_tissue)=="X786.0"] <- "786.0"
-rownames (cor1.2_tissue) = as.data.frame (t(row_names_cor1.2_t[1,]))[,1]
-
-names(cor1.2_tissue)[names(cor1.2_tissue)=="V1"] <- "Tissue"
-
-cor1.2_tissue = as.matrix(cor1.2_tissue)
-
-
-#Tissue Annotation: Creating the function for the annotation
-
-cor1.2_tissue_an <- data.frame(V1 = rep(c("Renal", "Lung", "Breast", "Leukemia", "Colon", "Prostate", "Ovarian", "Melanoma", "CNS"), c(8,9,6,5,7,2,7,9,6)))
-
-row.names(cor1.2_tissue_an) <- colnames(cor1.2_tab)
-
-
+#Here we can use the same annotation function as in Heatmap with 30 Biomarkers and 59 cell lines: cor1_tissue_an
 
 
 #
@@ -457,9 +454,8 @@ cor1.2 = pheatmap(cor1.2_tab,
                   fontsize_col = 6,
                   gaps_col=50,
                   info = TRUE
-)
+                  )
 
-cor1.2
 
 
 #Heatmap with breaks
@@ -502,12 +498,6 @@ cor1.2_ret_hclust$tree_row %>%
 
 ##  2.3   Dendogram                                                                                           ####
 #   2.3.1 Dendogram with 30 Biomarkers and 59 cell lines                                                      #####
-
-# load packages
-library(dendextend)
-library(ggplot2)
-library(circlize)
-
 
 ## CELL LINES
 
@@ -663,10 +653,6 @@ cor1.2_ret_hclust$tree_row %>%
 
 #   2.3.3 Comparison of dendograms with 100 Biomarkers and 30 Biomarkers                                      ####
 ##  2.4   Correlogram and Scatter Plot for 30 Biomarkers and 59 cell lines                                    ####
-
-# Loading Data
-library(corrgram)
-library(ggplot2)
 
 # Correlogram
 corrgram(cor1_tab, order=NULL, panel=panel.shade, text.panel=panel.txt,
