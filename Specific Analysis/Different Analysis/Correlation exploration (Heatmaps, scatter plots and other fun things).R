@@ -9,7 +9,7 @@
 ## Loading packages
 library(readr)
 library(rstudioapi)
-library(BBmisc)  
+library(BBmisc)
 
 #Packages needed for the heatmap
 library(pheatmap)
@@ -17,13 +17,11 @@ library("DESeq")
 library(dendextend)
 
 #Packages for the dendogram
-library(dendextend)
 library(ggplot2)
 library(circlize)
 
 #Packages for the correlogram
 library(corrgram)
-library(ggplot2)
 
 ## Finding local directory
 wd = dirname(rstudioapi::getSourceEditorContext()$path)
@@ -448,7 +446,7 @@ cor1.2_colour = list(cluster = c("Cluster 1" = "#68f9f1", "Cluster 2" = "#c9ff87
 cor1.2 = pheatmap(cor1.2_tab,
                   annotation_colors = cor1.2_colour,
                   annotation_row = cor1.2_hclust_tree,
-                  annotation_col = cor1.2_tissue_an,
+                  annotation_col = cor1_tissue_an,
                   fontsize = 6.5,
                   fontsize_row= 5, 
                   fontsize_col = 6,
@@ -456,7 +454,7 @@ cor1.2 = pheatmap(cor1.2_tab,
                   info = TRUE
                   )
 
-
+cor1.2
 
 #Heatmap with breaks
 
@@ -627,19 +625,31 @@ head(cor1.2_hclust_tree)
 
 #Heatmap for a 100 Biomarkers
 
-cor1.2_colour = list(cluster = c("Cluster 1" = "#68f9f1", "Cluster 2" = "#c9ff87"))
+
+cor1.2_colour = list(cluster = c("Cluster 1" = "#68f9f1", "Cluster 2" = "#c9ff87"),
+                     V1 = c("Renal" = "#A0E862", 
+                            "Lung" = "#29C0DE", 
+                            "Breast" = "#005BF8", 
+                            "Leukemia" = "#845EC2", 
+                            "Colon" = "#CA009E", 
+                            "Prostate" = "#FF88CB", 
+                            "Ovarian" = "#F1903D", 
+                            "Melanoma" = "#FFC75F", 
+                            "CNS" = "#F9F871"))
 
 
 cor1.2 = pheatmap(cor1.2_tab,
                   annotation_colors = cor1.2_colour,
                   annotation_row = cor1.2_hclust_tree,
+                  annotation_col = cor1_tissue_an,
                   fontsize = 6.5,
                   fontsize_row= 5, 
                   fontsize_col = 6,
                   gaps_col=50,
                   info = TRUE
-)
+                  )
 
+cor1.2
 
 # Retrieving hierachical clustering
 
@@ -672,10 +682,6 @@ heatmap(cor, col = cm.colors(256))
 
 cor1.2 = cor(cor1.2_tab)
 heatmap(cor1.2, col = cm.colors(256))
-
-# Pending 
-qplot(cor1_tab, bins = 30)
-
 
 
 ### 3.    CORRELATION 2: Biomarkers found using the variance vs tissue                                        ####
