@@ -123,6 +123,7 @@ The following barplot shows the prevalence of tissues, in which 50 of our biomar
 ```{r, fig.height= 5, fig.width= 7}
 col=palette(rainbow(9))
 table(tissue)
+par(mar=c(5, 4, 5, 9))
 barplot(table(tissue), ylab="counts", main="Affected tissues by biomarkers", col=col, las=3, cex.names = 0.7)
 ```
 
@@ -131,6 +132,7 @@ Vorinostat is used against T-cell lymphomas. They origin from T-cells which are 
 ```{r, fig.height= 5, fig.width= 7}
 col=palette(rainbow(16))
 table(general.function) 
+par(mar=c(10, 4, 6, 9))
 barplot(table(general.function), ylab="counts", main="General functions of biomarkers", col=col, las=3, cex.names = 0.7)
 ```
 
@@ -139,7 +141,8 @@ In order to get a better overview of the function, we can plot only those functi
 ```{r, fig.height= 5, fig.width= 7}
 highfrequencyfunctions <- table(general.function)[table(general.function)>2]
 
-col=palette(rainbow(7))
+col=palette(rainbow(8))
+par(mar=c(10, 4, 6, 9))
 barplot(highfrequencyfunctions, ylab="counts", main="Prevalent functions of biomarkers", col=col, las=3, cex.names = 0.7)
 ```
 
@@ -221,8 +224,7 @@ The result of the assignment can be visualized via a bar plot.
 
 ```{r, fig.height= 5, fig.width= 7}
 # visualization 
-par(mar=c(5, 4, 5, 9))
-par(mfrow=c(1,3))
+par(mar=c(5, 4, 5, 9), mfrow=c(1,3))
 barplot(ggo.bp, drop=TRUE, showCategory=12)
 barplot(ggo.mf, drop=TRUE, showCategory=12)
 barplot(ggo.cc, drop=TRUE, showCategory=12)
