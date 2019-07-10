@@ -1,0 +1,457 @@
+---
+title: "Multiple and Linear Regressions"
+author: "Florencia Zúñiga"
+date: "7/9/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Multiple and Linear Regressions
+
+
+## PART 1 
+
+####  1.  LOADING DATA                                                                                                      
+
+Needed libraries:
+```{r}
+library(readr)
+library(rstudioapi)
+```
+
+
+Finding local directory
+```{r}
+
+wd = ("/GitHub/project-02-group-05")
+```
+
+
+
+
+Reading the data
+```{r}
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+Sensitivity <- readRDS(paste0(wd,"/data/NegLogGI50.rds"))
+
+
+Basal <- readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
+Copynumber <- readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
+Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
+
+Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+```
+ 
+
+Transforming the data
+```{r}
+Treated <- as.data.frame(Treated)
+Untreated <- as.data.frame(Untreated)
+Sensitivity<- as.data.frame(Sensitivity)
+```
+
+Data normalization
+```{r}
+Untreated_norm <- apply(Untreated, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+
+
+Treated_norm <- apply(Treated, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+
+
+FC <- Treated - Untreated
+FC_norm <- apply(FC, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+```
+
+###   1.1 Biomarkers                                                                                                        
+##  (1)  Creating Vorinostat
+
+
+#Find cell lines, which belong to vorinostat:
+
+Untreated matrix:
+
+```{r}
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+UntreatedVorinostatcolumns
+```
+
+
+Same with treated matrix:
+```{r}
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+identical(TreatedVorinostatcolumns, 761:819)
+```
+
+
+#Define Vorinostat-data: 
+```{r}
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+```
+
+#fold change matrix 
+```{r}
+FC <- TreatedVorinostat - UntreatedVorinostat
+```
+
+# sensitivity 
+```{r}
+vorinostat_Sensitivity_alleZeilen= grep ('vorinostat', rownames(Sensitivity))
+vorinostat_Sensitivity_data= Sensitivity[vorinostat_Sensitivity_alleZeilen,]
+```
+
+We see, that we have a heavy tailed distribution. Nevertheless, we assume normality.
+
+
+##  (2)  Creating FC Data -  Finding the Biomarkers
+
+```{r}
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+```
+
+We work with mean of the rows because we only want to compare the genes 
+```{r}
+FC_meanrow= rowMeans(FC)
+```
+
+
+### Sorting the data 
+
+We work with absolute value to find the highest values, because we want to have the most up and down regulated genes.
+```{r}
+FC_abs= abs(FC_meanrow)
+```
+
+We sort the values to get the 100 largest values 
+
+```{r}
+sortedFC_abs <- sort(FC_abs, decreasing = TRUE)
+sortedFC_abs <- as.matrix(sortedFC_abs)
+```
+
+
+We select the first n for biomarkers 
+
+```{r}
+biomarkers_FC30 = sortedFC_abs[1:30,]
+biomarkers_FC30 <- as.matrix(biomarkers_FC30)
+
+
+biomarkers_FC100 = sortedFC_abs[1:100,]
+biomarkers_FC100 <- as.matrix(biomarkers_FC100)
+```
+
+
+### Creating a matrix with FC values, that are both positive and negative 
+
+```{r}
+FC_both= cbind(FC_meanrow,FC_abs)
+FC_both=as.data.frame(FC_both)
+```
+
+Ordering this matrix 
+```{r}
+FC_both_sorted <- FC_both[order(FC_both$FC_abs, decreasing = TRUE),]
+```
+
+
+FC values of biomarkers
+We select the first 100 of the sorted matrix, which should be the same as un biomarkers_FC 
+```{r}
+biomarkers_FC_values30 = FC_both_sorted[1:30,]
+
+biomarkers_FC_values100 = FC_both_sorted[1:100,]
+```
+
+
+
+Removing the absolute values
+```{r}
+biomarkers_FC_values30 <- subset( biomarkers_FC_values30, select = -FC_abs)
+biomarkers_FC_values30 = as.matrix(biomarkers_FC_values30)
+
+biomarkers_FC_values100 <- subset( biomarkers_FC_values100, select = -FC_abs)
+biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
+```
+
+
+####  2.  PREPARING THE DATA                                                                                                
+###   2.1 Creating the necessary tables (Copynumber with biomarkers/all genes and Cell lines with drug sensitivity)         
+
+## (1) Table 1: Selection of 100 Biomarkers in copynumber 
+
+```{r}
+BM_copynumber = Copynumber[ which(row.names(Copynumber) %in% rownames(biomarkers_FC_values100)), ]
+
+BM_Copynumber_meancol= colMeans(BM_copynumber)
+
+CN = as.data.frame(BM_Copynumber_meancol)
+```
+
+## (2) Table 2: All genes in copynumber 
+
+```{r}
+CN_meancol= colMeans(Copynumber)
+
+CN_all = as.data.frame(CN_meancol)
+```
+
+
+## (3) Table 3: Selection of Doubling time from cellline_annotation
+
+```{r}
+library(dplyr)
+library(knitr) 
+```
+
+Selecting the desired columns
+
+```{r}
+Doubling_Time <- cellline_annotation %>% 
+  select(Cell_Line_Name, Doubling_Time)
+```
+
+Changig the name of the "name" column to the names of the cell lines
+
+```{r}
+row.names(Doubling_Time) <- Doubling_Time$Cell_Line_Name
+Doubling_Time[1] <- NULL
+```
+
+## (4) Table 4: Selection of vorinostat row from Sensitivity
+
+```{r}
+drug_sensitivity <- Sensitivity[-c(1:14),] 
+
+drug_sensitivity = t(drug_sensitivity)
+```
+
+####  3.  SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with doubling time                                      
+
+Can we predict drug sensitivity using doubling time?
+How much of the variance of the data can be explained using the doubling time?
+
+## Data frames
+
+```{r}
+DT = as.data.frame(Doubling_Time)
+
+DS = as.data.frame(drug_sensitivity)
+```
+
+
+## Table with drug sensitivity and doubling time per cell line
+
+```{r}
+lm_tab = transform(merge(DT,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+```
+
+
+###   3.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data              
+
+
+Ploting the data: can a linear relationship be observed? Should we expect a high value for R-squared?
+
+Here we aim to Visualize the relationship between doubling time and drug sensitivity
+
+# (1) Scatter Plot
+
+```{r}
+scatter.smooth(lm_tab$vorinostat, 
+               lm_tab$Doubling_Time, 
+               col = "dodgerblue1",
+               main = "Drug sensitivity & Doubling time Regression",
+               xlab = "Drug sensitivity",
+               ylab = "Doubling time",
+               cex = 1.3,
+               pch = 1)
+```
+
+
+At first look, the points in the plot are so scattered, that a linear relationship seems unlikely.  The second problem that one can observe in this graphic, is that the line describing the behaviour is not straight. 
+
+# (2) Box plot
+
+```{r}
+par(mfrow=c(1, 2))
+boxplot(lm_tab$vorinostat, 
+        main="Drug sensitivity", 
+        sub=paste("Outlier rows: ", boxplot.stats(lm_tab$vorinostat)$out)
+        ) 
+boxplot(lm_tab$Doubling_Time, 
+        main="Doubling time", 
+        sub=paste("Outlier rows: ", boxplot.stats(lm_tab$Doubling_Time)$out)
+        ) 
+```
+
+
+A boxplot can help us visualize the amount of outliers in our data. This is relevant as too many (extreme) outliers can have great impact on the results of our analysis and can change the outcome completely. They can easily affect the slope. 
+Some outliers can be observed.
+
+# (3) Density: Should be expect normality for drug sensitivity?
+
+```{r}
+library(e1071)
+
+par(mfrow=c(1, 2)) 
+
+plot(density(lm_tab$vorinostat), 
+     main="Density Plot: Drug Sensitivity", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab$vorinostat), 2))
+     )
+
+polygon(density(lm_tab$vorinostat), col="royalblue1")
+
+plot(density(lm_tab$Doubling_Time), 
+     main="Density Plot: Doubling time", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab$Doubling_Time), 2))
+    )
+
+polygon(density(lm_tab$Doubling_Time), col="skyblue1")
+```
+
+Skewness of the plot on the left: 0.22 -> Plot is slightly skewed to the right
+
+Skewness of the plot on the right: 1.03 -> Plot is skewed to the right.
+
+The shape of a density plot and its skewness, give us an idea of how well normalized our data is. Taking this into consideration, it is worth noting that the plot for doubling time is considerably skewed to the right. This tells us our data is not very well normalized.
+
+# (4) Correlation: what is the level level of linear dependence between the two variables?
+
+```{r}
+cor(lm_tab$vorinostat, lm_tab$Doubling_Time)
+```
+
+A good value for correlation lies close to 1 or -1, whilst the value 0 is undesirable. Values closer to 0 indicate that there is a weak relationship. The results shows us that there is a weak correlation with a negative slope.   
+
+
+These analysis help us predcit whether a linear regression is or not the best model to describe our data. 
+Taking into consideration all results so far for this part, it is not unreasonable to predict that a linear regression will probably not be the best model to describe the relationships in our data.
+
+###   3.2 Linear Regression                                                                                                 ####
+
+This is the function for a linear regression:
+
+linear_regression = lm(predicted ~ predictor, data = dat) 
+
+
+## Linear Regression
+
+```{r}
+reg1 <- lm(vorinostat ~ Doubling_Time, data = lm_tab)
+```
+
+
+## Details about the linear regression: what we need draw some conclusions
+
+```{r}
+summary(reg1)
+```
+
+
+Multiple R-squared:  0.04235 
+This indicates that only 4,235% percent of the variation in the data (drug sensitivity) can be explained by the relationship between drug sensitivity and doubling time. In other words, there is a 4.235% variance reduction when we take the doubling time into account. 
+
+p-value: 0.1116 
+As the p-value for reg1 is significantly larger than 0.05 and R-squared tells us the doubling time only explains 4.235% of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and doubling time, a.k.a doubling time cannot predict drug sensitivity. 
+
+More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
+
+```{r}
+confint(reg1)
+```
+
+
+###   3.3 Checking the normalization of residuals                                                                           
+
+Here we explore two ways to visualize the normalization of residuals.
+```{r}
+hist(reg1$residuals, 
+     breaks = 20, 
+     xlab = "Residuals", 
+     main = "Drug sensitivity vs doubling time: Histogram of the residuals")
+```
+
+The data does NOT look normally distributed: As the residuals are not normally distributed, then the hypothesis that they are a random dataset, takes the value NO. This means that the linear regression model does not explain all trends in the dataset.
+
+
+
+```{r}
+qqnorm(reg1$residuals)
+qqline(reg1$residuals, col = "red")
+```
+
+
+###   3.4 Visualization: Plots that describe the linear regression                                                          ####
+
+## Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
+
+library(lattice)
+
+xyplot(resid(reg1) ~ fitted(reg1),
+       xlab = "Fitted Values",
+       ylab = "Residuals",
+       main = "Residual Diagnostic Plot",
+       col = "slateblue3",
+       panel = function(x, y, ...)
+       {
+         panel.grid(h = -1, v = -1)
+         panel.abline(h = 0)
+         panel.xyplot(x, y, ...)
+       }
+      )
+
+
+qqmath( ~ resid(reg1),
+      xlab = "Theoretical Quantiles",
+      ylab = "Residuals",
+      abline(a=-0.01034, b=1))
+
+#Here we expect to be able to draw a straight line that is fitting for most points. Although, this graphic seems promising,
+#too many points would not be properly fit. 
+
+# Visualization of regression 
+
+par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
+plot(reg1, which = c(1, 2))
+
+# Comparing prediction and real values for drug sensitivity
+
+plot(lm_tab$vorinostat, reg1$fitted.values, pch = 20, col = "royalblue1", xlab = "Real values", ylab = "Predicted values")
+abline(0, 1, col = "red")
+
+
+####  4.  SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber                                    ####
+
+```{r cars}
+summary(cars)
+```
+
+## Including Plots
+
+You can also embed plots, for example:
+
+```{r pressure, echo=FALSE}
+plot(pressure)
+```
+
+Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
