@@ -46,9 +46,9 @@ First of all, we want to explore the whole data from all 15 drug responses inclu
 Before we are able to start the broad analysis, we load the needed data. The data sets are taken from the NCI Transcriptional Pharmacodynamics Workbench, including the effect on 13.299 genes from 61 cell lines treated with 15 different anticancer agents.
 
 ```{r, include = FALSE}
-wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
 
-#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 ```{r read_data, message = FALSE, warning = FALSE}
@@ -264,13 +264,9 @@ legend("topright", inset = c(-0.4,0.0), legend= levels(drug), xpd = TRUE,
        pch=19, col = levels, title = "drugs")
 ```
 
-Here we can see that most FC values are in a similar value range. Only 5-Azacytidine and bortezomib have clear outliers. Moreover brotezomib and geldanamycin show mostly downregulated genes. 
+Here we can see that most FC values are in a similar value range.This is beacuse we used the column mean, so we get one value for each sample. 
+Only 5-Azacytidine and bortezomib have clear outliers. Moreover brotezomib and geldanamycin show mostly downregulated genes. 
 
-The shape of the density plot of the mean FC values shows that the data is approximately normally distributed: 
-
-```{r}
-plot(density(FC_all_mean), main= "Distribution of Fold Change Values")
-```
 
 Coloring the scatter plot according to the tissue type shows that there is no correlation between FC values and tissue type, if we look at all drugs:
 
@@ -287,13 +283,10 @@ legend("topright", inset = c(-0.4,0), legend= levels(tissue), xpd = TRUE, pch=19
        title = "tissues")
 ```
 
-We can identify the Top 10 values from the FC matrix, which indicate the ten most up and down regulated genes by a specific drug in a specific cell line. 
+We can identify the Top 10 values from the FC matrix, which indicate the ten most up and down regulated samples by a specific drug in a specific cell line. 
 
 ``` {r include = FALSE}
-#install.packages("knitr")
 library(knitr)
-#install.packages("xtable")
-#library(xtable)
 ```
 
 ```{r results = "asis"}
@@ -316,6 +309,24 @@ knitr::kable(largest10_FC_all_max, caption = "10 highest FC values")
 ```
 
 Here we can see, that vorinostat (occurs 3 times for downregulated and 2 times for up regulated), bortezomib (occurs 3 times for downregulated and 6 times for up regulated) seem to have great effects on the gene expression in the celllines. Moreover, the OVCAR-4 cell line, which bellows to the ovarian cancer, occurs the most (3 times) in the down regulated data. 
+
+Now we want to see which genes are changed the most. Therefore we are looking for the highest and lowest FC values of our genes.
+
+```{r}
+FC=Treated-Untreated
+
+### most up regulated 
+samplemax=apply(FC,1, max)
+max10=(sort(samplemax, decreasing = T)[1:10])
+max10=as.data.frame(max10)
+knitr::kable(max10, caption = "most up regulated ")
+
+### most down regulated 
+samplemax=apply(FC,1, min)
+min10=(sort(samplemax, decreasing = F)[1:10])
+min10=as.data.frame(min10)
+knitr::kable(min10, caption = "most down regulated ")
+```
 
 ***
 
@@ -460,9 +471,6 @@ We execute the PCA with normalized FC data:
 
 ```{r}
 FC_norm <- Treated_norm - Untreated_norm
-#FC_norm <- apply(FC, 2, function(x){
- # (x - mean(x)) / sd(x)
-#})
 ```
 
 ```{r, warning= FALSE}
