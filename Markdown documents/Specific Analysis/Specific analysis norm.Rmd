@@ -383,12 +383,27 @@ diff= setdiff(generalbiomarkergenes,biomarkers.genes)
 length(diff)
 ```
 
+``` {r include = FALSE}
+library(knitr)
+```
+
 We want to compare p.Values and FC values in a new matrix which contains both values:
 ```{r}
-pV_FC= cbind(FC_meanrow,sortedpValues)
+pValues=as.data.frame(pValues)
+sort(rownames(pValues), decreasing = F)
+
+FC=TreatedVorinostat-UntreatedVorinostat
+FC_m=rowMeans(FC)
+FC_m=as.data.frame(FC_m)
+sort(rownames(FC_m), decreasing = F)
+
+
+pV_FC= cbind(FC_m,pValues)
+pV_FC=as.data.frame(pV_FC)
+pV_FC=pV_FC[generalbiomarkergenes,]
 head(pV_FC)
 ```
-Now we know that p.Value and FC value do not deliver the same biomarkers. In fact, 88 out of 100 biomarkers are different.
+Now we know that p.Value and FC value do not deliver the same biomarkers. In fact, 87 out of 100 biomarkers are different.
 If we compare the values directly, we see that a low p.value does not correlate with a high FC value. This is because small values are also assigned small p.values by the T-test and the result of the test is therefore falsified. For this reason, we cannot trust the biomarkers from the two-sided T-test and will trust the biomarkers we received via the __fold change__ values.
 
 
