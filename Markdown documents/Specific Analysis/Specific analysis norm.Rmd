@@ -388,7 +388,7 @@ library(knitr)
 ```
 
 We want to compare p.Values and FC values in a new matrix which contains both values:
-```{r}
+```{r,results='hide',message=FALSE}
 pValues=as.data.frame(pValues)
 sort(rownames(pValues), decreasing = F)
 
@@ -396,8 +396,9 @@ FC=TreatedVorinostat-UntreatedVorinostat
 FC_m=rowMeans(FC)
 FC_m=as.data.frame(FC_m)
 sort(rownames(FC_m), decreasing = F)
+```
 
-
+```{r}
 pV_FC= cbind(FC_m,pValues)
 pV_FC=as.data.frame(pV_FC)
 pV_FC=pV_FC[generalbiomarkergenes,]
