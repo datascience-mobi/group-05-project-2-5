@@ -338,7 +338,7 @@ For both PCAs, the celllines were colored by 2 different features:
 
 Execute the PCA for Treated data:
 ```{r}
-treated.pca = prcomp(Treated_norm, center=T, scale. = T)
+treated.pca = prcomp(Treated_norm)
 ```
 
 Hereinafter, we want to use __information from Metadata__ to color different celllines in the PCA. Therefore we need to check, if the celllines in the sample-column of Metadata are in the same order as in the Treated matrix. First of all we test, if the number of samples is equal.
@@ -352,7 +352,7 @@ library(readr)
 ```{r}
 identical(nrow(Metadata), ncol(Treated_norm))
 nrow(Metadata)
-ncol(Treated)
+ncol(Treated_norm)
 ```
 
 Metadata consists of twice as much celllines as the Treated matrix since Metadata contains information for treated and untreated celllines.
@@ -404,8 +404,8 @@ Plot Principal component 1 and 2 and add a legend to the plot. To see the PCA pl
 
 ```{r plot_data, fig.height= 5, fig.width= 7}
 par(mar=c(5, 4, 5, 9))
-plot(treated.pca$rotation[, 2], treated.pca$rotation[, 3], pch = 19, xlab = "PC2",
-     ylab = "PC3", col= drugfactor, main = "PCA Treated colored by drug")
+plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19, xlab = "PC1",
+     ylab = "PC2", col= drugfactor, main = "PCA Treated colored by drug")
 druglevels <- as.factor(levels(drugfactor))
 legend("topright", inset = c(-0.4,0),levels(drugfactor), xpd = TRUE, pch=19,
        col = druglevels, title = "Drug")
@@ -437,18 +437,18 @@ Since we have 9 different tissue types we need 9 different colors:
 palette(rainbow(9))
 ```
     
-Plot PC 2 and PC 3 and add a legend:
+Plot PC 1 and PC 2 and add a legend:
 ```{r, fig.height= 5, fig.width= 7}
 par(mar=c(5, 4, 5, 9))
-plot(treated.pca$rotation[, 2], treated.pca$rotation[, 3], pch = 19, xlab = "PC2",
-     ylab = "PC3", col= tissuefactor, main= "PCA Treated colored by tissue")
+plot(treated.pca$rotation[, 1], treated.pca$rotation[, 2], pch = 19, xlab = "PC1",
+     ylab = "PC2", col= tissuefactor, main= "PCA Treated colored by tissue")
 levels <- as.factor(levels(tissuefactor))
 tissuelevels <- as.factor(levels(tissuefactor))
 legend("topright", inset = c(-0.3,0), levels(tissuefactor), xpd = TRUE, pch=19,
        col = tissuelevels, title = "Tissue") 
 ```
 
-PC 2 and PC 3 group the treated celllines as well as other PC combinations. Thus, most of the celllines of the same tissue-type seem to have similarities regarding their gene expression.
+PC 1 and PC 2 group the treated celllines as well as other PC combinations. Thus, most of the celllines of the same tissue-type seem to have similarities regarding their gene expression.
            
                  
 ***
@@ -459,14 +459,14 @@ PC 2 and PC 3 group the treated celllines as well as other PC combinations. Thus
 We execute the PCA with normalized FC data:
 
 ```{r}
-FC <- Treated - Untreated
-FC_norm <- apply(FC, 2, function(x){
-  (x - mean(x)) / sd(x)
-})
+FC_norm <- Treated_norm - Untreated_norm
+#FC_norm <- apply(FC, 2, function(x){
+ # (x - mean(x)) / sd(x)
+#})
 ```
 
 ```{r, warning= FALSE}
-pca.FC = prcomp(FC_norm, center = T, scale. = T)
+pca.FC = prcomp(FC_norm)
 ```
 
 We want to see how much variance is explained by each principle component:
@@ -502,7 +502,7 @@ Example: PC1 and PC2 do not group celllines of same tissue-type:
 palette(rainbow(9))
 par(mar=c(5, 4, 5, 9))   
 
-plot(pca.FC$rotation[, 1], pca.FC$rotation[, 2], col = tissuefactor, pch = 19, xlab = "PC1",
+plot(pca.FC$rotation[, 1], pca.FC$rotation[, 2], col = tissuefactorFC, pch = 19, xlab = "PC1",
      ylab = "PC2", main = "PCA FC colored by tissue")
 levels <- as.factor(levels(tissuefactorFC))
 
@@ -527,26 +527,26 @@ Save drug information as factors so it can be used for coloring:
 drugfactorFC <- as.factor(FCwithdrugs["Metadatadrugs",])
 ```
 
-Plot PC 2 & PC 3:
+Plot PC 1 & PC 2:
 
 ```{r, fig.height= 5, fig.width= 7}
 palette(rainbow(15))
 par(mar=c(5, 4, 5, 9))
 
-plot(pca.FC$rotation[, 2], pca.FC$rotation[, 3], col = drugfactor , pch = 19, xlab = "PC2"
-         , ylab = "PC3", main = "PCA FC colored by drugs")
+plot(pca.FC$rotation[, 1], pca.FC$rotation[, 2], col = drugfactorFC , pch = 19, xlab = "PC1"
+         , ylab = "PC2", main = "PCA FC colored by drugs")
 levels <- as.factor(levels(drugfactorFC))
 
 legend("topright", inset = c(-0.4,0), levels(drugfactorFC), xpd = TRUE, pch=19,
        col = druglevels, title = "Drugs")
 ```
    
-Plot PC 3 and PC 4:
+Plot PC 2 and PC 3:
 
 ```{r, fig.height= 5, fig.width= 7}
 par(mar=c(5,4,5,9))
-plot(pca.FC$rotation[, 3], pca.FC$rotation[, 4], col = drugfactor , pch = 19, xlab = "PC3",
-     ylab = "PC4", main = "PCA FC colored by drug")
+plot(pca.FC$rotation[, 2], pca.FC$rotation[, 3], col = drugfactorFC , pch = 19, xlab = "PC2",
+     ylab = "PC3", main = "PCA FC colored by drug")
 levels <- as.factor(levels(drugfactorFC))
 legend("topright", inset = c(-0.4,0), levels(drugfactorFC), xpd = TRUE, pch=19,
        col = druglevels, title = "Drugs")
@@ -573,12 +573,12 @@ Add the information, whether samples belong to Vorinostat, to the FC matrix:
 HighlightVorinostat <- cbind(`FC_norm` = Marking)
 ```
 
-Plot PC 3 and PC 4:
+Plot PC 1 and PC 2:
 
 ```{r, fig.height= 5, fig.width= 7}
 par(mar=c(5, 4, 5, 9))
-plot(pca.FC$rotation[, 3], pca.FC$rotation[, 4], col = HighlightVorinostat, pch = 19,
-     xlab = "PC3", ylab = "PC4", main = "PCA FC Highlighted Vorinostat samples")
+plot(pca.FC$rotation[, 1], pca.FC$rotation[, 2], col = HighlightVorinostat, pch = 19,
+     xlab = "PC1", ylab = "PC2", main = "PCA FC Highlighted Vorinostat samples")
 legend("topright", inset = c(-0.3,0), legend = c("Vorinostat","Other drugs"),
        xpd = TRUE, pch=19, col = c("yellow", "black")) 
 
