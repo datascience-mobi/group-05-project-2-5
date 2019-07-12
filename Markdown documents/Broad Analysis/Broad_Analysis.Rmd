@@ -46,9 +46,9 @@ First of all, we want to explore the whole data from all 15 drug responses inclu
 Before we are able to start the broad analysis, we load the needed data. The data sets are taken from the NCI Transcriptional Pharmacodynamics Workbench, including the effect on 13.299 genes from 61 cell lines treated with 15 different anticancer agents.
 
 ```{r, include = FALSE}
-wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
 
-#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 ```{r read_data, message = FALSE, warning = FALSE}
