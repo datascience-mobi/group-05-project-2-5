@@ -44,7 +44,8 @@ Normally, cells maintain a dynamic balance between acetylated and deacetylated h
 Vorinostats application as an anti-cancer medicine might origin from a better access to tumor-suppressorgenes in the acetylated form.
 
 ```{r}
-Drug_annotation$target[grep(Drug_annotation$Drug, pattern= "vorinostat")]
+target=Drug_annotation$target[grep(Drug_annotation$Drug, pattern= "vorinostat")]
+
 ```
 We see, that the targets of vorinostat are exclusively HDACs. In further analyses, we want to check their gene expression change under vorinostat- treatment since we can imagine that an increased inhibition might result in a higher production of HDACs to maintain the balance.
 
@@ -92,20 +93,19 @@ Until now, the T-cell lymphoma is the only cancer-type which indicates vorinosta
 
 
 
-
+***
 ## 1. General visualizations {#anchor1}
 
 ### 1.1. Pie chart of tissue types {#anchor2}
 
-Which tissue types are we dealing with when we work with the vorinostat-treated celllines?
-We use tissue information from Metadata and add it to the Treated-matrix, then we select those columns which belong to Vorinostattreatment:
+Which tissue types are we dealing with when we work with the vorinostat-treated celllines? To get an overview of this, we use tissue information from Metadata and add it to the Treated-matrix, then we select those columns which belong to Vorinostat treatment:
 ```{r}
 Metadata <- as.matrix(Metadata)
 Metadatatissue <- Metadata[1:819,"tissue"]
 Treatedwithtissue <- rbind(Treated, Metadatatissue)
 
-    TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treatedwithtissue))
-    TreatedVorinostattissue <- Treatedwithtissue[,TreatedVorinostatcolumns]
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treatedwithtissue))
+TreatedVorinostattissue <- Treatedwithtissue[,TreatedVorinostatcolumns]
 
 #Create a pie chart:
     
@@ -115,6 +115,8 @@ pie(table(TreatedVorinostattissue["Metadatatissue",]),
     radius=1, 
     cex=0.8)
 ```
+
+We see, that most of our samples belong to the tissue types "lung", "melanoma" and "renal". However, this does not mean that Vorinostat works best there. This is only the selection of samples for the dataset.
 
 ### 1.2.Density plot of general gene expression {#anchor3}
 
@@ -135,22 +137,25 @@ legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = T
 
 Altough Vorinostats working mechanism as a HDAC inhibitor should lead to a better access to genes, we do not see a higher expression in terms of all genes. We are interested in how this plot changes when we plot only our biomarkers, so we are going to repeat the density plot later when we identified them.
 
-
+***
 
 ## 2. Create a Vorinostat-FC-matrix {#anchor4}
 
-For the soecific analysis, it is laborious to work with the whole dataset which includes data from all 15 drugs. Consequently, we reduce the data-sets by selecting those celllines that belong to vorinostat:
+For the specific analysis, it is laborious to work with the whole dataset which includes data from all 15 drugs. Consequently, we reduce the data-sets by selecting those samples that belong to vorinostat:
 
 ```{r}
 UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
 TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
 ```
 
-We want to keep all genes but only the selected celllines:
+We want to keep all genes but only the selected samples:
 ```{r}
 UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
 TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+```
 
+Moreover, we have to normalize the data to remove batch effects. 
+```{r}
 # normalize the data 
 UntreatedVorinostat <- apply(UntreatedVorinostat, 2, function(x){
   (x - mean(x)) / sd(x)
@@ -164,12 +169,13 @@ TreatedVorinostat <- apply(TreatedVorinostat, 2, function(x){
 FC <- TreatedVorinostat  - UntreatedVorinostat
 ```
 
+***
 
 ## 3. Finding biomarkers {#anchor5}
 
 ### 3.1. Biomarkers received from two-sided T-test {#anchor6}
 
-The two-sided T-test was performed to find those genes with the smallest p-values, since they change most significantly under drug treatment. 
+The two-sided T-test was performed to find those genes with the smallest p-values, since they change most significantly under drug treatment. These can then possibly be used as biomarkers.
 
 For the t-test, we need to check if genes and celllines are in the same order in both matrices:
 ```{r}
@@ -180,18 +186,20 @@ identical(rownames(UntreatedVorinostat), rownames(TreatedVorinostat))
 ```{r}
 identical(colnames(UntreatedVorinostat), colnames(TreatedVorinostat))
 ```
-The colnames differ since the the matrices have a different drug dosis
+
+The colnames differ, since the the matrices have a different drug dosis. 
 We remove the information about the dosis (replace it with nothing):
 
 ```{r}
 Untreatedcolnames <- sub(pattern = "_0nM_24h", "", colnames(UntreatedVorinostat))
 Treatedcolnames <- sub(pattern = "_5000nM_24h", "", colnames(TreatedVorinostat))
 ```
-Check, if the colnames are equal now:
+
+Check, if the colnames are equal:
 ```{r}
 identical(Untreatedcolnames, Treatedcolnames)
 ```
-Since the colnames are equal now, matrices do not differ regarding their order of celllines, the dosis is the only difference, thus we can use both matrices to perform a two-sided t-test.
+Since the colnames are equal now, matrices do not differ regarding their order of celllines.  The dosis was the only difference. Thus, we can use both matrices to perform a two-sided t-test.
 
 We need to formulate hypotheses:
 
@@ -257,11 +265,16 @@ Those 100 genes with the smallest p-Value are most significant:
 biomarkers <- sortedpValues[1:100,]
 biomarkers <- as.matrix(biomarkers)
 biomarkers.genes = row.names(biomarkers)
+head(biomarkers.genes)
 ```
+
 
 ## 3.2. Biomarkers received from FC values {#anchor7}
 
 ### 3.2.1.General biomarkers {#anchor8}
+
+The FC value is a measure of the change in gene expression. Therefore, it is also well suited for the determination of biomarkers. In order to avoid mutually canceling effects and to find the largest change (regardless of its direction), we only use absolute values here.
+
 ```{r}
 FC <- TreatedVorinostat - UntreatedVorinostat
 
@@ -288,7 +301,7 @@ Now we have determined biomarkers via the fold change. However, since we have wo
 
 ### 3.2.2. Up- and Downregulation of biomarkers {#anchor9}
 
-We determine rowmeans of FC values but unlike before, we do not use absolute values to calculate the averages. Consequently, we get a general overview which genes are mostly up- or downregulated.
+We determine rowmeans of FC values. But unlike before, we do not use absolute values to calculate the averages. Consequently, we get a general overview which genes are mostly up- or downregulated.
 
 ```{r}
 FC_meanrow= rowMeans(FC)
@@ -306,8 +319,6 @@ FC100 <- as.matrix(FC100)
 
 # create a vector with genenames 
 biomarkergenes_noabs = row.names(FC100)
-# check if it has the correct length
-length(biomarkergenes_noabs)
 ```
 
 We want to compare the top biomarkers with and without using absolute values to determine how much they differ:
@@ -328,9 +339,10 @@ diff2= setdiff(generalbiomarkergenes,biomarkergenes_noabs)
 length(diff2)
 diff2
 ```
+
 We see that only 5 genes differ in the top biomarkers. Nevertheless, it is better to trust the absolute values, as they indicate the largest change in gene expression. So we avoid, that up- or down-regulating effects cancel each other out.
 
-In order to be able to work better with the biomarkers, we creat a matrix with the information whether the genes are up or down regulated.  
+In order to be able to work better with the biomarkers, we creat a matrix with the information, whether the genes are up or down regulated.  
 
 ```{r}
 FCVorinostatmean_noabs= rowMeans(FC)
@@ -371,7 +383,8 @@ head(top100generalbiomarkers_withUporDown)
 
 ### 3.3. Comparison of the differently received biomarkers {#anchor10}
 
-Now we have determined biomarkers via the 2 sided T-test and want to investigate their FC values now since our biomarkers should have the largest change in gene expression. 
+Now we have determined biomarkers via the 2-sided T-test and want to investigate their FC values, since our biomarkers should cause the largest change in gene expression.
+
 Do we have exactly the same biomarkers?
 ```{r}
 setequal(generalbiomarkergenes,biomarkers.genes)
@@ -383,11 +396,12 @@ diff= setdiff(generalbiomarkergenes,biomarkers.genes)
 length(diff)
 ```
 
+Obviously, the biomarkers almost do not match at all. Thus, we want to compare p.Values and FC values in a new matrix which contains both values:
+
 ``` {r include = FALSE}
 library(knitr)
 ```
 
-We want to compare p.Values and FC values in a new matrix which contains both values:
 ```{r,results='hide',message=FALSE}
 pValues=as.data.frame(pValues)
 sort(rownames(pValues), decreasing = F)
@@ -404,11 +418,12 @@ pV_FC=as.data.frame(pV_FC)
 pV_FC=pV_FC[generalbiomarkergenes,]
 head(pV_FC)
 ```
+
 Now we know that p.Value and FC value do not deliver the same biomarkers. In fact, 87 out of 100 biomarkers are different.
 If we compare the values directly, we see that a low p.value does not correlate with a high FC value. This is because small values are also assigned small p.values by the T-test and the result of the test is therefore falsified. For this reason, we cannot trust the biomarkers from the two-sided T-test and will trust the biomarkers we received via the __fold change__ values.
 
 
-
+***
 
 
 ## 4. Visualizations of biomarkers {#anchor11}
@@ -469,8 +484,7 @@ barplot( height= biomarkers_FC_values$FC_meanrow,
 
 ```
 
-We see that most values are very similar to each other and that we have approximately the same number of genes regulated up and down as we already have visualized above.
-
+We see that most values are very similar to each other. 
 
 
 ### 4.3. Visualization of biomarkers with Vulcanoplot {#anchor14}
@@ -543,16 +557,21 @@ Now we want to further investigate our biomarkers.
 
 ## 5. Are the targets for vorinostat (HDACs) part of our biomarkers? {#anchor15}
 
+As already mentioned in the introduction, the metadata describe the HDACs as targets of Vorinostat. Now we want to investigate whether these are among our biomarkers. To do this, we first create a vector that contains the target names. 
 
 ```{r}
-# search for HDAC in biomarkers 
-target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
-length(target)
+###find target of vorinostat 
+
+target=Drug_annotation$target
+target=as.data.frame(target)
+
+# take row with vorinostat 
+target_vorinostat=target[9,]
+target_vorinostat
+
 ```
 
-In drug annotation, HDAC genes are mentioned as target of vorinostat, but these genes are not in our defined biomarkers, so we want to check their FC values: 
-
-We create a vector with targetnames as strings, because otherwise we have a problem with spacer | 
+We create a vector with targetnames as strings, because otherwise we have a problem with spacer |.  
 
 ```{r}
 target_vorinostat=c("HDAC1","HDAC10","HDAC11","HDAC2","HDAC3","HDAC5","HDAC6",
@@ -564,20 +583,29 @@ target_vorinostat=c("HDAC1","HDAC10","HDAC11","HDAC2","HDAC3","HDAC5","HDAC6",
 FC_meanrow = as.data.frame(FC_meanrow)
 genes = row.names(FC_meanrow)
 FC_new=cbind(FC_meanrow,genes)
+
+# search for HDAC in biomarkers 
+target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
+length(target)
 ```
 
+In drug annotation, HDAC genes are mentioned as target of vorinostat, but these genes are not in our defined biomarkers, so we want to check their FC values: 
+
 ```{r, include = FALSE}
-# filter data 
 library(dplyr)
 ```
 
 ```{r}
+# filter data 
 FC_target = as.data.frame(filter(FC_new, genes %in% target_vorinostat))
 FC_target
+
+knitr::kable(head(FC_target), caption = "FC values vorinostat targets")
 ```
 
+The changes in gene expression are really small. Most of the HDAC genes are up regulated insted of being down regulated. This could be because the cell wants to compensate the inhibition of the enzymes by their increased formation.
 
-__Create boxplots of HDACs in comparison to biomarkers__
+__Create boxplot of HDACs in comparison to biomarkers__
 
 To compare the FC of the HDAC genes with some of our biomarkers, we create a vector which contains both biomarkers and HDAC-genes. 
 ```{r}
@@ -608,7 +636,7 @@ boxplot(t(FC_HDAC), las=3, col = col, ylab="Fold Change Values", cex.axis= 0.65,
 abline(v=7.5, col="blue", lty=5)
 ```
 
-We can summarize, that the changes in HDAC gene expression are low. Some of the them are slightly upregulated, it might be that treated cells try to compensate the inhibition of the enzymes by their increased production.
+We can summarize, that the changes in HDAC gene expression are low. Some of the them are slightly upregulated. As already mentioned, it might be that treated cells try to compensate the inhibition of the enzymes by their increased production.
 
 
 
@@ -655,7 +683,7 @@ legend("topright", inset = c(-0.3,0),levels(Metadatavorinostattissue),
 
 ## 7. Find biomarkers only for leukemia-celllines {#anchor17}
 
-Since we found in the beginning, that Vorinostat is used against T-cell lymphomas, we are interested in how Vorinostat influences especially the leukemia-celllines.
+Since we found in the beginning, that Vorinostat is used against T-cell lymphomas, we are interested in how Vorinostat influences especially the leukemia-celllines. Therefore, we now want to investigate these specific samples. 
 
 ```{r}
 #We only need the tissueinformation of those samples treated with Vorinostat
