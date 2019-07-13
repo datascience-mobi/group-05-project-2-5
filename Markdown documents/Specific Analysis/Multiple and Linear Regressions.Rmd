@@ -3,8 +3,8 @@ title: "Multiple and Linear Regressions"
 author: "Florencia Zúñiga"
 date: "7/9/2019"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -25,13 +25,10 @@ library(rstudioapi)
 ```
 
 
-Finding local directory
-```{r}
+```{r,include = FALSE}
 
 wd = ("/GitHub/project-02-group-05")
 ```
-
-
 
 
 Reading the data
@@ -51,7 +48,6 @@ Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
 Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 ```
- 
 
 Transforming the data
 ```{r}
@@ -86,31 +82,35 @@ FC_norm <- apply(FC, 2, function(x){
 
 Untreated matrix:
 
-```{r}
+#Find cell lines, which belong to vorinostat:
+
+Untreated matrix:
+
+```{r, include=FALSE}
 UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
 UntreatedVorinostatcolumns
 ```
 
 
 Same with treated matrix:
-```{r}
+```{r, include=FALSE}
 TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
 identical(TreatedVorinostatcolumns, 761:819)
 ```
 
 
 #Define Vorinostat-data: 
-```{r}
+```{r, include=FALSE}
 UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
 TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
 ```
 
 #fold change matrix 
-```{r}
+```{r, include=FALSE}
 FC <- TreatedVorinostat - UntreatedVorinostat
 ```
 
-# sensitivity 
+#Sensitivity 
 ```{r}
 vorinostat_Sensitivity_alleZeilen= grep ('vorinostat', rownames(Sensitivity))
 vorinostat_Sensitivity_data= Sensitivity[vorinostat_Sensitivity_alleZeilen,]
@@ -121,13 +121,13 @@ We see, that we have a heavy tailed distribution. Nevertheless, we assume normal
 
 ##  (2)  Creating FC Data -  Finding the Biomarkers
 
-```{r}
+```{r, include=FALSE}
 FC <- TreatedVorinostat - UntreatedVorinostat
 
 ```
 
 We work with mean of the rows because we only want to compare the genes 
-```{r}
+```{r, include=FALSE}
 FC_meanrow= rowMeans(FC)
 ```
 
@@ -135,13 +135,13 @@ FC_meanrow= rowMeans(FC)
 ### Sorting the data 
 
 We work with absolute value to find the highest values, because we want to have the most up and down regulated genes.
-```{r}
+```{r, include=FALSE}
 FC_abs= abs(FC_meanrow)
 ```
 
 We sort the values to get the 100 largest values 
 
-```{r}
+```{r, include=FALSE}
 sortedFC_abs <- sort(FC_abs, decreasing = TRUE)
 sortedFC_abs <- as.matrix(sortedFC_abs)
 ```
@@ -149,7 +149,7 @@ sortedFC_abs <- as.matrix(sortedFC_abs)
 
 We select the first n for biomarkers 
 
-```{r}
+```{r, include=FALSE}
 biomarkers_FC30 = sortedFC_abs[1:30,]
 biomarkers_FC30 <- as.matrix(biomarkers_FC30)
 
@@ -161,7 +161,7 @@ biomarkers_FC100 <- as.matrix(biomarkers_FC100)
 
 ### Creating a matrix with FC values, that are both positive and negative 
 
-```{r}
+```{r, include=FALSE}
 FC_both= cbind(FC_meanrow,FC_abs)
 FC_both=as.data.frame(FC_both)
 ```
@@ -174,7 +174,7 @@ FC_both_sorted <- FC_both[order(FC_both$FC_abs, decreasing = TRUE),]
 
 FC values of biomarkers
 We select the first 100 of the sorted matrix, which should be the same as un biomarkers_FC 
-```{r}
+```{r, include=FALSE}
 biomarkers_FC_values30 = FC_both_sorted[1:30,]
 
 biomarkers_FC_values100 = FC_both_sorted[1:100,]
@@ -183,7 +183,7 @@ biomarkers_FC_values100 = FC_both_sorted[1:100,]
 
 
 Removing the absolute values
-```{r}
+```{r, include=FALSE}
 biomarkers_FC_values30 <- subset( biomarkers_FC_values30, select = -FC_abs)
 biomarkers_FC_values30 = as.matrix(biomarkers_FC_values30)
 
@@ -218,13 +218,12 @@ CN_all = as.data.frame(CN_meancol)
 
 ```{r}
 library(dplyr)
-library(knitr) 
 ```
 
 Selecting the desired columns
 
 ```{r}
-Doubling_Time <- cellline_annotation %>% 
+Doubling_Time <- Cellline_annotation %>% 
   select(Cell_Line_Name, Doubling_Time)
 ```
 
@@ -245,8 +244,7 @@ drug_sensitivity = t(drug_sensitivity)
 
 ####  3.  SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with doubling time                                      
 
-Can we predict drug sensitivity using doubling time?
-How much of the variance of the data can be explained using the doubling time?
+Can we predict drug sensitivity using doubling time? How much of the variance of the data can be explained using the doubling time?
 
 ## Data frames
 
@@ -303,7 +301,7 @@ boxplot(lm_tab$Doubling_Time,
 
 
 A boxplot can help us visualize the amount of outliers in our data. This is relevant as too many (extreme) outliers can have great impact on the results of our analysis and can change the outcome completely. They can easily affect the slope. 
-Some outliers can be observed.
+Two outliers can be observed. Considering that the table lm_tab describes the behaviour of 61 cell lines, these two outliers correspond approximately only to a 3.28% of our data. This is of course not much. But how much can that 3.28% affect our end results? What impact do the outliers have on the fit of the linear model? Would we have better results if we just removed the outliers? These are all questions we explore in the final part of the exploration related to linear regression, as these are interesting questions for an analysis of statistical nature such as this one.
 
 # (3) Density: Should be expect normality for drug sensitivity?
 
@@ -374,11 +372,26 @@ This indicates that only 4,235% percent of the variation in the data (drug sensi
 p-value: 0.1116 
 As the p-value for reg1 is significantly larger than 0.05 and R-squared tells us the doubling time only explains 4.235% of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and doubling time, a.k.a doubling time cannot predict drug sensitivity. 
 
-More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
+More information about the fit (linear ecuation: y = y-intercept + slope * x) can be found by checking the confidence interval.
 
 ```{r}
 confint(reg1)
 ```
+
+We can also visualize the results of the confidence interval
+```{r}
+library(ggplot2)
+
+ggplot(data = lm_tab, aes(x = Doubling_Time, y = vorinostat)) +
+  geom_point() +
+  stat_smooth(method = "lm", col = "slateblue3", level = 0.975) +
+  theme(panel.background = element_rect(fill = "white"),
+        axis.line.x=element_line(),
+        axis.line.y=element_line()) +
+  ggtitle("Linear Model Fitted to Data") 
+```
+
+The grey area represents the 97.5% confidence interval. This tells us the probability that the true value we want to find is within this grey area with a 97.5% chance. As the doubling time increases, the uncertainty gets higher. Eventhough many points are inside the grey area, there are many more that are scattered across the graph. 
 
 
 ###   3.3 Checking the normalization of residuals                                                                           
@@ -396,16 +409,840 @@ The data does NOT look normally distributed: As the residuals are not normally d
 
 
 ```{r}
-qqnorm(reg1$residuals)
+qqnorm(reg1$residuals, col = "royalblue2")
 qqline(reg1$residuals, col = "red")
 ```
+
+Here we expect to be able to draw a straight line that is fitting for most points. Although, this graphic seems promising, too many points would not be properly fit. Around both ends of the lines, there are many points that are not following it properly.
 
 
 ###   3.4 Visualization: Plots that describe the linear regression                                                          ####
 
 ## Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
 
+```{r}
 library(lattice)
+
+xyplot(resid(reg1) ~ fitted(reg1),
+       xlab = "Fitted Values",
+       ylab = "Residuals",
+       main = "Residual Diagnostic Plot",
+       col = "slateblue3",
+       panel = function(x, y, ...)
+       {
+         panel.grid(h = -1, v = -1)
+         panel.abline(h = 0)
+         panel.xyplot(x, y, ...)
+       }
+      )
+```
+
+
+# Visualization of regression 
+
+```{r}
+par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
+plot(reg1, which = c(1, 2))
+```
+
+In these graphs, we can observe the behaviour of 3 cell lines under a linear regression model. 
+
+# Comparing prediction and real values for drug sensitivity
+
+```{r}
+plot(lm_tab$vorinostat, reg1$fitted.values, pch = 20, col = "royalblue1", xlab = "Real values", ylab = "Predicted values")
+abline(0, 1, col = "red")
+```
+
+The data points are quite scattered.
+
+####  4.  SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber                                    ####
+
+
+Can we predict drug sensitivity using the copynumber data? How much of the variance of the data can be explained using the copynumber data?
+
+
+## Data frames
+
+```{r}
+CN = as.data.frame(BM_Copynumber_meancol)
+
+DS = as.data.frame(drug_sensitivity)
+```
+
+
+## Table with drug sensitivity and doubling time per cell line
+
+```{r}
+lm_tab2 = transform(merge(CN,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+lm_tab2 <- na.omit(lm_tab2)
+```
+
+Because not all values included in copynumber are in drug sensitivity, the NAs are omitted. 
+
+
+###   4.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
+
+
+Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
+
+# Visualization of doubling time vs drug sensitivity
+
+# (1) Scatter Plot
+
+```{r}
+scatter.smooth(lm_tab2$vorinostat, 
+              lm_tab2$BM_Copynumber_meancol, 
+              col = "yellowgreen",
+              main = "Drug sensitivity & Copynumber Regression",
+              xlab = "Drug sensitivity",
+              ylab = "Copynumber",
+              cex = 1.3,
+              pch = 1)
+```
+
+At first look, the points in the plot are so scattered, that a linear relationship seems unlikely. The second problem that one can observe in this graphic, is that the line describing the behaviour is not straight. 
+
+
+# (2) Box plot
+
+```{r}
+par(mfrow=c(1, 2))
+boxplot(lm_tab2$vorinostat, 
+        main="Drug sensitivity", 
+        sub=paste("Outlier rows: ", boxplot.stats(lm_tab2$vorinostat)$out)
+        ) 
+boxplot(lm_tab2$BM_Copynumber_meancol, 
+        main="Copynumber", 
+        sub=paste("Outlier rows: ", boxplot.stats(lm_tab2$BM_Copynumber_meancol)$out)
+        ) 
+```
+
+No outliers can be observed. This is good, because there is no extreme data that can affect the slope for the linear regression.
+
+# (3) Density: Should be expect normality for drug sensitivity?
+
+```{r}
+par(mfrow=c(1, 2)) 
+
+plot(density(lm_tab2$vorinostat), 
+     main="Density Plot: Drug Sensitivity", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$vorinostat), 2))
+    )
+
+polygon(density(lm_tab2$vorinostat), col="springgreen3")
+
+plot(density(lm_tab2$BM_Copynumber_meancol), 
+     main="Density Plot: Copynumber", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$BM_Copynumber_meancol), 2))
+    )
+
+polygon(density(lm_tab2$BM_Copynumber_meancol), col="olivedrab1")
+```
+
+Skewness of the plot on the left: 0.03 -> Plot is very slightly skewed to the right.
+Skewness of the plot on the left: -0.07 -> Plot is very slightly skewed to the left.
+
+The data seems to be well normalized in terms of skewness, but the shape of the plots does not match very well that of a classic normalized density plot. 
+
+# (4) Correlation: what is the level level of linear dependence between the two variables?
+
+```{r}
+cor(lm_tab2$vorinostat, lm_tab2$BM_Copynumber_meancol)
+```
+
+The value here is extremely low, so a linear relationship is not a very good option to describe the data. 
+
+
+Eventhough both the box plots (2) and the density plots (3) results could have been good indicators for a linear relationship, the lack of a fitting straight line on the scatter plotc(1) and the low value in the result of the correlation (4) indicate the opposite.
+
+Taking into consideration all results so far for this part, it is not unreasonable to predict that a linear regression will probably not be the best model to describe the relationships in our data.
+
+
+
+###   4.2 Linear Regression                                                                                                 ####
+
+## Linear Regression
+
+reg2 <- lm(vorinostat ~ BM_Copynumber_meancol, data = lm_tab2)
+
+## Details about the linear regression: what we need draw some conclusions
+
+summary(reg2)
+
+# Multiple R-squared:  0.004101 -> This indicates that only 0,4101% percent of the variation in the data (drug sensitivity)
+#can be explained by the relationship between drug sensitivity and copynumber. In other words, there is a 0,4101% 
+#variance reduction when we take the copynumber into account. 
+
+# p-value: 0.6487 
+#As the p-value for reg2 is significantly larger than 0.05 and R-squared tells us the copynumber only explains 0,4101% 
+#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
+#copynumer, a.k.a copynumber cannot predict drug sensitivity. 
+
+# More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
+confint(reg2)
+
+We can also visualize the results of the confidence interval
+```{r}
+library(ggplot2)
+
+ggplot(data = lm_tab, aes(x = Doubling_Time, y = vorinostat)) +
+  geom_point() +
+  stat_smooth(method = "lm", col = "slateblue3", level = 0.975) +
+  theme(panel.background = element_rect(fill = "white"),
+        axis.line.x=element_line(),
+        axis.line.y=element_line()) +
+  ggtitle("Linear Model Fitted to Data") 
+```
+
+The grey area represents the 97.5% confidence interval. This tells us the probability that the true value we want to find is within this grey area with a 97.5% chance. As the doubling time increases, the uncertainty gets higher. Eventhough many points are inside the grey area, there are many more that are scattered across the graph. 
+
+###   4.3 Checking the normalization of residuals                                                                           ####
+
+hist(reg2$residuals, 
+     breaks = 20,
+     xlab = "Residuals", 
+     main = "Drug sensitivity vs copynumber: Histogram of the residuals")
+
+# The data does NOT look normally distributed: As the residuals are not normally distributed, then the hypothesis that
+#they are a random dataset, takes the value NO.
+#This means that the linear regression model does not explain all trends in the dataset.
+
+qqnorm(reg2$residuals)
+qqline(reg2$residuals)
+
+
+###   4.4 Visualization: Plots that describe the linear regression                                                          #### 
+
+
+## Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
+
+library(lattice)
+
+xyplot(resid(reg2) ~ fitted(reg2),
+       xlab = "Fitted Values",
+       ylab = "Residuals",
+       main = "Residual Diagnostic Plot",
+       col = "hotpink",
+       panel = function(x, y, ...)
+       {
+         panel.grid(h = -1, v = -1)
+         panel.abline(h = 0)
+         panel.xyplot(x, y, ...)
+       }
+      )
+
+
+qqmath( ~ resid(reg2),
+        xlab = "Theoretical Quantiles",
+        ylab = "Residuals",
+        abline(a=-2.8839, b=1))
+
+#Here we expect to be able to draw a straight line that is fitting for most points. Although, this graphic seems promising,
+#too many points would not be properly fit. 
+
+# Visualization of regression 
+
+par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
+plot(reg2, which = c(1, 2))
+
+# Comparing prediction and real values for drug sensitivity
+
+plot(lm_tab2$vorinostat, reg2$fitted.values, pch = 20, col = "springgreen3", xlab = "Real values", ylab = "Predicted values")
+abline(0, 1, col = "red")
+
+
+
+####  5.  SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with copynumber                                         ####
+
+# Can we predict drug sensitivity using the copynumber data?
+# How much of the variance of the data can be explained using the copynumber data?
+## Data frames
+
+CN_all = as.data.frame(CN_meancol)
+
+DS = as.data.frame(drug_sensitivity)
+
+## Table with drug sensitivity and doubling time per cell line
+
+lm_tab_all2 = transform(merge(CN_all,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+lm_tab_all2 <- na.omit(lm_tab_all2)
+
+
+###   5.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
+
+
+## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
+
+# Visualization of doubling time vs drug sensitivity
+
+
+scatter.smooth(lm_tab_all2$vorinostat, 
+               lm_tab_all2$CN_meancol, 
+               col = "orangered",
+               main = "Drug sensitivity & Copynumber Regression",
+               xlab = "Drug sensitivity",
+               ylab = "Copynumber",
+               cex = 1.3,
+               pch = 1)
+
+#At first look, the points in the plot are so extremely scattered, that a linear relationship seems really unlikely. 
+#The second problem that one can observe in this graphic, is that the line describing the behaviour
+#is not straight. 
+
+
+# (2) Box plot
+
+par(mfrow=c(1, 2))
+boxplot(lm_tab_all2$vorinostat, main="Drug sensitivity", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_all2$vorinostat)$out)) 
+boxplot(lm_tab_all2$CN_meancol, main="Copynumber", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_all2$CN_meancol)$out)) 
+
+#A boxplot can help us visualize the amount of outliers in our data. This is relevant as too many (extreme) outliers can
+#have great impact on the results of our analysis and can change the outcome completely. They can easily affect the slope. 
+#No outliers can be observed.
+
+# (3) Density: Should be expect normality for drug sensitivity?
+
+library(e1071)
+
+par(mfrow=c(1, 2)) 
+
+plot(density(lm_tab_all2$vorinostat), 
+     main="Density Plot: Drug Sensitivity", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab_all2$vorinostat), 2))
+    )
+
+polygon(density(lm_tab_all2$vorinostat), col="orangered")
+
+#Skewness: 0.03 -> Plot is very slightly skewed to the right. 
+
+plot(density(lm_tab_all2$CN_meancol), 
+     main="Density Plot: Copynumber", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab_all2$CN_meancol), 2))
+    )
+
+polygon(density(lm_tab_all2$CN_meancol), col="lightcoral")
+
+#Skewness: -0.42 -> Plot is skewed to the left.
+
+
+# (4) Correlation: what is the level level of linear dependence between the two variables?
+
+cor(lm_tab2$vorinostat, lm_tab_all2$CN_meancol)
+
+#[1] 0.1534729
+#A good value for correlation lies close to 1 or -1, whilst the value 0 is undesirable. Values closer to 0 indicate
+#that there is a weak relationship.  
+#The value here is too low. 
+
+
+#These analysis help us predcit whether a linear regression is or not the best model to describe our data. 
+#Although no outliers were observed in the box plot results, all ther results seem to indicate that a linear 
+#regression is most likely not the best model to describe our data. 
+
+
+###   5.2 Linear Regression                                                                                                 ####
+
+## Linear Regression
+
+reg_all2 <- lm(vorinostat ~ CN_meancol, data = lm_tab_all2)
+
+## Details about the linear regression: what we need draw some conclusions
+
+summary(reg_all2)
+
+# Multiple R-squared:  0.02355 -> This indicates that only 2.355% percent of the variation in the data (drug sensitivity)
+#can be explained by the relationship between drug sensitivity and copynumber. In other words, there is a 2.355% 
+#variance reduction when we take the copynumber into account. 
+
+# p-value: 0.2726 
+#As the p-value for reg_all2 is significantly larger than 0.05 and R-squared tells us the copynumber only explains 2.355% 
+#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
+#copynumer, a.k.a copynumber cannot predict drug sensitivity. 
+
+# More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
+confint(reg_all2)
+
+###   5.3 Checking the normalization of residuals                                                                           ####
+
+
+hist(reg_all2$residuals, 
+     breaks = 20,
+     xlab = "Residuals", 
+     main = "Drug sensitivity vs copynumber: Histogram of the residuals")
+
+# The data does NOT look normally distributed: As the residuals are not normally distributed, then the hypothesis that
+#they are a random dataset, takes the value NO.
+#This means that the linear regression model does not explain all trends in the dataset.
+
+qqnorm(reg_all2$residuals)
+qqline(reg_all2$residuals)
+
+###   5.4 Visualization: Plots that describe the linear regression                                                          ####
+
+
+# Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
+
+library(lattice)
+
+xyplot(resid(reg_all2) ~ fitted(reg_all2),
+       xlab = "Fitted Values",
+       ylab = "Residuals",
+       main = "Residual Diagnostic Plot",
+       col = "hotpink",
+       panel = function(x, y, ...)
+       {
+         panel.grid(h = -1, v = -1)
+         panel.abline(h = 0)
+         panel.xyplot(x, y, ...)
+       }
+      )
+
+
+qqmath( ~ resid(reg_all2),
+        xlab = "Theoretical Quantiles",
+        ylab = "Residuals",
+        abline(a=-2.8839, b=1))
+
+#Here we expect to be able to draw a straight line that is fitting for most points. Although, this graphic seems promising,
+#too many points would not be properly fit. 
+
+# Visualization of regression 
+
+par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
+plot(reg_all2, which = c(1, 2))
+
+# Comparing prediction and real values for drug sensitivity
+
+plot(lm_tab_all2$vorinostat, reg_all2$fitted.values, pch = 20, col = "lightcoral", xlab = "Real values", ylab = "Predicted values")
+abline(0, 1, col = "royalblue1")
+
+
+
+####  6.  MULTIPLE REGRESSION WITH ALL GENES: Drug sensitivity with doubling time and copynumber                            ####
+
+## Data frames
+
+CN_all = as.data.frame(CN_meancol)
+
+DT = as.data.frame(Doubling_Time)
+
+DS = as.data.frame(drug_sensitivity)
+
+## Table with drug sensitivity, copynumber and doubling time per cell line
+
+lm_tab_m = transform(merge(CN_all, lm_tab,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+
+names(lm_tab_m)[names(lm_tab_m) == "CN_meancol"] <- "Copynumber"
+names(lm_tab_m)[names(lm_tab_m) == "vorinostat"] <- "Drug_Sensitivity"
+
+lm_tab_m <- na.omit(lm_tab_m)
+
+
+###   6.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
+
+
+## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
+
+# Visualization of doubling time vs drug sensitivity
+
+# (1) Plot
+plot(lm_tab_m , 
+     pch=20 , 
+     cex=1.5 , 
+     col=rgb(0.5, 0.8, 0.9, 0.7)
+    )
+
+#There seems to be no linear relationship, because of how spread the points are.
+
+# (2) Box plot
+
+par(mfrow=c(1, 3))
+boxplot(lm_tab_m$Drug_Sensitivity, main="Drug sensitivity", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Drug_Sensitivity)$out)) 
+boxplot(lm_tab_m$Doubling_Time, main="Doubling time", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Doubling_Time)$out)) 
+boxplot(lm_tab_m$Copynumber, main="Copynumber", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Copynumber)$out)) 
+
+#A boxplot can help us visualize the amount of outliers in our data. This is relevant as too many (extreme) outliers can
+#have great impact on the results of our analysis and can change the outcome completely. They can easily affect the slope. 
+#Outliers can only be observed fo the boxplot of doubling time, which coincides with our previous results
+
+# (3) Density: Should be expect normality for drug sensitivity?
+
+library(e1071)
+
+par(mfrow=c(1, 3)) 
+
+plot(density(lm_tab_m$Drug_Sensitivity), 
+     main="Density Plot: Drug sensitivity", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab_m$Drug_sensitivity), 2))
+     )
+
+polygon(density(lm_tab_m$Drug_Sensitivity), col="darkorchid1")
+
+#Skewness: 0.03 -> Plot is very slightly skewed to the right.
+
+plot(density(lm_tab_m$Doubling_Time), 
+     main="Density Plot: Doubling time", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab_m$Doubling_Time), 2))
+     )
+
+polygon(density(lm_tab_m$Doubling_Time), col="skyblue1")
+
+#Skewness: 1.02 -> Plot is slightly skewed to the left.
+
+plot(density(lm_tab_m$Copynumber), 
+     main="Density Plot: Copynumber", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab_m$Copynumber), 2))
+     )
+
+polygon(density(lm_tab_m$Copynumber), col="olivedrab1")
+
+#Skewness: -0.29 -> Plot is slightly skewed to the left.
+
+
+## Checking for correlation
+
+cor(lm_tab_m)
+
+#These analysis help us predcit whether a linear regression is or not the best model to describe our data. 
+#Thanks to the outliers, considerably spread plots and skewed density plots, it is not unreasonable to predict that a 
+#multiple regression with these parameterswill probably not be the best model to describe the relationships in our data.
+
+
+###   6.2 Linear Regression                                                                                                 ####
+
+## Linear Regression
+
+reg_m <- lm(Drug_Sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
+
+## Details about the linear regression: what we need draw some conclusions
+
+summary(reg_m)
+
+
+# Multiple R-squared: 0.05949 -> This indicates that only 5.949% percent of the variation in the data (drug sensitivity)
+#can be explained by the relationship between drug sensitivity, doubling time and copynumber. In other words, there is a 
+#5.949% variance reduction when we take the both the doubling time and the copynumber into account. 
+
+
+# p-value: 0.2158
+#As the p-value for reg_m is significantly larger than 0.05 and R-squared tells us the copynumber only explains 2.355% 
+#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
+#copynumer, a.k.a copynumber cannot predict drug sensitivity. 
+
+
+# Coefficients:
+#                   Estimate Std.    Error     t-value   Pr(>|t|)    
+#   (Intercept)      6.139792       0.115579    53.122    <2e-16 ***
+#   Copynumber       0.373463       0.834851    0.447     0.6566    
+#   Doubling_Time   -0.005105       0.002975   -1.716     0.0924
+
+#F-statistic (multiple regression) : 1.581
+#F-statistic (drug sensitivity vs doubling time): 2.609 
+#F-statistic (drug sensitivity vs copynumber):  0.21
+
+#The coefficients show that better results are yielded when using doubling time alone to predict drug sensitivity,
+#than when using both doubling time and copynumber.
+
+
+## RMSE: A measure of how accurately the model predicts the response
+n = nrow(lm_tab_m)
+rmse = sqrt(1/n * sum(reg_m$residuals^2))
+rmse
+
+#[1] 0.2877142
+#Low values indicate a better fit. This result is surprising as the R-squared and p-value tell us that these variables
+#do not contribute significantly to the variance of the data. 
+
+# More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
+confint(reg_m)
+
+###   6.3 Checking the normalization of residuals                                                                           ####
+
+hist(reg_m$residuals, 
+     breaks = 20,
+     xlab = "Residuals", 
+     main = "Drug sensitivity vs copynumber and doubling time: Residuals histogram")
+
+# The data does NOT look normally distributed: As the residuals are not normally distributed, then the hypothesis that
+#they are a random dataset, takes the value NO.
+#This means that the linear regression model does not explain all trends in the dataset.
+
+qqnorm(reg_m$residuals)
+qqline(reg_m$residuals)
+
+###   6.4 Visualization: Plots that describe the linear regression                                                          ####
+
+## Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
+
+library(lattice)
+
+xyplot(resid(reg_m) ~ fitted(reg_m),
+       xlab = "Fitted Values",
+       ylab = "Residuals",
+       main = "Residual Diagnostic Plot",
+       col = "hotpink",
+       panel = function(x, y, ...)
+       {
+         panel.grid(h = -1, v = -1)
+         panel.abline(h = 0)
+         panel.xyplot(x, y, ...)
+       }
+)
+
+
+qqmath( ~ resid(reg_m),
+        xlab = "Theoretical Quantiles",
+        ylab = "Residuals",
+        abline(a=-2.8839, b=1))
+
+#Here we expect to be able to draw a straight line that is fitting for most points. Although, this graphic seems promising,
+#too many points would not be properly fit. 
+
+# Visualization of regression 
+
+par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
+plot(reg_m, which = c(1, 2))
+
+
+# Comparing prediction and real values for drug sensitivity
+
+plot(lm_tab_m$Drug_Sensitivity, reg_m$fitted.values, pch = 20, col = "orchid1", xlab = "Real values", ylab = "Predicted values")
+abline(0, 1, col = "orange1")
+
+####  7.  General Conclusions                                                                                               ####
+
+# The predictions made with the scatter plot, boxplot, density plot and the correlations between the predicted 
+#and predicting variable were generally speaking good, as most of these statistical analyses predicted 
+#that building a model using linear regression would prove to be not ideal. Once we tested for R-squared and p-value,
+#every regression had extremely low R-quared values, and extremely high p-values. This is of course an undesired
+#result. 
+# Considering the complexity of the process of gene expression, is not entirely surprising that we cannot predict 
+#drug sensitivity in a satisfactory way just by relying on copynumber and/or doubling time. 
+
+# Eventhough no linear relationships were found, we did discover that doubling time is a better tool to predict our
+#data for drug sensitivity than copynumber. 
+
+
+# Trying to use a different regression model, would be most likely futile if we take into consideration
+#the results and visualizations of our predictors. Take loess, for example, and think of our scatter plots,
+#a curve does not seem much better fitted to predict our data. Even using other regression models, such as Ridge,
+#that allow more complex curves to be fitted to data, finding a model with both high R-squared and low p-value
+#when we consider our predictors, in particular the scatter plot, seems unlikely. 
+
+
+##### PART 2 ##################################################################################################################
+###   8.  Using PCA to determine independent variables                                                                      ####
+
+### Data 
+
+lm_tab_pca = lm_tab_m[,c(3,1,2)]
+
+###   8.1 PCA                                                                                                               ####
+
+pca = prcomp(lm_tab_pca[, -1])
+summary(pca)
+
+par(las = 2)
+barplot(pca$rotation[, 1], horiz = TRUE, main = "PC1", col = "turquoise")
+
+###   8.2 A little correlation exploration                                                                                  ####
+
+pairs(lm_tab_pca, col = "turquoise2", pch = 20)
+
+cor_pca = cor(lm_tab_pca)
+heatmap(cor_pca, col = cm.colors(256), margins = c(15, 10))
+
+#As expected, we observe a higher correlation between doubling time and drug sensitivity than
+#between copynumber and drug sensitivity
+
+## What are exact values for the correlations?
+
+cor(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Doubling_Time)
+
+#[1] -0.2360583
+
+cor(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Copynumber)
+
+#[1] 0.1534729
+
+#Here we confirm that there is indeed a stronger relationship between drug sensitivity and doubling 
+#time. 
+
+cor(lm_tab_pca$Doubling_Time, lm_tab_pca$Copynumber)
+#[1] -0.275499
+
+#Surprisingly, the strongest correlation that we can observe happens to be the one between doubling 
+#time and copynumber. 
+
+## How significatn are these values?
+
+cor.test(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Doubling_Time)
+
+#p-value = 0.08881
+
+cor.test(lm_tab_pca$Drug_Sensitivity, lm_tab_pca$Copynumber)
+
+#p-value = 0.2726
+
+cor.test(lm_tab_pca$Doubling_Time, lm_tab_pca$Copynumber)
+
+#p-value = 0.04586
+
+#Considering these results, the validity of the correlation comes into questions. 
+#However, in would still be interesting to explore linear regression with 
+#PCA. Therefore, we carry on. 
+
+###   8.3 Linear Regression                                                                                                 ####
+
+reg_pca = lm(lm_tab_m$Drug_Sensitivity ~ pca$x)
+summary(reg_pca)
+
+# Multiple R-squared: 0.06419 -> This indicates that only 6.419% percent of the variation in the data (drug sensitivity)
+#can be explained by the relationship between drug sensitivity, doubling time and copynumber. In other words, there is a 
+#6.419% variance reduction when we take the both the doubling time and the copynumber into account. 
+
+
+# p-value: 0.1904
+#As the p-value for reg_m is significantly larger than 0.05 and R-squared tells us the copynumber only explains 2.355% 
+#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
+#copynumer, a.k.a copynumber cannot predict drug sensitivity.
+
+
+
+# The comparison of the results when we carry out a regular multiple regression vs when we carry out one using the principal
+#component, shows us that while R-squared has a higher value when using PCA, the p-value decreases. 
+
+##### PART 3 ##################################################################################################################
+
+####  9.  SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with doubling time                                      ####
+
+
+###   9.1 Boxplot: removing the outliers                                                                                    #### 
+
+Boxplot for doubling time
+
+boxplot(lm_tab$Doubling_Time, main="Doubling time", sub=paste("Outlier rows: ", boxplot.stats(lm_tab$Doubling_Time)$out)) 
+
+# What are the values of the outliers?
+
+boxplot(lm_tab$Doubling_Time)$out
+#[1] 66.8 79.5
+
+outliers <- boxplot(mtcars$disp, plot=FALSE)$out
+
+# Storing the values of the outliers in a vector
+
+outliers_DT <- boxplot(lm_tab$Doubling_Time, plot=FALSE)$out
+
+# Removing the outliers
+
+lm_tab[which(lm_tab$Doubling_Time %in% outliers_DT),]
+#We can see that the outliers correspond to those of the cell lines A498 (renal) and HOP-92 (lung).
+
+lm_tab_out <- lm_tab[-which(lm_tab$Doubling_Time %in% outliers_DT),]
+
+# checking our results
+
+boxplot(lm_tab_out$Doubling_Time, main="Doubling time", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_out$Doubling_Time)$out)) 
+
+#There are no outliers now
+
+###   9.2 Linear Regression                                                                                                 ####
+
+# linear_regression = lm(predicted ~ predictor, data = dat) 
+
+## Linear Regression without removing the outliers
+
+reg1 <- lm(vorinostat ~ Doubling_Time, data = lm_tab)
+
+## Details about the linear regression: what we need draw some conclusions
+
+summary(reg1)
+
+# Multiple R-squared:  0.04235 -> This indicates that only 4,235% percent of the variation in the data (drug sensitivity)
+#can be explained by the relationship between drug sensitivity and doubling time. In other words, there is a 4.235% 
+#variance reduction when we take the doubling time into account. 
+
+# p-value: 0.1116 
+#As the p-value for reg1 is significantly larger than 0.05 and R-squared tells us the doubling time only explains 4.235% 
+#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
+#doubling time, a.k.a doubling time cannot predict drug sensitivity. 
+
+## Linear Regression removing the outliers
+
+reg_out <- lm(vorinostat ~ Doubling_Time, data = lm_tab_out)
+
+## Details about the linear regression: what we need draw some conclusions
+
+summary(reg_out)
+
+# Multiple R-squared:  0.01767 -> This indicates that only 1,1767% percent of the variation in the data (drug sensitivity)
+#can be explained by the relationship between drug sensitivity and doubling time. In other words, there is a 1.767% 
+#variance reduction when we take the doubling time into account. 
+
+# p-value: 0.3155 
+#As the p-value for reg_out is significantly larger than 0.05 and R-squared tells us the doubling time only explains 1.767% 
+#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
+#doubling time, a.k.a doubling time cannot predict drug sensitivity. 
+
+##We can already observe this small change, the removal of outliers, has a significant impact on our results. 
+
+
+# More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
+
+confint(reg1)
+
+
+confint(reg_out)
+
+#Small changes are observed.
+
+###   9.3 Checking the normalization of residuals                                                                           ####
+
+## Drug sensitivity vs doubling time: Histogram of the residuals
+
+par(mfrow=c(1, 2))
+hist(reg1$residuals, 
+     breaks = 20, 
+     xlab = "Residuals", 
+     main = "Histogram with outliers")
+
+hist(reg_out$residuals, 
+     breaks = 20, 
+     xlab = "Residuals", 
+     main = "Histogram without outliers")
+
+# The data in both histograms does not appear normalized and it is hard to say whether there
+#is a case in which the data looks more normally distributed or not.
+#This means that the linear regression models do not explain all trends in the dataset.
+
+par(mfrow=c(1, 2))
+
+qqnorm(reg1$residuals)
+qqline(reg1$residuals, col = "red")
+
+qqnorm(reg_out$residuals)
+qqline(reg_out$residuals, col = "red")
+
+# Small changes can be observed between values 1 and 2.
+
+###   9.4 Visualization: Plots that describe the linear regression                                                          ####
+
+## Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
+
+library(lattice)
+
+# 
+
+par(mfrow=c(1, 2))
 
 xyplot(resid(reg1) ~ fitted(reg1),
        xlab = "Fitted Values",
@@ -421,37 +1258,59 @@ xyplot(resid(reg1) ~ fitted(reg1),
       )
 
 
-qqmath( ~ resid(reg1),
-      xlab = "Theoretical Quantiles",
-      ylab = "Residuals",
-      abline(a=-0.01034, b=1))
 
-#Here we expect to be able to draw a straight line that is fitting for most points. Although, this graphic seems promising,
-#too many points would not be properly fit. 
+xyplot(resid(reg_out) ~ fitted(reg_out),
+       xlab = "Fitted Values",
+       ylab = "Residuals",
+       main = "Residual Diagnostic Plot",
+       col = "slateblue3",
+       panel = function(x, y, ...)
+       {
+         panel.grid(h = -1, v = -1)
+         panel.abline(h = 0)
+         panel.xyplot(x, y, ...)
+       }
+      )
+
+# The data for reg_out appear to be more spread.  
+
+# 
+
+par(mfrow=c(1, 2))
+
+qqmath( ~ resid(reg1),
+        xlab = "Theoretical Quantiles",
+        ylab = "Residuals",
+        abline(a=-0.01034, b=1))
+
+qqmath( ~ resid(reg_out),
+        xlab = "Theoretical Quantiles",
+        ylab = "Residuals",
+        abline(a=-0.01034, b=1))
+
 
 # Visualization of regression 
 
-par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
+par(mar = c(4, 4, 2, 2), mfrow = c(2, 2))
 plot(reg1, which = c(1, 2))
+plot(reg_out, which = c(1, 2))
+
+# The line drawn accross the scatter plot changes when we remove the outliers.
 
 # Comparing prediction and real values for drug sensitivity
+
+par(mfrow=c(1, 2))
 
 plot(lm_tab$vorinostat, reg1$fitted.values, pch = 20, col = "royalblue1", xlab = "Real values", ylab = "Predicted values")
 abline(0, 1, col = "red")
 
+plot(lm_tab_out$vorinostat, reg_out$fitted.values, pch = 20, col = "royalblue1", xlab = "Real values", ylab = "Predicted values")
+abline(0, 1, col = "red")
 
-####  4.  SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber                                    ####
+# Changes in the red line can be observed_ change in the slope and intercept with the x-axis.
 
-```{r cars}
-summary(cars)
-```
 
-## Including Plots
 
-You can also embed plots, for example:
+###   9.4  General Conclusions                                                                                               ####
 
-```{r pressure, echo=FALSE}
-plot(pressure)
-```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
