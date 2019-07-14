@@ -6,9 +6,9 @@ library(rstudioapi)
 
 wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
-  Untreated_notnormalized = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
-  Treated_notnormalized = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
-  Metadata = read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
+  Untreated_notnormalized = readRDS(paste0(wd,"/../data/NCI_TPW_gep_untreated.rds"))
+  Treated_notnormalized = readRDS(paste0(wd,"/../data/NCI_TPW_gep_treated.rds"))
+  Metadata = read_tsv(paste0(wd,"/../data/NCI_TPW_metadata.tsv"))
 
   
 ########################## BROAD ANALYSIS ###############################################
@@ -35,7 +35,7 @@ wd = dirname(rstudioapi::getSourceEditorContext()$path)
 
 #########PCA OVER TREATED DATA############################
   
-treated.pca = prcomp(Treated, center=T, scale. = T)
+treated.pca = prcomp(Treated, center=T)
 
   #use drug information from Metadata to color points in PCA:
          
@@ -108,7 +108,7 @@ treated.pca = prcomp(Treated, center=T, scale. = T)
 #########PCA WITH THE FC MATRIX##########################################
 
 
-pca.FC = prcomp(FC, center = T, scale. = T)
+pca.FC = prcomp(FC, center = T)
       #to get information about pca data: print(pca)
         #see how much variance is exolained by each principle component:
          plot(pca.FC, type = "l")
