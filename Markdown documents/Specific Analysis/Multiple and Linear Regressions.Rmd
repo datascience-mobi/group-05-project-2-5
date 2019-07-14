@@ -611,6 +611,8 @@ Eventhough many points are inside the grey area, there are many more that are sc
 
 ###   4.3 Checking the normalization of residuals                                                                         
 
+Here we explore two ways to visualize the normalization of residuals.
+
 ```{r}
 hist(reg2$residuals, 
      breaks = 20,
@@ -813,6 +815,7 @@ ggplot(data = lm_tab_all2, aes(x = CN_meancol, y = vorinostat)) +
 
 ###   5.3 Checking the normalization of residuals                                                                           ####
 
+Here we explore two ways to visualize the normalization of residuals.
 ```{r}
 hist(reg_all2$residuals, 
      breaks = 20,
@@ -821,18 +824,21 @@ hist(reg_all2$residuals,
 ```
 
 
-# The data does NOT look normally distributed: As the residuals are not normally distributed, then the hypothesis that
-#they are a random dataset, takes the value NO.
-#This means that the linear regression model does not explain all trends in the dataset.
+The data does NOT look normally distributed. This menas that the linear regression model does not explain all trends in the dataset.
 
-qqnorm(reg_all2$residuals)
-qqline(reg_all2$residuals)
+```{r}
+qqnorm(reg_all2$residuals, col = "royalblue1")
+qqline(reg_all2$residuals, col = "red")
+```
+
+Many data points at both extremes do not follow the line that dictates the behaviour in the linear relationship. Therefore, asuming normalization is discarded.
 
 ###   5.4 Visualization: Plots that describe the linear regression                                                          ####
 
 
 # Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
 
+```{r}
 library(lattice)
 
 xyplot(resid(reg_all2) ~ fitted(reg_all2),
@@ -847,46 +853,53 @@ xyplot(resid(reg_all2) ~ fitted(reg_all2),
          panel.xyplot(x, y, ...)
        }
       )
+```
 
-
-qqmath( ~ resid(reg_all2),
-        xlab = "Theoretical Quantiles",
-        ylab = "Residuals",
-        abline(a=-2.8839, b=1))
-
-#Here we expect to be able to draw a straight line that is fitting for most points. Although, this graphic seems promising,
-#too many points would not be properly fit. 
 
 # Visualization of regression 
 
+```{r}
 par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
 plot(reg_all2, which = c(1, 2))
+```
+
+Looking at the red line of the graph on the left side, we can confirm the results of the summary of the regression. The low R-squared value is better visualized here. If a linear regression was a good model to explain our data, then the red line would be straight and would go right through the middle of the graph. 
 
 # Comparing prediction and real values for drug sensitivity
 
-plot(lm_tab_all2$vorinostat, reg_all2$fitted.values, pch = 20, col = "lightcoral", xlab = "Real values", ylab = "Predicted values")
+```{r}
+plot(lm_tab_all2$vorinostat, 
+     reg_all2$fitted.values, 
+     pch = 20, col = "lightcoral", 
+     xlab = "Real values", 
+     ylab = "Predicted values")
 abline(0, 1, col = "royalblue1")
-
-
+```
+The data points are very scattered.
 
 ####  6.  MULTIPLE REGRESSION WITH ALL GENES: Drug sensitivity with doubling time and copynumber                            ####
 
 ## Data frames
 
+```{r}
 CN_all = as.data.frame(CN_meancol)
 
 DT = as.data.frame(Doubling_Time)
 
 DS = as.data.frame(drug_sensitivity)
+```
+
 
 ## Table with drug sensitivity, copynumber and doubling time per cell line
 
+```{r}
 lm_tab_m = transform(merge(CN_all, lm_tab,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
 
 names(lm_tab_m)[names(lm_tab_m) == "CN_meancol"] <- "Copynumber"
 names(lm_tab_m)[names(lm_tab_m) == "vorinostat"] <- "Drug_Sensitivity"
 
 lm_tab_m <- na.omit(lm_tab_m)
+```
 
 
 ###   6.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
@@ -898,6 +911,8 @@ lm_tab_m <- na.omit(lm_tab_m)
 
 # 3D Scatter Plot
 
+
+```{r}
 library(ggplot2)
 library(GGally)
 library(scatterplot3d)
@@ -906,41 +921,55 @@ library(scatterD3)
 library(rgl)
 
 scatterplot3d(lm_tab_m)
+```
 
 
 # (0) Matrix with scatter plots, density plots and correlation values
 
+```{r}
 library(ggplot2)
 library(GGally)
 library(scatterplot3d)
 
 ggpairs(data=lm_tab_m, columns=1:3, title="Multiple Regression")
+```
 
 
 # (1) Plot
+
+```{r}
 plot(lm_tab_m , 
      pch=20 , 
      cex=1.5 , 
      col=rgb(0.5, 0.8, 0.9, 0.7)
     )
+```
 
-#There seems to be no linear relationship, because of how spread the points are.
+There seems to be no linear relationship, because of how spread the points are.
 
 # (2) Box plot
 
+```{r}
 par(mfrow=c(1, 3))
-boxplot(lm_tab_m$Drug_Sensitivity, main="Drug sensitivity", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Drug_Sensitivity)$out)) 
-boxplot(lm_tab_m$Doubling_Time, main="Doubling time", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Doubling_Time)$out)) 
-boxplot(lm_tab_m$Copynumber, main="Copynumber", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Copynumber)$out)) 
+boxplot(lm_tab_m$Drug_Sensitivity, 
+        main="Drug sensitivity", 
+        sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Drug_Sensitivity)$out)
+        ) 
+boxplot(lm_tab_m$Doubling_Time, 
+        main="Doubling time", 
+        sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Doubling_Time)$out)
+        ) 
+boxplot(lm_tab_m$Copynumber, 
+        main="Copynumber", 
+        sub=paste("Outlier rows: ", boxplot.stats(lm_tab_m$Copynumber)$out)) 
+```
 
-#A boxplot can help us visualize the amount of outliers in our data. This is relevant as too many (extreme) outliers can
-#have great impact on the results of our analysis and can change the outcome completely. They can easily affect the slope. 
-#Outliers can only be observed fo the boxplot of doubling time, which coincides with our previous results
+
+Just as before we see only outliers for doubling time.
 
 # (3) Density: Should be expect normality for drug sensitivity?
 
-library(e1071)
-
+```{r}
 par(mfrow=c(1, 3)) 
 
 plot(density(lm_tab_m$Drug_Sensitivity), 
@@ -951,8 +980,6 @@ plot(density(lm_tab_m$Drug_Sensitivity),
 
 polygon(density(lm_tab_m$Drug_Sensitivity), col="darkorchid1")
 
-#Skewness: 0.03 -> Plot is very slightly skewed to the right.
-
 plot(density(lm_tab_m$Doubling_Time), 
      main="Density Plot: Doubling time", 
      ylab="Frequency", 
@@ -961,8 +988,6 @@ plot(density(lm_tab_m$Doubling_Time),
 
 polygon(density(lm_tab_m$Doubling_Time), col="skyblue1")
 
-#Skewness: 1.02 -> Plot is slightly skewed to the left.
-
 plot(density(lm_tab_m$Copynumber), 
      main="Density Plot: Copynumber", 
      ylab="Frequency", 
@@ -970,97 +995,125 @@ plot(density(lm_tab_m$Copynumber),
      )
 
 polygon(density(lm_tab_m$Copynumber), col="olivedrab1")
+```
 
-#Skewness: -0.29 -> Plot is slightly skewed to the left.
+
+Skewness of the plot on the left: 0.03 -> Plot is very slightly skewed to the right.
+
+Skewness of the plot on the middle: 1.02 -> Plot is slightly skewed to the left.
+
+Skewness of the plot on the right:: -0.29 -> Plot is slightly skewed to the left.
 
 
 ## Checking for correlation
 
+```{r}
 cor(lm_tab_m)
+```
 
-#These analysis help us predcit whether a linear regression is or not the best model to describe our data. 
-#Thanks to the outliers, considerably spread plots and skewed density plots, it is not unreasonable to predict that a 
-#multiple regression with these parameterswill probably not be the best model to describe the relationships in our data.
+None of the values here indicate a strong linear relationship.
+
+Thanks to the outliers, considerably spread plots and skewed density plots, it is not unreasonable to predict that a multiple regression with these parameters will probably not be the best model to describe the relationships in our data.
 
 
-###   6.2 Linear Regression                                                                                                 ####
+###   6.2 Linear Regression                                                                                                 
 
 ## Linear Regression
 
+```{r}
 reg_m <- lm(Drug_Sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
+```
+
 
 ## Details about the linear regression: what we need draw some conclusions
 
+```{r}
 summary(reg_m)
+```
 
 
-# Multiple R-squared: 0.05949 -> This indicates that only 5.949% percent of the variation in the data (drug sensitivity)
+Multiple R-squared: 0.05949 
+This indicates that only 5.949% percent of the variation in the data (drug sensitivity)
 #can be explained by the relationship between drug sensitivity, doubling time and copynumber. In other words, there is a 
 #5.949% variance reduction when we take the both the doubling time and the copynumber into account. 
 
 
-# p-value: 0.2158
-#As the p-value for reg_m is significantly larger than 0.05 and R-squared tells us the copynumber only explains 2.355% 
-#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
-#copynumer, a.k.a copynumber cannot predict drug sensitivity. 
+p-value: 0.2158
+As the p-value for reg_m is significantly larger than 0.05 and R-squared tells us the copynumber only explains 2.355% of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and copynumer, a.k.a copynumber cannot predict drug sensitivity. 
 
 
-# Coefficients:
-#                   Estimate Std.    Error     t-value   Pr(>|t|)    
-#   (Intercept)      6.139792       0.115579    53.122    <2e-16 ***
-#   Copynumber       0.373463       0.834851    0.447     0.6566    
-#   Doubling_Time   -0.005105       0.002975   -1.716     0.0924
+ Coefficients:
+                   Estimate Std.    Error     t-value   Pr(>|t|)    
+   (Intercept)      6.139792       0.115579    53.122    <2e-16 ***
+   Copynumber       0.373463       0.834851    0.447     0.6566    
+   Doubling_Time   -0.005105       0.002975   -1.716     0.0924
 
-#F-statistic (multiple regression) : 1.581
-#F-statistic (drug sensitivity vs doubling time): 2.609 
-#F-statistic (drug sensitivity vs copynumber):  0.21
+F-statistic (multiple regression) : 1.581
+F-statistic (drug sensitivity vs doubling time): 2.609 
+F-statistic (drug sensitivity vs copynumber):  0.21
 
-#The coefficients show that better results are yielded when using doubling time alone to predict drug sensitivity,
-#than when using both doubling time and copynumber.
+The coefficients show that better results are yielded when using doubling time alone to predict drug sensitivity,than when using both doubling time and copynumber.
 
 
 ## RMSE: A measure of how accurately the model predicts the response
+
+```{r}
 n = nrow(lm_tab_m)
 rmse = sqrt(1/n * sum(reg_m$residuals^2))
 rmse
+```
 
-#[1] 0.2877142
-#Low values indicate a better fit. This result is surprising as the R-squared and p-value tell us that these variables
-#do not contribute significantly to the variance of the data. 
+Low values indicate a better fit. This result is surprising as the R-squared and p-value tell us that these variables do not contribute significantly to the variance of the data. 
 
-# More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
+# More information about the fit (linear ecuation: y = y-intercept + slope * x) :
+```{r}
 confint(reg_m)
+```
+
 
 ###   6.3 Checking the normalization of residuals                                                                           ####
 
+Here we explore two ways to visualize the normalization of residuals.
+
+
+```{r}
 hist(reg_m$residuals, 
      breaks = 20,
      xlab = "Residuals", 
      main = "Drug sensitivity vs copynumber and doubling time: Residuals histogram")
+```
 
-# The data does NOT look normally distributed: As the residuals are not normally distributed, then the hypothesis that
-#they are a random dataset, takes the value NO.
-#This means that the linear regression model does not explain all trends in the dataset.
 
-qqnorm(reg_m$residuals)
-qqline(reg_m$residuals)
+The data does NOT look normally distributed.
+
+```{r}
+qqnorm(reg_m$residuals, col = "orchid1")
+qqline(reg_m$residuals, col = "royalblue1")
+```
+
+
+###   6.4 Visualization: Plots that describe the linear regression  
 
 # 3D Plot with Regression Plane
 
-s3d <- scatterplot3d(lm_tab_m, type = "h", color = "blue",
-                     angle=55, pch = 16)
-                     
+```{r}
+#Creating 3D plot
+m_3d <- scatterplot3d(lm_tab_m, 
+                     type = "h", 
+                     color = "royalblue2",
+                     angle=55, 
+                     pch = 16)
+#Adding regression plane
 reg_m_3D <- lm(Drug_Sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
-s3d$plane3d(my.lm)
-s3d$points3d(seq(10, 20, 2), seq(85, 60, -5), seq(60, 10, -10),
-             col = "red", type = "h", pch = 8)
+m_3d$plane3d(reg_m_3D)
 
-###   6.4 Visualization: Plots that describe the linear regression                                                          ####
+```
+
+This 3D plot allows us to see the plane created for the multivariate regression and the location of data points in relation to to the plane. Most points are either above the plane or below it. This matches our previous results for the multiple regression, from which we conlcuded there is no relevant relationship between the variables. 
 
 ## Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
 
-library(lattice)
-
+```{r}
 xyplot(resid(reg_m) ~ fitted(reg_m),
        xlab = "Fitted Values",
        ylab = "Residuals",
@@ -1072,51 +1125,41 @@ xyplot(resid(reg_m) ~ fitted(reg_m),
          panel.abline(h = 0)
          panel.xyplot(x, y, ...)
        }
-)
+      )
 
+```
 
-qqmath( ~ resid(reg_m),
-        xlab = "Theoretical Quantiles",
-        ylab = "Residuals",
-        abline(a=-2.8839, b=1))
-
-#Here we expect to be able to draw a straight line that is fitting for most points. Although, this graphic seems promising,
-#too many points would not be properly fit. 
 
 # Visualization of regression 
 
+```{r}
 par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
 plot(reg_m, which = c(1, 2))
-
+```
+The red line is not straight. 
 
 # Comparing prediction and real values for drug sensitivity
 
+```{r}
 plot(lm_tab_m$Drug_Sensitivity, reg_m$fitted.values, pch = 20, col = "orchid1", xlab = "Real values", ylab = "Predicted values")
 abline(0, 1, col = "orange1")
-
-####  7.  General Conclusions                                                                                               ####
-
-# The predictions made with the scatter plot, boxplot, density plot and the correlations between the predicted 
-#and predicting variable were generally speaking good, as most of these statistical analyses predicted 
-#that building a model using linear regression would prove to be not ideal. Once we tested for R-squared and p-value,
-#every regression had extremely low R-quared values, and extremely high p-values. This is of course an undesired
-#result. 
-# Considering the complexity of the process of gene expression, is not entirely surprising that we cannot predict 
-#drug sensitivity in a satisfactory way just by relying on copynumber and/or doubling time. 
-
-# Eventhough no linear relationships were found, we did discover that doubling time is a better tool to predict our
-#data for drug sensitivity than copynumber. 
+```
 
 
-# Trying to use a different regression model, would be most likely futile if we take into consideration
-#the results and visualizations of our predictors. Take loess, for example, and think of our scatter plots,
-#a curve does not seem much better fitted to predict our data. Even using other regression models, such as Ridge,
-#that allow more complex curves to be fitted to data, finding a model with both high R-squared and low p-value
-#when we consider our predictors, in particular the scatter plot, seems unlikely. 
+####  7.  General Conclusions                                                                                               
+
+The predictions made with the scatter plot, boxplot, density plot and the correlations between the predicted and predicting variable were generally speaking good, as most of these statistical analyses predicted that building a model using linear regression would prove to be not ideal. Once we tested for R-squared and p-value, every regression had extremely low R-quared values, and extremely high p-values. This is of course an undesired result. 
+
+Considering the complexity of the process of gene expression, is not entirely surprising that we cannot predict drug sensitivity in a satisfactory way just by relying on copynumber and/or doubling time. 
+
+Eventhough no linear relationships were found, we did discover that doubling time is a better tool to predict our data for drug sensitivity than copynumber. 
+
+
+Trying to use a different regression model, would be most likely futile if we take into consideration the results and visualizations of our predictors. Take loess, for example, and think of our scatter plots,a curve does not seem much better fitted to predict our data. Even using other regression models, such as Ridge, that allow more complex curves to be fitted to data, finding a model with both high R-squared and low p-value when we consider our predictors, in particular the scatter plot, seems unlikely. 
 
 
 ##### PART 2 ##################################################################################################################
-###   8.  Using PCA to determine independent variables                                                                      ####
+###   8.  Using PCA to determine independent variables                                                                      
 
 ### Data 
 
