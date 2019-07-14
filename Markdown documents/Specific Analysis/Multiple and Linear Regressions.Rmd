@@ -1245,7 +1245,7 @@ confint(reg_out)
 
 Small changes are observed.
 
-###   9.3 Checking the normalization of residuals                                                                           ####
+###   9.3 Checking the normalization of residuals                                                                           
 
 ## Drug sensitivity vs doubling time: Histogram of the residuals
 
@@ -1370,6 +1370,8 @@ There are small differences in the plots when the outliers are removed. The rela
 ####  10.  Comparing the results for the linear regression of drug sensitivity vs copynumber using only the biomarkers wvs using all genes.              
 
 
-###   10.1
+While the value of R-squared when using the biomarkers is of 0.004101 and the p-value is equal to 0.6487, when all genes are used instead R-squared has a value of 0.02355 and the p-value is 0.2726.
+
+R-squared is significantly greater when using all genes and the p-value is significantly smaller. Therefore better results are expected when using all genes. 
 
 
