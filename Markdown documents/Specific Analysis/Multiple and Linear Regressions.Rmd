@@ -445,12 +445,17 @@ par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
 plot(reg1, which = c(1, 2))
 ```
 
-In these graphs, we can observe the behaviour of 3 cell lines under a linear regression model. 
+In these graphs, we can observe the behaviour of 3 cell lines under a linear regression model. The red line on the graph on the left lets us se that a linear relationship is unlikely. 
 
 # Comparing prediction and real values for drug sensitivity
 
 ```{r}
-plot(lm_tab$vorinostat, reg1$fitted.values, pch = 20, col = "royalblue1", xlab = "Real values", ylab = "Predicted values")
+plot(lm_tab$vorinostat, 
+     reg1$fitted.values, 
+     pch = 20, 
+     col = "royalblue1", 
+     xlab = "Real values", 
+     ylab = "Predicted values")
 abline(0, 1, col = "red")
 ```
 
@@ -543,7 +548,7 @@ polygon(density(lm_tab2$BM_Copynumber_meancol), col="olivedrab1")
 ```
 
 Skewness of the plot on the left: 0.03 -> Plot is very slightly skewed to the right.
-Skewness of the plot on the left: -0.07 -> Plot is very slightly skewed to the left.
+Skewness of the plot on the right: -0.07 -> Plot is very slightly skewed to the left.
 
 The data seems to be well normalized in terms of skewness, but the shape of the plots does not match very well that of a classic normalized density plot. 
 
@@ -566,66 +571,75 @@ Taking into consideration all results so far for this part, it is not unreasonab
 
 ## Linear Regression
 
+```{r}
 reg2 <- lm(vorinostat ~ BM_Copynumber_meancol, data = lm_tab2)
+```
+
 
 ## Details about the linear regression: what we need draw some conclusions
 
+```{r}
 summary(reg2)
+```
 
-# Multiple R-squared:  0.004101 -> This indicates that only 0,4101% percent of the variation in the data (drug sensitivity)
-#can be explained by the relationship between drug sensitivity and copynumber. In other words, there is a 0,4101% 
-#variance reduction when we take the copynumber into account. 
+Multiple R-squared:  0.004101
+This indicates that only 0,4101% percent of the variation in the data (drug sensitivity) can be explained by the relationship between drug sensitivity and copynumber. In other words, there is a 0,4101% variance reduction when we take the copynumber into account. 
 
-# p-value: 0.6487 
-#As the p-value for reg2 is significantly larger than 0.05 and R-squared tells us the copynumber only explains 0,4101% 
-#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
-#copynumer, a.k.a copynumber cannot predict drug sensitivity. 
+p-value: 0.6487 
+As the p-value for reg2 is significantly larger than 0.05 and R-squared tells us the copynumber only explains 0,4101% of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and copynumer, a.k.a copynumber cannot predict drug sensitivity. 
 
 # More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
+
+```{r}
 confint(reg2)
+```
 
 We can also visualize the results of the confidence interval
 ```{r}
 library(ggplot2)
 
-ggplot(data = lm_tab, aes(x = Doubling_Time, y = vorinostat)) +
+ggplot(data = lm_tab2, aes(x = BM_Copynumber_meancol, y = vorinostat)) +
   geom_point() +
-  stat_smooth(method = "lm", col = "slateblue3", level = 0.975) +
+  stat_smooth(method = "lm", col = "springgreen3", level = 0.975) +
   theme(panel.background = element_rect(fill = "white"),
         axis.line.x=element_line(),
         axis.line.y=element_line()) +
   ggtitle("Linear Model Fitted to Data") 
 ```
 
-The grey area represents the 97.5% confidence interval. This tells us the probability that the true value we want to find is within this grey area with a 97.5% chance. As the doubling time increases, the uncertainty gets higher. Eventhough many points are inside the grey area, there are many more that are scattered across the graph. 
+Eventhough many points are inside the grey area, there are many more that are scattered across the graph. The confidence interval is very big and the data dispersed. There is no correlation between the variables.  
 
-###   4.3 Checking the normalization of residuals                                                                           ####
+###   4.3 Checking the normalization of residuals                                                                         
 
+```{r}
 hist(reg2$residuals, 
      breaks = 20,
      xlab = "Residuals", 
      main = "Drug sensitivity vs copynumber: Histogram of the residuals")
+```
 
-# The data does NOT look normally distributed: As the residuals are not normally distributed, then the hypothesis that
-#they are a random dataset, takes the value NO.
-#This means that the linear regression model does not explain all trends in the dataset.
+The graph lets us see that the residuals are not normally distributed. 
 
-qqnorm(reg2$residuals)
-qqline(reg2$residuals)
+```{r}
+qqnorm(reg2$residuals, col = "springgreen4")
+qqline(reg2$residuals, col = "red")
+```
 
+Most points of the data seem to meet the red line. However, it is important to take note of the points that are potitioned after the 2nd Quantile, as they are the ones that distance themselves the most from the red line. 
 
-###   4.4 Visualization: Plots that describe the linear regression                                                          #### 
+###   4.4 Visualization: Plots that describe the linear regression                                                           
 
 
 ## Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?
 
+```{r}
 library(lattice)
 
 xyplot(resid(reg2) ~ fitted(reg2),
        xlab = "Fitted Values",
        ylab = "Residuals",
        main = "Residual Diagnostic Plot",
-       col = "hotpink",
+       col = "hotpink1",
        panel = function(x, y, ...)
        {
          panel.grid(h = -1, v = -1)
@@ -633,52 +647,60 @@ xyplot(resid(reg2) ~ fitted(reg2),
          panel.xyplot(x, y, ...)
        }
       )
+```
 
-
-qqmath( ~ resid(reg2),
-        xlab = "Theoretical Quantiles",
-        ylab = "Residuals",
-        abline(a=-2.8839, b=1))
-
-#Here we expect to be able to draw a straight line that is fitting for most points. Although, this graphic seems promising,
-#too many points would not be properly fit. 
 
 # Visualization of regression 
 
+```{r}
 par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
 plot(reg2, which = c(1, 2))
+```
+
+The red line of the Residual vs Fitted graph is a good tool that lets us visualize just how disperse our data is and that a linear model is not a good fit to describe the data. 
 
 # Comparing prediction and real values for drug sensitivity
 
-plot(lm_tab2$vorinostat, reg2$fitted.values, pch = 20, col = "springgreen3", xlab = "Real values", ylab = "Predicted values")
+```{r}
+plot(lm_tab2$vorinostat, 
+     reg2$fitted.values, 
+     pch = 20, col = "springgreen3", 
+     xlab = "Real values", 
+     ylab = "Predicted values")
 abline(0, 1, col = "red")
+```
 
 
+####  5.  SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with copynumber                                         
 
-####  5.  SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with copynumber                                         ####
+Can we predict drug sensitivity using the copynumber data for all genes? How much of the variance of the data can be explained using the copynumber data?
 
-# Can we predict drug sensitivity using the copynumber data?
-# How much of the variance of the data can be explained using the copynumber data?
+Which differences will we see in our data when we consider the copynumber of all genes, instead of just the biomarkers? 
+
 ## Data frames
 
+```{r}
 CN_all = as.data.frame(CN_meancol)
 
 DS = as.data.frame(drug_sensitivity)
+```
 
 ## Table with drug sensitivity and doubling time per cell line
 
+```{r}
 lm_tab_all2 = transform(merge(CN_all,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
 lm_tab_all2 <- na.omit(lm_tab_all2)
+```
 
 
-###   5.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data             #### 
+###   5.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data              
 
 
 ## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
 
 # Visualization of doubling time vs drug sensitivity
 
-
+```{r}
 scatter.smooth(lm_tab_all2$vorinostat, 
                lm_tab_all2$CN_meancol, 
                col = "orangered",
@@ -687,24 +709,31 @@ scatter.smooth(lm_tab_all2$vorinostat,
                ylab = "Copynumber",
                cex = 1.3,
                pch = 1)
+```
 
-#At first look, the points in the plot are so extremely scattered, that a linear relationship seems really unlikely. 
-#The second problem that one can observe in this graphic, is that the line describing the behaviour
-#is not straight. 
+
+At first look, the points in the plot are so extremely scattered, that a linear relationship seems really unlikely. The second problem that one can observe in this graphic, is that the line describing the behaviour is not straight. 
 
 
 # (2) Box plot
 
+```{r}
 par(mfrow=c(1, 2))
-boxplot(lm_tab_all2$vorinostat, main="Drug sensitivity", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_all2$vorinostat)$out)) 
-boxplot(lm_tab_all2$CN_meancol, main="Copynumber", sub=paste("Outlier rows: ", boxplot.stats(lm_tab_all2$CN_meancol)$out)) 
+boxplot(lm_tab_all2$vorinostat, 
+        main="Drug sensitivity", 
+        sub=paste("Outlier rows: ", boxplot.stats(lm_tab_all2$vorinostat)$out)
+        ) 
+boxplot(lm_tab_all2$CN_meancol, 
+        main="Copynumber", 
+        sub=paste("Outlier rows: ", boxplot.stats(lm_tab_all2$CN_meancol)$out)
+        ) 
+```
 
-#A boxplot can help us visualize the amount of outliers in our data. This is relevant as too many (extreme) outliers can
-#have great impact on the results of our analysis and can change the outcome completely. They can easily affect the slope. 
-#No outliers can be observed.
+No outliers can be observed.
 
 # (3) Density: Should be expect normality for drug sensitivity?
 
+```{r}
 library(e1071)
 
 par(mfrow=c(1, 2)) 
@@ -716,9 +745,6 @@ plot(density(lm_tab_all2$vorinostat),
     )
 
 polygon(density(lm_tab_all2$vorinostat), col="orangered")
-
-#Skewness: 0.03 -> Plot is very slightly skewed to the right. 
-
 plot(density(lm_tab_all2$CN_meancol), 
      main="Density Plot: Copynumber", 
      ylab="Frequency", 
@@ -726,46 +752,64 @@ plot(density(lm_tab_all2$CN_meancol),
     )
 
 polygon(density(lm_tab_all2$CN_meancol), col="lightcoral")
+```
 
-#Skewness: -0.42 -> Plot is skewed to the left.
+
+Skewness of the plot on the left: 0.03 -> Plot is very slightly skewed to the right. 
+
+Skewness of the plot on the right: -0.42 -> Plot is skewed to the left.
 
 
 # (4) Correlation: what is the level level of linear dependence between the two variables?
 
-cor(lm_tab2$vorinostat, lm_tab_all2$CN_meancol)
+```{r}
+cor(lm_tab_all2$vorinostat, lm_tab_all2$CN_meancol)
+```
 
-#[1] 0.1534729
-#A good value for correlation lies close to 1 or -1, whilst the value 0 is undesirable. Values closer to 0 indicate
-#that there is a weak relationship.  
-#The value here is too low. 
-
-
-#These analysis help us predcit whether a linear regression is or not the best model to describe our data. 
-#Although no outliers were observed in the box plot results, all ther results seem to indicate that a linear 
-#regression is most likely not the best model to describe our data. 
+The value here is too low and therefore indicates an extremely weak relationship between both variables. 
 
 
-###   5.2 Linear Regression                                                                                                 ####
+Although no outliers were observed in the box plot results, all ther results seem to indicate that a linear regression is most likely not the best model to describe our data. 
+
+
+###   5.2 Linear Regression                                                                                                 
 
 ## Linear Regression
 
+```{r}
 reg_all2 <- lm(vorinostat ~ CN_meancol, data = lm_tab_all2)
+```
+
 
 ## Details about the linear regression: what we need draw some conclusions
 
+```{r}
 summary(reg_all2)
+```
 
-# Multiple R-squared:  0.02355 -> This indicates that only 2.355% percent of the variation in the data (drug sensitivity)
-#can be explained by the relationship between drug sensitivity and copynumber. In other words, there is a 2.355% 
-#variance reduction when we take the copynumber into account. 
+Multiple R-squared:  
+0.02355 -> This indicates that only 2.355% percent of the variation in the data (drug sensitivity) can be explained by the relationship between drug sensitivity and copynumber. In other words, there is a 2.355% variance reduction when we take the copynumber into account. 
 
-# p-value: 0.2726 
-#As the p-value for reg_all2 is significantly larger than 0.05 and R-squared tells us the copynumber only explains 2.355% 
-#of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and 
-#copynumer, a.k.a copynumber cannot predict drug sensitivity. 
+p-value: 0.2726 
+As the p-value for reg_all2 is significantly larger than 0.05 and R-squared tells us the copynumber only explains 2.355% of the variation in the data, it is safe to assume that there is no linear relationship between drug sensitivity and copynumer, a.k.a copynumber cannot predict drug sensitivity. 
 
-# More information about the fit (linear ecuation: y = y-intercept + slope * x) : 
+# More information about the fit (linear ecuation: y = y-intercept + slope * x) :
+```{r}
 confint(reg_all2)
+```
+
+We can also visualize the results of the confidence interval
+```{r}
+library(ggplot2)
+
+ggplot(data = lm_tab_all2, aes(x = CN_meancol, y = vorinostat)) +
+  geom_point() +
+  stat_smooth(method = "lm", col = "lightcoral", level = 0.975) +
+  theme(panel.background = element_rect(fill = "white"),
+        axis.line.x=element_line(),
+        axis.line.y=element_line()) +
+  ggtitle("Linear Model Fitted to Data") 
+```
 
 ###   5.3 Checking the normalization of residuals                                                                           ####
 
