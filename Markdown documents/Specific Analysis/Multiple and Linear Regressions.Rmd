@@ -813,11 +813,13 @@ ggplot(data = lm_tab_all2, aes(x = CN_meancol, y = vorinostat)) +
 
 ###   5.3 Checking the normalization of residuals                                                                           ####
 
-
+```{r}
 hist(reg_all2$residuals, 
      breaks = 20,
      xlab = "Residuals", 
      main = "Drug sensitivity vs copynumber: Histogram of the residuals")
+```
+
 
 # The data does NOT look normally distributed: As the residuals are not normally distributed, then the hypothesis that
 #they are a random dataset, takes the value NO.
@@ -893,6 +895,27 @@ lm_tab_m <- na.omit(lm_tab_m)
 ## Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
 
 # Visualization of doubling time vs drug sensitivity
+
+# 3D Scatter Plot
+
+library(ggplot2)
+library(GGally)
+library(scatterplot3d)
+library(car)
+library(scatterD3)
+library(rgl)
+
+scatterplot3d(lm_tab_m)
+
+
+# (0) Matrix with scatter plots, density plots and correlation values
+
+library(ggplot2)
+library(GGally)
+library(scatterplot3d)
+
+ggpairs(data=lm_tab_m, columns=1:3, title="Multiple Regression")
+
 
 # (1) Plot
 plot(lm_tab_m , 
@@ -1021,6 +1044,16 @@ hist(reg_m$residuals,
 
 qqnorm(reg_m$residuals)
 qqline(reg_m$residuals)
+
+# 3D Plot with Regression Plane
+
+s3d <- scatterplot3d(lm_tab_m, type = "h", color = "blue",
+                     angle=55, pch = 16)
+                     
+reg_m_3D <- lm(Drug_Sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
+s3d$plane3d(my.lm)
+s3d$points3d(seq(10, 20, 2), seq(85, 60, -5), seq(60, 10, -10),
+             col = "red", type = "h", pch = 8)
 
 ###   6.4 Visualization: Plots that describe the linear regression                                                          ####
 
