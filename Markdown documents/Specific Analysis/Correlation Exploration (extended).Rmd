@@ -297,7 +297,8 @@ We can visualize a pheatmap with scaled rows using the standard normal distribut
 ```{r}
 cor1_tab_norm_tissue = cor1_tab_norm
 colnames(cor1_tab_norm_tissue) = Metadata_V_after$tissue
-pheatmap(cor1_tab_norm_tissue)
+pheatmap(cor1_tab_norm_tissue,
+         main = "Normalized heatmap for 30 biomarkers")
 ```
 When we apply the function for standard normal distribution, the data changes its appearence in a way in which not many conclusions can be drawn. It is for this reason that, for the rest of the analysis, the biomarkers will not be normalized using the function of the code above. 
 
@@ -308,7 +309,8 @@ cor1_hclust <- hclust(dist(cor1_tab), method = "complete")
 as.dendrogram(cor1_hclust) %>%
   plot(horiz = TRUE)
 
-cor1_hclust_tree <- cutree(tree = as.dendrogram(cor1_hclust), k = 2)
+cor1_hclust_tree <- cutree(tree = as.dendrogram(cor1_hclust), 
+                           k = 2)
 ```
 
 To which cluster do some of our genes belong?
@@ -388,7 +390,8 @@ cor1 = pheatmap(cor1_tab,
                 fontsize_row= 5, 
                 fontsize_col = 6,
                 gaps_col=50,
-                info = TRUE
+                info = TRUE,
+                main = "Heatmap for 30 biomarkers"
                 )
 ```
 
@@ -406,15 +409,19 @@ pheatmap(cor1_tab,
          gaps_col=50,
          info = TRUE,
          cutree_rows = 2,
-         cutree_cols = 4)
+         cutree_cols = 4,
+         main = "Heatmap for 30 biomarkers"
+         )
 ```
-
+There is a cluster with relative leves of expression close to 0. Another interesting thing is that several, but not all, melanoma and leukemia cells are very up-regulated in comparison to cells of other tissues. But as this observation can only be made for some melanoma and some leukemia cells, it is not enough to say that vorinostat has a higher impact on those types of cancer cells. If anything, what we can conlcude is that vorinostat does not appear to affect any tipe of cell belonging to a perticular tissue in a specific way. This is surprising and gives rise to some questions. If this drug is not tissue specific, why is it used mostly for akute myeloid leukemia? If it does not affect the level of expression, through which mechanism does it help treat cancer?
 
 
 ####   2.2.2 Heatmap with 100 Biomarkers and 59 cell lines
 This is how the heatmap looks making any modifications.
 ```{r}
-pheatmap(cor1.2_tab, fontsize_row= 2.7, fontsize_col = 6)
+pheatmap(cor1.2_tab, 
+         fontsize_row= 2.7, 
+         fontsize_col = 6)
 ```
 
 #### Scaling the rows
@@ -425,7 +432,10 @@ cal_z_score <- function(x){
 }
 
 cor1.2_tab_norm <- t(apply(cor1.2_tab, 1, cal_z_score))
-pheatmap(cor1.2_tab_norm, fontsize_row= 2.7, fontsize_col = 6)
+pheatmap(cor1.2_tab_norm, 
+         fontsize_row= 2.7, 
+         fontsize_col = 6,
+         main = "Normalized heatmap for 30 biomarkers")
 ```
 
 #### Ploting a dendogram and cutting the tree
@@ -436,7 +446,8 @@ cor1.2_hclust <- hclust(dist(cor1.2_tab), method = "complete")
 as.dendrogram(cor1.2_hclust) %>%
   plot(horiz = TRUE)
 
-cor1.2_hclust_tree <- cutree(tree = as.dendrogram(cor1.2_hclust), k = 2)
+cor1.2_hclust_tree <- cutree(tree = as.dendrogram(cor1.2_hclust), 
+                             k = 2)
 ```
 
 
@@ -463,7 +474,8 @@ cor1.2 = pheatmap(cor1.2_tab,
                   fontsize_row= 2.7, 
                   fontsize_col = 6,
                   gaps_col=50,
-                  info = TRUE
+                  info = TRUE,
+                  main = "Heatmap for 100 biomarkers"
                   )
 ```
 
@@ -479,8 +491,12 @@ pheatmap(cor1.2_tab,
          gaps_col=50,
          info = TRUE,
          cutree_rows = 2,
-         cutree_cols = 4)
+         cutree_cols = 4,
+         main = "Heatmap for 100 biomarkers"
+         )
 ```
+
+Perhaps one of the most interesting things about this heatmap, is that there is a cluster comprised of a single cell line. Another eye-catching characteristic of this heatmap is that, just as the one for 30 biomarkers, is that there is a cluster that includes cell lines with relative levels of expression close to 0. FUrthermore, we see that some, but not all, melanoma cells are very up-regulated. Although the clustering allows us to better visualize the relationships between cell lines and between biomarkers, no pattern arises and therefore we can say, with the data we have, that the treatment with vorinostat was not better for some types of cancer. 
 
 
 ###  2.3   Dendrogram                                                                                           
@@ -496,10 +512,10 @@ d_gg30 <- cor1_tab %>% dist %>% hclust %>% as.dendrogram %>%
   set("branches_lty", c(1,1,3,1,1,2)) %>%
   set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
   set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA),
-                               main = "How Vorinostat biomarkers define the relationship between cell lines",
   )
 
-plot(d_gg30)
+plot(d_gg30, 
+     main = "Dendrogram for 30 biomarkers")
 ```
 
 
@@ -514,7 +530,9 @@ d_pd30 <- d_pd %>%
   color_labels
 
 par(mar = rep(0,4))
-circlize_dendrogram(d_pd30, labels_track_height = NA, dend_track_height = .3) 
+circlize_dendrogram(d_pd30, 
+                    labels_track_height = NA, 
+                    dend_track_height = .3) 
 ```
 
 #### Retrieving hierachical clustering from the heatmap
@@ -530,7 +548,9 @@ cor1_ret_hclust$tree_row %>%
 cor1_ret_hclust$tree_row = cor1_ret_hclust$tree_row %>% color_branches(k=2) %>% color_labels
 
 par(mar = c(3,1,1,7))
-plot(cor1_ret_hclust$tree_row, horiz  = TRUE)
+plot(cor1_ret_hclust$tree_row, 
+     horiz  = TRUE, 
+     main = "Heatmap hierachical clustering retrieved for 30 biomarkers")
 ```
 
 
@@ -543,11 +563,11 @@ d_gg30t <- t(cor1_tab) %>% dist %>% hclust %>% as.dendrogram %>%
   set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
   set("branches_lty", c(1,1,3,1,1,2)) %>%
   set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
-  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA),
-                               main = "How Vorinostat biomarkers define the relationship between cell lines",
+  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA)
   )
 
-plot(d_gg30t)
+plot(d_gg30t,
+      main = "How Vorinostat biomarkers define the relationship between cell lines")
 ```
 
 
@@ -580,7 +600,8 @@ cor1_ret_hclust$tree_row %>%
 cor1_ret_hclust$tree_row = cor1_ret_hclust$tree_row %>% color_branches(k=2) %>% color_labels
 
 par(mar = c(2,1,1,7))
-plot(cor1_ret_hclust$tree_row, horiz  = TRUE, main = "Heatmap hierarchical clustering retrieved")
+plot(cor1_ret_hclust$tree_row, horiz  = TRUE, 
+     main = "Heatmap hierarchical clustering retrieved showing cell lines")
 ```
 
 
@@ -596,11 +617,11 @@ d_gg100 <- cor1.2_tab %>% dist %>% hclust %>% as.dendrogram %>%
   set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
   set("branches_lty", c(1,1,3,1,1,2)) %>%
   set("labels_colors") %>% set("labels_cex", c(0.28,0.5)) %>% 
-  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA),
-                               main = "How Vorinostat biomarkers define the relationship between cell lines",
+  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA)
   )
 
-plot(d_gg100)
+plot(d_gg100,
+     main = "Dendrogram for 100 biomarkers")
 ```
 
 
@@ -631,11 +652,11 @@ d_gg100t <- t(cor1.2_tab) %>% dist %>% hclust %>% as.dendrogram %>%
   set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
   set("branches_lty", c(1,1,3,1,1,2)) %>%
   set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
-  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA),
-                               main = "How Vorinostat biomarkers define the relatiosnhip between cell lines",
+  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA)
   )
 
-plot(d_gg100t)
+plot(d_gg100t,
+     main = "How Vorinostat biomarkers define the relatiosnhip between cell lines")
 ```
 
 
@@ -668,7 +689,9 @@ cor1_ret_hclust$tree_row %>%
 cor1_ret_hclust$tree_row = cor1_ret_hclust$tree_row %>% color_branches(k=2) %>% color_labels
 
 par(mar = c(3,1,1,7))
-plot(cor1_ret_hclust$tree_row, horiz  = TRUE)
+plot(cor1_ret_hclust$tree_row, 
+     horiz  = TRUE, 
+     main = "Heatmap hierarchical clustering retrieved showing cell lines")
 ```
 
 
@@ -679,7 +702,7 @@ plot(cor1_ret_hclust$tree_row, horiz  = TRUE)
 
 ##### Comparison of biomarkers
 
-```{r}
+```{r, warning=FALSE}
 
 #Creating a dendlist 
 dl_BM <- dendlist(
@@ -703,8 +726,9 @@ tanglegram(dl_BM,
            )
 ```
 
-
 The trees were pruned because the labels in both dendrograms had different values.
+
+The dendogram on the left corresponds to that of the 30 biomarkers and the one on the right to that of 100 biomarkers. Here we can see increasing the number of biomarkers drasticaclly changes the relationships that arise in our data. 
 
 ###  2.4   Correlogram and Scatter Plot for 30 Biomarkers and 59 cell lines                                    
 
@@ -749,5 +773,5 @@ cor1.2 = cor(cor1.2_tab)
 heatmap(cor1.2, col = cm.colors(256))
 ```
 
-Strangely we dont see a correlation value of one between the same cell lines. We also see that different patterns of clustering for the cell lines emerge when we consider 100 biomarkers and when we consider 30 biomarkers. 
+Strangely we do not see a correlation value of 1 between the same cell lines. We also see that different patterns of clustering for the cell lines emerge when we consider 100 biomarkers and when we consider 30 biomarkers. 
 
