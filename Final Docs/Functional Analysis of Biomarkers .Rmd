@@ -1,0 +1,538 @@
+---
+title: "Functional Analysis of Biomarkers"
+author: "Laura Plutowski and Franziska Heinkele"
+date: "2 July 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05")
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+``` 
+
+Load Data: 
+
+```{r read_data, message = FALSE, warning = FALSE}
+library(readr)
+
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+```
+
+Filter Vorinostat data: 
+
+```{r, include = FALSE}
+
+#Find cell lines, which belong to vorinostat:
+
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+
+#Create Vorinostat matrix:
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+# Create Vorinostat Fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+# work with mean of the rows because we only want to compare the genes:
+FCVorinostatabs= abs(FC)
+FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
+
+# sort the values to get the 100 largest values:
+sortedgeneralbiomarker <- sort(FCVorinostatmean, decreasing = TRUE)
+sortedgeneralbiomarker <- as.matrix(sortedgeneralbiomarker)
+
+#select the top 100 general biomarkers:
+top100generalbiomarkers = sortedgeneralbiomarker[1:100,]
+top100generalbiomarkers <- as.matrix(top100generalbiomarkers)
+
+#create vector with gene names:
+generalbiomarkergenes = row.names(top100generalbiomarkers)
+```
+
+***
+# Functional Analysis of Biomarkers
+***
+
+In the specific analysis, we have already filtered out the biomarkers for treatment with Vorinostat and carried out first analyses with them. For example, we have investigated whether the biomarkers also include the targets of vorinostat indicated in the drug annotation. However, this was not the case. So it is of interest to investigate which functions our biomarkers have and in which pathways they are involved. 
+
+First, the functions of the biomarkers will be selected by hand, stored in a table and then examined. Next, we will present and apply some of the numerous enrichment methods. For this purpose we will use the R package "cluster profiler". Here we will perform and compare enrichment analyses on "Gene Ontology", "Reactome Pathway" and "KEGG (Kyoto Encyclopedia of Genes and Genomes) Pathway". Finally, we will briefly discuss Gene Set Variation Analysis. 
+
+
+#Table of content
+
+[1. Functional Analysis "by hand"](#anchor1)
+
+* [1.1. Create a table with biomarker features](#anchor2)
+
+* [1.2. Barplots of biomarker tissue and function](#anchor3)
+
+[2. Functional Analysis using "cluster profiler"](#anchor4)
+
+* [2.1.Gene Ontology Analysis](#anchor5)
+
+* [2.2.Reactome Pathway Analysis](#anchor6)
+
+* [2.3. KEGG Pathway Analysis](#anchor7)
+
+[3. Gene Set Variation Analysis](#anchor8)
+
+[4. Conclusion/Discussion ](#anchor9)
+
+[5. Literatur ](#anchor10)
+
+
+***
+
+## 1. Functional Analysis "by hand" {#anchor1}
+
+We used human gene-databases such as "GeneCards" to do research about our biomarkers. We collected information about the __gene-function__ as well as about the __tissue__ in which the respective genes are mainly expressed. Unfortunately, we were not able to assign a function and tissue to each of the biomarkers since some genes were not sufficiently researched yet. That lead to quite a lot NA-values in our table.
+On the other hand, we found great numbers of different functions for single genes. We tried to summarize the functions but were not able to consider them all. Consequently, our table is only suitable for the purpose to get a general overview and to investigate, whether we have biomarkers with partly similar features.
+
+
+### 1.1. Create a table with biomarker features {#anchor2}
+
+``` {r include = FALSE}
+library(knitr)
+```
+
+We used Excel to create a table with our top 50 biomarkers and their features, a part of the table can be seen below.
+Then we imported the annotation data in R and definded the tissue- and function-column for better readability:
+```{r}
+vorinostat_annotation = read.csv2(paste0(wd,"/data/Biomarkers.csv"),header = TRUE, quote="\"")
+tissue = vorinostat_annotation$affected.Tissue..if.specific.
+general.function = vorinostat_annotation$general.Function
+# rename 
+names(vorinostat_annotation)[names(vorinostat_annotation)=="X...Gene"] <- "Gene" 
+names(vorinostat_annotation)[names(vorinostat_annotation)=="affected.Tissue..if.specific."] <- "affected Tissue (if specific)" 
+
+knitr::kable(head(vorinostat_annotation, caption = "vorinostat annotation"))
+```
+
+### 1.2. Barplots of biomarker tissue and function {#anchor3}
+
+The following barplot shows the prevalence of tissues, in which 50 of our biomarkers are preferentially expressed.
+```{r, fig.height= 5, fig.width= 7}
+col=palette(rainbow(9))
+table(tissue)
+par(mar=c(5, 4, 5, 9))
+barplot(table(tissue), ylab="counts", main="Affected tissues by biomarkers", col=col, las=3, cex.names = 0.7)
+```
+
+Vorinostat is used against T-cell lymphomas. They origin from T-cells which are a subgroup of white blood cells and of high importance for the immune defense. Thus, we expected Vorinostat to affect preferentially those areas. Some of our biomarkers are indeed mainly active in blood cells and in the immune system but we also found, that quite a lot of the biomarkers show activity in the brain. Current papers show that vorinostat is actually used to treat brain metastases (Shi et al., 2014) and also has an antidepressant effect (Kv et al., 2019).
+
+```{r, fig.height= 5, fig.width= 7}
+col=palette(rainbow(16))
+table(general.function) 
+par(mar=c(10, 4, 6, 9))
+barplot(table(general.function), ylab="counts", main="General functions of biomarkers", col=col, las=3, cex.names = 0.7)
+```
+
+In order to get a better overview of the function, we can plot only those functions which occur with a frequency greater or equal to two:
+
+```{r, fig.height= 5, fig.width= 7}
+highfrequencyfunctions <- table(general.function)[table(general.function)>2]
+
+col=palette(rainbow(8))
+par(mar=c(10, 4, 6, 9))
+barplot(highfrequencyfunctions, ylab="counts", main="Prevalent functions of biomarkers", col=col, las=3, cex.names = 0.7)
+```
+
+The plot indicates, that Vorinostat affects amongst other things especially genes which are involved in chromatin binding and transcription regulation. We already knew, that the drugs working mechanism is to create an altered chromatin structure and gene accessibility. However, we did not know, that those altered structures have a high impact on genes involved in chromatin-organisation as well.
+
+In an other column in the self created annotation table we specified the function of some biomarkers more precise. Some of the chromatin-binding biomarkers function as histone components.
+```{r}
+length(grep(vorinostat_annotation$Function, pattern = "histone cluster"))
+```
+In 50 researched biomarkers we found six histone genes which show a clearly altered expression after Vorinostat treatment. That leads to the assumption, that beside Vorinistats working mechanism as a histone modification regulator it might affect the number or composition of histones as well.
+
+***
+
+## 2. Functional Analysis using "cluster profiler" {#anchor4}
+
+The R package "cluster profiler", created by Guangchuang Yu *et al.* allows the user to create and visualize different functional profiles of genes and gene clusters using different enrichment methods. Here, we will focus on "Gene Ontology", "Reactome Pathway" and "KEGG Pathway" methodes.
+
+### 2.1. Gene Ontology Analysis {#anchor5}
+
+Gene Ontology is an enrichment Analysis, which hierarchically classifies genes or gene products to terms organized in an "Gene Ontology" system. The genes can be identified and ordered in three different ways (Yon Rhee et al., 2008): 
+
+1. Biological Process: describing a general cellular or physiological role 
+2. Molecular Function: describing the molecular activity
+3. Cellular Component: describing the location in the cell where the function of the gene is executed 
+
+In addition, a statistical test can be carried out on the assignment, which outputs a p-value. This value then indicates how significant the assignment has been. The smaller the value, the better the gene could be assigned to a group. For example, almost all genes can be assigned to a biological process. This assignment would therefore not be significant. In contrast, there are only a few genes that belong to the group "DNA repair". The smaller the pValue of the assigned gene, the larger the association with this group.  (http://geneontology.org/docs/go-enrichment-analysis/) 
+
+First of all, we need to load the libraries, we will work with: 
+
+```{r,warning=FALSE, results='hide',message=FALSE}
+library(clusterProfiler)
+library(org.Hs.eg.db)
+```
+
+To be able to work with our biomarker genes in cluster profiler, we need to translate them into another Gene ID: 
+
+```{r,warning=FALSE,message=FALSE}
+
+translated.genes= bitr(generalbiomarkergenes,
+                        fromType="SYMBOL", 
+                        toType="ENTREZID",
+                        OrgDb = org.Hs.eg.db) 
+head(translated.genes)
+```
+
+As a first step, we will assign the biomarkers to the groups described above. First we define the "input genes" with with the correct Gene ID:  
+
+```{r,warning=FALSE, results='hide',message=FALSE}
+# load the needed library
+library(DOSE)
+```
+
+```{r}
+# take the needed gene ID
+gene=translated.genes$ENTREZID
+head(gene)
+```
+
+Now we can group them, using all 3 categories: 
+
+```{r,warning=FALSE,message=FALSE}
+
+## 1. Biological Process
+ggo.bp <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "BP", level = 3, readable = FALSE)
+head(summary(ggo.bp))
+
+
+## 2. Molecular Function
+ggo.mf <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "MF", level = 3, readable = FALSE)
+head(summary(ggo.mf))
+
+
+## 3. Cellular Component
+ggo.cc <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "CC", level = 3, readable = FALSE)
+head(summary(ggo.cc))
+
+```
+The result of the assignment can be visualized via a bar plot.
+
+```{r, fig.height= 5, fig.width= 7}
+# visualization 
+par(mar=c(5, 4, 5, 9), mfrow=c(1,3))
+barplot(ggo.bp, drop=TRUE, showCategory=12)
+barplot(ggo.mf, drop=TRUE, showCategory=12)
+barplot(ggo.cc, drop=TRUE, showCategory=12)
+```
+
+We see that we have assignments in all Barplots to which almost all genes belong to. In "biological process"", for example, we have an excessive number of genes involved in the "nitrogen compound metabolic process", in molecular function we have a large number with "hydrolase activity" and all genes localised in the "cell part". Consequently, these bar plots are not very informative. 
+For this reason we will now additionally check the statistical parameters by an enrichment analysis, to see how significant our allocations are. 
+
+Here we also need to translate the Gene IDs first: 
+
+```{r,warning=FALSE,message=FALSE}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENSEMBL"),
+                OrgDb = org.Hs.eg.db)
+```
+
+For the enrichment analysis we have to set some important statistical parameters. As we expect to have small pValues we set the significance level to 0.1. Because we have multiple compairisons, we also have to use the Adjust p.Value Method. Here we use the Benjamini-Hochberg Method, which controls the false discovery rate (FDR) and guarantees a powerful test. As limit for our q-value we have chosen 0.05, which is used by default. 
+
+
+```{r,warning=FALSE,message=FALSE}
+## 1. Biological Process
+ego.bp <- enrichGO(gene        = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "BP",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego.bp))
+
+## 2. Molecular Function
+ego.mf <- enrichGO(gene        = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "MF",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego.mf))
+
+##  3. Cellular Component
+ego.cc <- enrichGO(gene        = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "CC",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+
+head(summary(ego.cc))
+
+```
+
+The results of the enrichment can be visualized in many different ways. We will now present some possible plots based on biological function:  
+
+```{r,fig.height= 5, fig.width= 7}
+# Dot Plot 
+dotplot(ego.bp, showCategory=12)
+```
+
+This plot is similar to a bar plot, except that the bars were replaced by points. The size of the points indicates how many genes there are in this category and the color gives information about the pValue. In contrast to the barplot, less genes per category are displayed here. Since we have defined a p and q value, these are only "significant" categories.We see that categories with fewer genes have a smaller pValue and have therefore been better assigned. 
+
+```{r,fig.height= 5, fig.width= 7}
+# Gene-Concept Network
+cnetplot(ego.bp)
+```
+
+The Gene-Concept Network shows us in which categories a gene occurs. Also here the size of the points is proportional to the number of genes in the corresponding category.
+
+```{r,fig.height= 5, fig.width= 7}
+# Enrichment Map for enrichment result of over-representation test or gene set enrichment analysis
+emapplot(ego.bp)
+```
+
+The enrichment map connects the two plots seen befor. We see the related pathways and how many genes with which pValues are allocated in one category. 
+
+Since we believe that dot plots are the easiest to interpret and show the most important information at first glance, we will now only display the other two GO enrichment results with these. 
+
+```{r,fig.height= 5, fig.width= 7}
+# Dot Plot Molecular Function
+dotplot(ego.mf, showCategory=12)
+```
+
+Here we see the diffrent molecular functions of our biomarkers. Like in the plots above, the result here is diffrent from the result from the Gene Ontology grouping. Nevertheless, these results are not very meaningful as the listed modifications are not assigned to specific molecules.Consequently, we cannot say anything about their effects. 
+
+```{r,fig.height= 5, fig.width= 7}
+# Dot Plot Cellular Component 
+dotplot(ego.cc, showCategory=12)
+```
+This plot shows the location of the biomarkers in the different cellular componets. Also here we see other categories than in the Barplot. This assignment provides the best results so far. We see that some genes have been assigned to expectable categories such as "protein DNA complex". This also fits well with the histone modifying function of vorinostat.
+
+
+### 2.2. Reactome Pathway Analysis {#anchor6}
+
+Reactome Pathway contains a big database of biological processes like signal transduction, DNA repair and metabolism. Thus it can be used as analysis tool for discovering functional relationships between genes from expression data (Fabregat et al., 2018). It returns enriched pathways from a given vector of genes, thereby also performing FDR control. The statistical part works similar to the one of Gene Ontology (GO) Analysis. 
+
+As a first step, we need to load the Reactome library:
+
+```{r,warning=FALSE, results='hide',message=FALSE}
+library(ReactomePA)
+```
+
+Here, as well, we have to translate the gene ID of our biomarkers into the ENTREZID form: 
+
+```{r, warning=FALSE,message=FALSE}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+```
+
+
+```{r,warning=FALSE,message=FALSE}
+x <- enrichPathway(gene=gene.df$ENTREZID,
+                   pvalueCutoff = 0.05,
+                   readable = T )
+head(as.data.frame(x))
+```
+
+For visualization we can use the same type of plots as for GO Analysis. 
+
+```{r, fig.height= 5, fig.width= 7}
+barplot(x,showCategory=12)
+```
+
+The color of the bars is associated with the pValue. The smaller the value, the better the assignment. Morover, we see categories that are crealy associated with cancer growth like "TP53 Regulates Transcription of Genes Involved in G1 Cell Cycle Arrest". Vorinostat is also involved in the cellular response to stress. This also seems to be an important point in its antidepressant effect (Kv et al., 2019). In addition, vorinostat influences the typical pathways that are affected by a tumor such as cell division and senescence. 
+Now it would be interesting to see if these genes are regulated up or down. This can be visualized in a cnet plot where the FC is stained. 
+
+```{r, fig.height= 5, fig.width= 7}
+# FC data for coloring 
+FC=TreatedVorinostat-UntreatedVorinostat
+FC<-FC[generalbiomarkergenes,]
+names(FC) <- gene.df$ENTREZID
+
+cnetplot(x,categorySize="geneNum",foldChange = FC)
+```
+We see that there are both highly and down-regulated genes in the same pathways. Unfortunately, the plot does not show whether the whole pathway is activated or inactivated. 
+
+The whole enrichment analysis can be summarized in the enrichment map. However, due to the numerous connecting lines it is no longer clear and the Fold Change is also missing in this plot. 
+
+```{r, fig.height= 5, fig.width= 7}
+emapplot(x)
+```
+
+### 2.3. KEGG Pathway Analysis {#anchor7}
+
+The next enrichment method we use is KEGG Pathway Analysis. KEGG stands for Kyoto Encyclopedia of Genes and Genomes. It is a freely accessible database that contains information on various drugs, metabolic pathways and genes, among other things (Kanehisa and Goto, 2000). The enrichment process is the same as for the other two methods presented here. 
+
+First, we need to load the libaries we will work with:
+
+```{r,warning=FALSE, results='hide',message=FALSE}
+library(KEGG.db)
+library(org.Hs.eg.db)
+library(enrichplot)
+library(DOSE)
+```
+
+The gene IDs must also be translated:
+
+````{r,warning=FALSE,message=FALSE}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+```
+
+Now we can perform the enrichment. We did not choose a Adjust p.Value method because we could find more categories this way. When setting a specific pAdjustMethod, we would only be able to identify 5 categories. 
+
+```{r,warning=FALSE,message=FALSE}
+kk <- enrichKEGG(gene=gene.df$ENTREZID,
+                 pvalueCutoff = 0.05,
+                 pAdjustMethod = "none")
+head(summary(kk))
+```
+
+For the visualization of the results, we use the same plots as before, except for an additional heatplot that is based on a heatmap. 
+
+```{r, fig.height= 5, fig.width= 7}
+par(mfrow=c(2,1))
+barplot(kk,showCategory=12)
+
+# FC data for coloring 
+FC=TreatedVorinostat-UntreatedVorinostat
+FC<-FC[generalbiomarkergenes,]
+names(FC) <- gene.df$ENTREZID
+
+cnetplot(kk,categorySize="pvalue",foldChange=FC)
+```
+
+We see that the KEGG database has found pathways that can be directly linked to vorinostat, such as the category "Human T-cell leukemia virus 1 infection". As already mentioned in the introduction of the board and specific analysis, vorinostat is used in leukaemia diseases. Thus, in comparison KEGG provides the best drug-specific enrichment results. Here also typical cancer topics like "Apoptosis", "p53 signaling pathway" or "cellular secescens" can be found. Moreover, we can identify two more cancer types "colorectal cancer" and "small cell lung cancer" for which vorinostat could be used. 
+All these are summarized in the following heatplot. Here we can see the single genes on the x-axis and on the y-axis the pathways they are involved in  marked by small boxes. Since boxes are stained with the Fold Change, we can also read here whether a gene has been down or upregulated. 
+
+```{r, fig.height= 5, fig.width= 7}
+heatplot(kk, foldChange=FC)
+```
+
+In addition, the KEGG data can be used to create so-called pathway graphs. 
+For this the library "pathview" is needed. A pathway ID from the KEGG Pathway enrichment result is entered into the function and the graphic is created. 
+This will be demonstrated in the following using the first listed pathway from the previous KEGG enrichment analysis.  
+
+Load the library: 
+
+```{r,warning=FALSE, results='hide',message=FALSE}
+library(pathview)
+```
+
+Load the pathway graph:  
+
+```{r, warning=FALSE, message=FALSE}
+pathview(gene.data = FC, 
+         pathway.id = "hsa05202", 
+         species = "hsa", 
+         limit = list(gene=5, cpd=1))
+```
+![](hsa05202.png)
+
+
+Here we see the pathway "Transcriptional misregulation in cancer - Homo sapiens (human)". There are diffent flow charts with the corresponding genes for dirffent cancer types. 
+With this information one could possibly make predictions in individual cancer therapy. If a patient's gene expression is known, it can be compared with our biomarkers and a prediction can be made of the ways in which vorinostat might work. In the pathway graphs, individual genes and reaction pathways can be specifically observed. 
+
+***
+
+## 3. Gene Set Variation Analysis {#anchor8}
+
+Finally, we performed the Gene Set Variation Analysis, short GSVA. GSVA is an analysis method that exports gene expression profiles into pathway or siganture summary. Consequently, it allows easier interpretation of the data and helps to model the pathway activation (Haenzelmann et al., 2013). 
+
+First we perform the GSVA enrichment, resulting in an enrichment score for each gene and each sample: 
+
+```{r,warning=FALSE, message=FALSE,results='hide'}
+# create data needed for GSVA Analysis 
+generalbiomarkergenes=as.list(generalbiomarkergenes)
+FC=TreatedVorinostat-UntreatedVorinostat
+
+library(GSVA)
+g<- gsva(FC,
+         generalbiomarkergenes,
+         mx.diff=TRUE,
+         verbose=TRUE)
+
+```
+The enrichment results can be visualized by an heatmap : 
+
+```{r, fig.height= 5, fig.width= 7, warning=FALSE, message=FALSE}
+heat <- t(scale(t(g)))
+
+myCol <- colorRampPalette(c("dodgerblue", "black", "yellow"))(100)
+myBreaks <- seq(-1.5, 1.5, length.out=101)
+
+
+
+library(gplots)
+png(filename = "GSVAheat.png")
+GSVAheat= heatmap.2(heat,
+          col=myCol,
+          breaks=myBreaks,
+          main="GSVA Enrichment Score of Biomarker",
+          xlab="genes",
+          ylab="samples",
+          labRow="", 
+          labCol="",
+          key=TRUE,
+          keysize=1.0,
+          key.title="",
+          key.xlab="Enrichment Z-score",
+          scale="none", 
+          density.info="none",
+          reorderfun=function(d,w) reorder(d, w, agglo.FUN=mean),
+          trace="none",
+          cexRow=1.0,
+          cexCol=1.0,
+          distfun=function(x) dist(x, method="euclidean"),
+          hclustfun=function(x) hclust(x, method="ward.D2"))
+
+ 
+```
+![](GSVAheat.png)
+
+
+The enrichement score summarizes the gene expression of each single genes and is given als the maximum derivation of zero. In our heatmap we can see two big gene groups looking on the left side, which also can be found in the dendogram of the heatmap. 
+
+Since we have a mapping of a gene and a sample, we see that the gsva enrichment did not work properly, because we were supposed to get groups of genes in a particular pathway. 
+Such a heatmap with pathways would look like the following. It was created by Haenzelmann et al. with leukemia data. 
+
+
+![](normalGSVAheatmap.png)
+
+
+We can see the diffrent samples grouped by pathways. The pictures shows the diffrentially activated pathways in the Leukemia data set. 
+
+***
+
+## 4. Conclusion/Discussion {#anchor9} 
+
+Finally, looking at all enrichment methods, it can be said that KEGG is best suited for our purposes. On the one hand it provides cancer- and drug-specific pathway information and on the other hand it can be used to create pathway graphs that could be used for predictions in individual therapy. 
+Gene Ontology Analysis provides only very superficial enrichment results and is more suitable for sorting genes by broad functions. It has been shown how important the inclusion of statistical parameters is. Without these, one often gets classifications that apply to all genes and which are not specific. 
+The Reactome Pathway Analysis had provided us with more specific analysis results, including cancer-specific metabolic pathways. However, in contrast to KEGG, the information about the progression of the pathways and the more precise function of individual genes was missing. 
+Since the GSVA enrichment did not work properly with us, no statement can be made about this method. 
+
+***
+
+## 5. Literatur {#anchor10}
+
+Fabregat, A., Jupe, S., Matthews, L., Sidiropoulos, K., Gillespie, M., Garapati, P., Haw, R., Jassal, B., Korninger, F., May, B., et al. (2018). The Reactome Pathway Knowledgebase. Nucleic Acids Res 46, D649-d655.
+
+Haenzelmann, S., Castelo, R., and Guinney, J. (2013). GSVA: gene set variation analysis for microarray and RNA-Seq data. BMC Bioinformatics 14, 7.
+
+Kanehisa, M., and Goto, S. (2000). KEGG: kyoto encyclopedia of genes and genomes. Nucleic acids research 28, 27-30.
+
+Kv, A., Madhana, R.M., Js, I.C., Lahkar, M., Sinha, S., and Naidu, V.G.M. (2019). Corrigendum to "Antidepressant activity of vorinostat is associated with amelioration of oxidative stress and inflammation in a corticosterone-induced chronic stress model in mice." [Behav. Brain Res. 344 (2018) 73-84]. Behavioural brain research 359, 973-974.
+
+Shi, W., Lawrence, Y.R., Choy, H., Werner-Wasik, M., Andrews, D.W., Evans, J.J., Judy, K.D., Farrell, C.J., Moshel, Y., Berger, A.C., et al. (2014). Vorinostat as a radiosensitizer for brain metastasis: a phase I clinical trial. Journal of neuro-oncology 118, 313-31
+
+Yon Rhee, S., Wood, V., Dolinski, K., and Draghici, S. (2008). Use and misuse of the gene ontology annotations. Nature Reviews Genetics 9, 509.
+
