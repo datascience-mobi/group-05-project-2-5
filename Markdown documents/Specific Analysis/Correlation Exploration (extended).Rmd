@@ -454,17 +454,6 @@ plot(d_gg)
 ```
 
 
-# Mirror horizontal dendogram
-
-```{r}
-hc_hmd <- hclust(dist(cor1_tab), "ave")
-d_hmd <- as.dendrogram(hc_hmd)
-d_hmd <- d_hmd %>% color_branches(k=2) %>% color_labels
-par(mar = c(3,1,1,7))
-plot(d_hmd, horiz  = TRUE)
-```
-
-
 # Polar dendogram
 
 ```{r}
@@ -513,14 +502,91 @@ plot(d_gg)
 ```
 
 
-# Mirror horizontal dendogram
+# Polar dendogram
 
 ```{r}
+hc_pd <- hclust(dist(t(cor1_tab)))
+d_pd <- as.dendrogram(hc_pd)
+
+d_pd <- d_pd %>% 
+  color_branches(k=2) %>% 
+  color_labels
+
+par(mar = rep(0,4))
+circlize_dendrogram(d_pd, labels_track_height = NA, dend_track_height = .3) 
+
+```
+
+
+# Retrieving hierachical clustering from the heatmap
+
+```{r}
+cor1_ret_hclust <- pheatmap(t(cor1_tab), silent = TRUE)
+
 hc_hmd <- hclust(dist(t(cor1_tab)), "ave")
-d_hmd <- as.dendrogram(hc_hmd)
-d_hmd <- d_hmd %>% color_branches(k=2) %>% color_labels
+cor1_ret_hclust$tree_row %>% 
+  as.dendrogram() %>%
+  plot(horiz = TRUE)
+
+cor1_ret_hclust$tree_row = cor1_ret_hclust$tree_row %>% color_branches(k=2) %>% color_labels
+
 par(mar = c(3,1,1,7))
-plot(d_hmd, horiz  = TRUE)
+plot(cor1_ret_hclust$tree_row, horiz  = TRUE)
+```
+
+
+
+#   2.3.2 Dendogram with 100 Biomarkers and 59 cell lines                                                     
+
+## CELL LINES
+
+# ggplot integration
+
+```{r}
+d_gg <- cor1.2_tab %>% dist %>% hclust %>% as.dendrogram %>%
+  set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
+  set("branches_lty", c(1,1,3,1,1,2)) %>%
+  set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
+  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA),
+                               main = "How Vorinostat biomarkers define the relationship between cell lines",
+  )
+
+plot(d_gg)
+```
+
+
+
+# Retrieving hierachical clustering from the heatmap
+
+```{r}
+cor1.2_ret_hclust <- pheatmap(cor1.2_tab, silent = TRUE)
+
+hc_hmd <- hclust(dist(cor1.2_tab), "ave")
+cor1.2_ret_hclust$tree_row %>% 
+  as.dendrogram() %>%
+  plot(horiz = TRUE)
+
+cor1_ret_hclust$tree_row = cor1.2_ret_hclust$tree_row %>% color_branches(k=2) %>% color_labels
+
+par(mar = c(3,1,1,7))
+plot(cor1.2_ret_hclust$tree_row, horiz  = TRUE)
+```
+
+
+## BIOMARKERS
+
+# ggplot integration
+
+```{r}
+d_gg <- t(cor1.2_tab) %>% dist %>% hclust %>% as.dendrogram %>%
+  set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
+  set("branches_lty", c(1,1,3,1,1,2)) %>%
+  set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
+  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA),
+                               main = "How Vorinostat biomarkers define the relatiosnhip between cell lines",
+  )
+
+plot(d_gg)
 ```
 
 
@@ -558,136 +624,9 @@ plot(cor1_ret_hclust$tree_row, horiz  = TRUE)
 
 
 
-#   2.3.2 Dendogram with 100 Biomarkers and 59 cell lines                                                     
 
-pheatmap(cor1.2_tab)
+#   2.3.3 Comparison of dendograms with 100 Biomarkers and 30 Biomarkers                     
 
-
-# Scaling the rows
-
-cal_z_score <- function(x){
-  (x - mean(x)) / sd(x)
-}
-
-cor1.2_tab_norm <- t(apply(cor1.2_tab, 1, cal_z_score))
-pheatmap(cor1.2_tab_norm)
-
-
-# Ploting a dendogram and cutting the tree
-cor1.2_hclust <- hclust(dist(cor1.2_tab), method = "complete")
-
-as.dendrogram(cor1.2_hclust) %>%
-  plot(horiz = TRUE)
-
-cor1.2_hclust_tree <- cutree(tree = as.dendrogram(cor1.2_hclust), k = 2)
-
-head(cor1.2_hclust_tree)
-
-
-
-#Heatmap for a 100 Biomarkers
-
-
-cor1.2_colour = list(cluster = c("Cluster 1" = "#68f9f1", "Cluster 2" = "#c9ff87"),
-                     V1 = c("Renal" = "#A0E862", 
-                            "Lung" = "#29C0DE", 
-                            "Breast" = "#005BF8", 
-                            "Leukemia" = "#845EC2", 
-                            "Colon" = "#CA009E", 
-                            "Prostate" = "#FF88CB", 
-                            "Ovarian" = "#F1903D", 
-                            "Melanoma" = "#FFC75F", 
-                            "CNS" = "#F9F871"))
-
-
-cor1.2 = pheatmap(cor1.2_tab,
-                  annotation_colors = cor1.2_colour,
-                  annotation_row = cor1.2_hclust_tree,
-                  annotation_col = cor1_tissue_an,
-                  fontsize = 6.5,
-                  fontsize_row= 5, 
-                  fontsize_col = 6,
-                  gaps_col=50,
-                  info = TRUE
-                  )
-
-cor1.2
-
-# Retrieving hierachical clustering
-
-cor1.2_ret_hclust <- pheatmap(cor1.2_tab, silent = TRUE)
-
-cor1.2_ret_hclust$tree_row %>%
-  as.dendrogram() %>%
-  plot(horiz = TRUE)
-
-
-                                                     #####
-
-pheatmap(cor1.2_tab)
-
-
-# Scaling the rows
-
-cal_z_score <- function(x){
-  (x - mean(x)) / sd(x)
-}
-
-cor1.2_tab_norm <- t(apply(cor1.2_tab, 1, cal_z_score))
-pheatmap(cor1.2_tab_norm)
-
-
-# Ploting a dendogram and cutting the tree
-cor1.2_hclust <- hclust(dist(cor1.2_tab), method = "complete")
-
-as.dendrogram(cor1.2_hclust) %>%
-  plot(horiz = TRUE)
-
-cor1.2_hclust_tree <- cutree(tree = as.dendrogram(cor1.2_hclust), k = 2)
-
-head(cor1.2_hclust_tree)
-
-
-
-#Heatmap for a 100 Biomarkers
-
-
-cor1.2_colour = list(cluster = c("Cluster 1" = "#68f9f1", "Cluster 2" = "#c9ff87"),
-                     V1 = c("Renal" = "#A0E862", 
-                            "Lung" = "#29C0DE", 
-                            "Breast" = "#005BF8", 
-                            "Leukemia" = "#845EC2", 
-                            "Colon" = "#CA009E", 
-                            "Prostate" = "#FF88CB", 
-                            "Ovarian" = "#F1903D", 
-                            "Melanoma" = "#FFC75F", 
-                            "CNS" = "#F9F871"))
-
-
-cor1.2 = pheatmap(cor1.2_tab,
-                  annotation_colors = cor1.2_colour,
-                  annotation_row = cor1.2_hclust_tree,
-                  annotation_col = cor1_tissue_an,
-                  fontsize = 6.5,
-                  fontsize_row= 5, 
-                  fontsize_col = 6,
-                  gaps_col=50,
-                  info = TRUE
-                  )
-
-cor1.2
-
-# Retrieving hierachical clustering
-
-cor1.2_ret_hclust <- pheatmap(cor1.2_tab, silent = TRUE)
-
-cor1.2_ret_hclust$tree_row %>%
-  as.dendrogram() %>%
-  plot(horiz = TRUE)
-
-
-
-#   2.3.3 Comparison of dendograms with 100 Biomarkers and 30 Biomarkers                                      
 ##  2.4   Correlogram and Scatter Plot for 30 Biomarkers and 59 cell lines                                    
 
 # Correlogram
@@ -728,22 +667,5 @@ heatmap(cor, col = cm.colors(256))
 cor1.2 = cor(cor1.2_tab)
 heatmap(cor1.2, col = cm.colors(256))
 ```
-
-
-
-### 3.    CORRELATION 2: Biomarkers found using the variance vs tissue                                        
-##  3.1   Table with Biomarkers, difference beatween treated and untreated, and cell lines                    
-##  3.2.1 Heatmap with 30 Biomarkers and 59 cell lines   
-#   3.2.2 Heatmap with 100 Biomarkers and 59 cell lines                                                       
-##  3.3   Dendogram                                                                                           
-
-#   3.3.1 Dendogram with 30 Biomarkers and 59 cell lines                                                      
-#   3.3.2 Dendogram with 100 Biomarkers and 59 cell lines                                                     
-#   3.3.3 Comparison of dendograms with 100 Biomarkers and 30 Biomarkers                                      
-##  3.4   Correlogram and Scatter Plot for 30 Biomarkers and 59 cell lines                                    
-
-
-### 4.    Comparing the biomarkers obtained using the variance and the mean                                   
-
 
 
