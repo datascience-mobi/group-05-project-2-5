@@ -1,0 +1,777 @@
+---
+title: "Correlation Exploration: Heatmaps, scatter plots and other fun things"
+author: "Florencia Zúñiga"
+date: "7/10/2019"
+output:
+  pdf_document: default
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+#Table of contents
+
+[1. LOADING DATA](#anchor1)
+
+* [1.1. Creating Vorinostat](#anchor2)
+
+* [1.2. Creating FC Data -  Finding the Biomarkers](#anchor3)
+
+[2. Biomarkers found using the mean vs tissue](#anchor4)
+
+* [2.1 Table with Biomarkers, difference beatween treated and untreated, and cell lines)](#anchor5)
+
+* [2.2 Heatmaps)](#anchor6)
+
+       + [2.2.1. Heatmap with 30 Biomarkers and 59 cell lines](#anchor7)
+       
+       + [2.2.2. Heatmap with 100 Biomarkers and 59 cell lines](#anchor8)
+       
+* [2.3. Dendrogram](#anchor9)
+
+       + [2.3.1. Dendrogram with 30 Biomarkers and 59 cell lines](#anchor10)
+       
+       + [2.3.2. Dendrogram with 100 Biomarkers and 59 cell lines](#anchor11)
+       
+       + [2.3.3. Comparison of dendrograms with 100 Biomarkers and 30 Biomarkers](#anchor12)
+
+* [2.4. Correlogram and Scatter Plot for 30 Biomarkers and 59 cell lines](#anchor13)
+
+#  1.  LOADING DATA                                                                                                      
+
+### Loading packages
+
+```{r}
+library(readr)
+library(rstudioapi)
+library(BBmisc)
+
+#Packages needed for the heatmap
+library(pheatmap)
+library("DESeq")
+library(dendextend)
+
+#Packages for the dendogram
+library(ggplot2)
+library(circlize)
+
+#Packages for the correlogram
+library(corrgram)
+```
+
+
+
+```{r,include = FALSE}
+
+wd = ("/GitHub/project-02-group-05")
+```
+
+
+Reading the data
+```{r}
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), 
+                      header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+Sensitivity <- readRDS(paste0(wd,"/data/NegLogGI50.rds"))
+
+
+Basal <- readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
+Copynumber <- readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
+Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
+
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), 
+                                 header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), 
+                             header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+```
+
+Transforming the data
+```{r}
+Treated <- as.data.frame(Treated)
+Untreated <- as.data.frame(Untreated)
+Sensitivity<- as.data.frame(Sensitivity)
+```
+
+
+
+
+Preparing metadata
+```{r echo=FALSE}
+#Levels 
+levels(Metadata$drug)
+
+#Exclude rows, that are treated with other drugs
+Metadata_Vorinostat   =  Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
+Metadata_Vorinostat   =  Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
+
+#=> Discover cell line to tissue relations
+unique(sort(Metadata$tissue)) # [1] Breast   CNS      Colon    Leukemia Lung     Melanoma Ovarian  Prostate Renal
+
+
+Metadata_V_after = subset(Metadata_Vorinostat, Metadata_Vorinostat$dose == "5000nM")
+Metadata_V_after = Metadata_V_after [, -which(colnames(Metadata_V_after) %in% c( "time", "drug", "sample", "dose" ))]
+rownames(Metadata_V_after) = Metadata_V_after$cell
+```
+
+
+Data normalization
+```{r}
+Untreated_norm <- apply(Untreated, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+
+
+Treated_norm <- apply(Treated, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+
+
+FC <- Treated - Untreated
+FC_norm <- apply(FC, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+```
+
+##   1.1 Biomarkers                                                                                                        
+###  (1)  Creating Vorinostat
+```{r}
+#Untreated matrix
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+
+#Same with treated matrix
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+
+#Define Vorinostat-data: 
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+#fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#Sensitivity 
+vorinostat_Sensitivity_alleZeilen= grep ('vorinostat', rownames(Sensitivity))
+vorinostat_Sensitivity_data= Sensitivity[vorinostat_Sensitivity_alleZeilen,]
+```
+
+###  (2)  Creating FC Data -  Finding the Biomarkers
+
+```{r}
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#We work with mean of the rows because we only want to compare the genes 
+FC_meanrow= rowMeans(FC)
+
+## Sorting the data 
+#We work with absolute value to find the highest values, 
+#because we want to have the most up and down regulated genes.
+FC_abs= abs(FC_meanrow)
+
+#We sort the values to get the 100 largest values 
+sortedFC_abs <- sort(FC_abs, decreasing = TRUE)
+sortedFC_abs <- as.matrix(sortedFC_abs)
+
+#We select the first n for biomarkers 
+biomarkers_FC30 = sortedFC_abs[1:30,]
+biomarkers_FC30 <- as.matrix(biomarkers_FC30)
+
+biomarkers_FC100 = sortedFC_abs[1:100,]
+biomarkers_FC100 <- as.matrix(biomarkers_FC100)
+
+## Creating a matrix with FC values, that are both positive and negative 
+FC_both= cbind(FC_meanrow,FC_abs)
+FC_both=as.data.frame(FC_both)
+
+#Ordering this matrix 
+FC_both_sorted <- FC_both[order(FC_both$FC_abs, decreasing = TRUE),]
+
+#FC values of biomarkers: We select the first 100 of the sorted matrix. 
+biomarkers_FC_values30 = FC_both_sorted[1:30,]
+
+biomarkers_FC_values100 = FC_both_sorted[1:100,]
+
+#Removing the absolute values
+biomarkers_FC_values30 <- subset( biomarkers_FC_values30, select = -FC_abs)
+biomarkers_FC_values30 = as.matrix(biomarkers_FC_values30)
+
+biomarkers_FC_values100 <- subset( biomarkers_FC_values100, select = -FC_abs)
+biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
+
+```
+
+## 2.    Biomarkers found using the mean vs tissue                                          
+
+###  2.1   Table with Biomarkers, difference beatween treated and untreated, and cell lines                    
+
+### CREATING THE TABLE FOR 30 BIOMARKERS
+```{r}
+cor1_tab = FC [ which(row.names(FC) %in% rownames(biomarkers_FC_values30)), ]
+```
+
+
+Cleaning the names of the columns and rows:
+COLUMNS ONLY WITH CELL LINE + CHANGE NAME OF GENE HIST, CHANGE CELL LINES NAME'S TO TISSUES
+
+```{r}
+col_names_cor1 = as.data.frame(strsplit(x=colnames(cor1_tab),split="_vorinostat"))
+colnames (cor1_tab) = as.data.frame (t(col_names_cor1[1,]))[,1]
+
+row_names_cor1 = as.data.frame(strsplit(x=rownames(cor1_tab),split="///HIST"))
+rownames (cor1_tab) = as.data.frame (t(row_names_cor1[1,]))[,1]
+
+cor1_tab = as.matrix(cor1_tab)
+```
+
+This table can only be read if it is a numerical matrix, so first we check if this is true
+
+```{r}
+class(cor1_tab)
+```
+
+```{r}
+is.numeric(cor1_tab)
+```
+
+Now that we have the table, and we know that it is a numeric matrix, we can proceed to use it to use for the heatmap
+
+### CREATING THE TABLE FOR 100 BIOMARKERS
+
+```{r}
+cor1.2_tab = FC [ which(row.names(FC) %in% rownames(biomarkers_FC_values100)), ]
+```
+
+Cleaning the names of the columns and rows:
+COLUMNS ONLY WITH CELL LINE + CHANGE NAME OF GENE HIST, CHANGE CELL LINES NAME'S TO TISSUES
+
+```{r}
+col_names_cor1.2    = as.data.frame(strsplit(x=colnames(cor1.2_tab),split="_vorinostat"))
+colnames (cor1.2_tab) = as.data.frame (t(col_names_cor1.2[1,]))[,1]
+
+row_names_cor1.2    = as.data.frame(strsplit(x=rownames(cor1.2_tab),split="///HIST"))
+rownames (cor1.2_tab) = as.data.frame (t(row_names_cor1.2[1,]))[,1]
+
+cor1.2_tab = as.matrix(cor1.2_tab)
+```
+
+This table can only be read if it is a numerical matrix, so first we check if this is true
+
+```{r}
+class(cor1.2_tab)
+```
+
+```{r}
+is.numeric(cor1.2_tab)
+```
+
+Now that we have the table, and we know that it is a numeric matrix, we can proceed to use it to use for the heatmap
+
+
+####   2.2.1 Heatmap with 30 Biomarkers and 59 cell lines                                                        
+
+This is how the heatmap looks making any modifications.
+```{r}
+pheatmap(cor1_tab)
+```
+
+
+#### Scaling the rows for standard normal distribution
+
+```{r, include=FALSE}
+cal_z_score <- function(x){
+  (x - mean(x)) / sd(x)
+}
+
+cor1_tab_norm <- t(apply(cor1_tab, 1, cal_z_score))
+pheatmap(cor1_tab_norm)
+colnames(cor1_tab_norm) == Metadata_V_after$cell
+```
+
+
+We can visualize a pheatmap with scaled rows using the standard normal distribution. Here we use tissue names instead of cell line names.
+```{r}
+cor1_tab_norm_tissue = cor1_tab_norm
+colnames(cor1_tab_norm_tissue) = Metadata_V_after$tissue
+pheatmap(cor1_tab_norm_tissue,
+         main = "Normalized heatmap for 30 biomarkers")
+```
+When we apply the function for standard normal distribution, the data changes its appearence in a way in which not many conclusions can be drawn. It is for this reason that, for the rest of the analysis, the biomarkers will not be normalized using the function of the code above. 
+
+#### Ploting a dendogram and cutting the tree
+```{r}
+cor1_hclust <- hclust(dist(cor1_tab), method = "complete")
+
+as.dendrogram(cor1_hclust) %>%
+  plot(horiz = TRUE)
+
+cor1_hclust_tree <- cutree(tree = as.dendrogram(cor1_hclust), 
+                           k = 2)
+```
+
+To which cluster do some of our genes belong?
+```{r}
+head(cor1_hclust_tree)
+```
+
+We can see that different genes belong to different clusters.
+
+
+#### Creating a dataframe, needed for annotations, and adding row annotations
+
+
+Tissue Annotation: Creating a table with the tissue that corresponds to each cell line
+
+```{r}
+tissue <- Metadata[,-c(2:5)] 
+
+row.names(tissue) <- tissue$sample
+tissue <- tissue[-c(1)]
+
+
+tissue = as.data.frame(tissue)
+cor1_tissue <- tissue[-c(1:1579), , drop=FALSE] 
+cor1_tissue = as.matrix(cor1_tissue)
+
+row_names_cor1_t    = as.data.frame(strsplit(x=rownames(cor1_tissue),split="_vorinostat"))
+colnames(cor1_tissue)[colnames(cor1_tissue)=="X786.0"] <- "786.0"
+rownames (cor1_tissue) = as.data.frame (t(row_names_cor1_t[1,]))[,1]
+
+names(cor1_tissue)[names(cor1_tissue)=="V1"] <- "Tissue"
+
+cor1_tissue = as.matrix(cor1_tissue)
+```
+
+
+
+Tissue Annotation: Creating the function for the annotation
+```{r}
+cor1_tissue_an <- data.frame(V1 = rep(c("Renal", 
+                                        "Lung", 
+                                        "Breast", 
+                                        "Leukemia", 
+                                        "Colon", 
+                                        "Prostate", 
+                                        "Ovarian", 
+                                        "Melanoma", 
+                                        "CNS"
+                                        ),
+                                      c(8,9,6,5,7,2,7,9,6)
+                                      )
+                             )
+
+row.names(cor1_tissue_an) <- colnames(cor1_tab)
+```
+
+##### Heatmap
+
+```{r}
+cor1_colour = list(V1 = c("Renal" = "#A0E862", 
+                       "Lung" = "#29C0DE", 
+                       "Breast" = "#005BF8", 
+                       "Leukemia" = "#845EC2", 
+                       "Colon" = "#CA009E", 
+                       "Prostate" = "#FF88CB", 
+                       "Ovarian" = "#F1903D", 
+                       "Melanoma" = "#FFC75F", 
+                       "CNS" = "#F9F871"
+                       )
+                   )
+
+
+cor1 = pheatmap(cor1_tab,
+                annotation_colors = cor1_colour,
+                annotation_col = cor1_tissue_an,
+                fontsize = 6.5,
+                fontsize_row= 5, 
+                fontsize_col = 6,
+                gaps_col=50,
+                info = TRUE,
+                main = "Heatmap for 30 biomarkers"
+                )
+```
+
+
+
+#####Heatmap with breaks
+
+```{r}
+pheatmap(cor1_tab,
+         annotation_colors = cor1_colour,
+         annotation_col = cor1_tissue_an,
+         fontsize = 6.5,
+         fontsize_row= 5, 
+         fontsize_col = 6,
+         gaps_col=50,
+         info = TRUE,
+         cutree_rows = 2,
+         cutree_cols = 4,
+         main = "Heatmap for 30 biomarkers"
+         )
+```
+There is a cluster with relative leves of expression close to 0. Another interesting thing is that several, but not all, melanoma and leukemia cells are very up-regulated in comparison to cells of other tissues. But as this observation can only be made for some melanoma and some leukemia cells, it is not enough to say that vorinostat has a higher impact on those types of cancer cells. If anything, what we can conlcude is that vorinostat does not appear to affect any tipe of cell belonging to a perticular tissue in a specific way. This is surprising and gives rise to some questions. If this drug is not tissue specific, why is it used mostly for akute myeloid leukemia? If it does not affect the level of expression, through which mechanism does it help treat cancer?
+
+
+####   2.2.2 Heatmap with 100 Biomarkers and 59 cell lines
+This is how the heatmap looks making any modifications.
+```{r}
+pheatmap(cor1.2_tab, 
+         fontsize_row= 2.7, 
+         fontsize_col = 6)
+```
+
+#### Scaling the rows
+
+```{r}
+cal_z_score <- function(x){
+  (x - mean(x)) / sd(x)
+}
+
+cor1.2_tab_norm <- t(apply(cor1.2_tab, 1, cal_z_score))
+pheatmap(cor1.2_tab_norm, 
+         fontsize_row= 2.7, 
+         fontsize_col = 6,
+         main = "Normalized heatmap for 30 biomarkers")
+```
+
+#### Ploting a dendogram and cutting the tree
+
+```{r}
+cor1.2_hclust <- hclust(dist(cor1.2_tab), method = "complete")
+
+as.dendrogram(cor1.2_hclust) %>%
+  plot(horiz = TRUE)
+
+cor1.2_hclust_tree <- cutree(tree = as.dendrogram(cor1.2_hclust), 
+                             k = 2)
+```
+
+
+To which cluster do some of our genes belong?
+```{r}
+head(cor1.2_hclust_tree)
+```
+
+We can see that different genes belong to different clusters. The clusters to which the genes belong are different when the relationship between more biomarkers is explored.
+
+
+#### Tissue Annotation:
+
+Here we can use the same annotation functions as in Heatmap with 30 Biomarkers and 59 cell lines: cor1_tissue_an and cor1_colour.
+
+
+#####Heatmap for a 100 Biomarkers
+
+```{r}
+cor1.2 = pheatmap(cor1.2_tab,
+                  annotation_colors = cor1_colour,
+                  annotation_col = cor1_tissue_an,
+                  fontsize = 6.5,
+                  fontsize_row= 2.7, 
+                  fontsize_col = 6,
+                  gaps_col=50,
+                  info = TRUE,
+                  main = "Heatmap for 100 biomarkers"
+                  )
+```
+
+#####Heatmap with breaks
+
+```{r}
+pheatmap(cor1.2_tab,
+         annotation_colors = cor1_colour,
+         annotation_col = cor1_tissue_an,
+         fontsize = 6.5,
+         fontsize_row= 2.7, 
+         fontsize_col = 6,
+         gaps_col=50,
+         info = TRUE,
+         cutree_rows = 2,
+         cutree_cols = 4,
+         main = "Heatmap for 100 biomarkers"
+         )
+```
+
+Perhaps one of the most interesting things about this heatmap, is that there is a cluster comprised of a single cell line. Another eye-catching characteristic of this heatmap is that, just as the one for 30 biomarkers, is that there is a cluster that includes cell lines with relative levels of expression close to 0. FUrthermore, we see that some, but not all, melanoma cells are very up-regulated. Although the clustering allows us to better visualize the relationships between cell lines and between biomarkers, no pattern arises and therefore we can say, with the data we have, that the treatment with vorinostat was not better for some types of cancer. 
+
+
+###  2.3   Dendrogram                                                                                           
+####   2.3.1 Dendrogram with 30 Biomarkers and 59 cell lines                                                      
+
+### BIOMARKERS
+
+#### ggplot integration
+
+```{r}
+d_gg30 <- cor1_tab %>% dist %>% hclust %>% as.dendrogram %>%
+  set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
+  set("branches_lty", c(1,1,3,1,1,2)) %>%
+  set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
+  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA),
+  )
+
+plot(d_gg30, 
+     main = "Dendrogram for 30 biomarkers")
+```
+
+
+#### Polar dendrogram
+
+```{r}
+hc_pd <- hclust(dist(cor1_tab))
+d_pd <- as.dendrogram(hc_pd)
+
+d_pd30 <- d_pd %>% 
+  color_branches(k=2) %>% 
+  color_labels
+
+par(mar = rep(0,4))
+circlize_dendrogram(d_pd30, 
+                    labels_track_height = NA, 
+                    dend_track_height = .3) 
+```
+
+#### Retrieving hierachical clustering from the heatmap
+
+```{r}
+cor1_ret_hclust <- pheatmap(cor1_tab, silent = TRUE)
+
+hc_hmd <- hclust(dist(cor1_tab), "ave")
+cor1_ret_hclust$tree_row %>% 
+  as.dendrogram() %>%
+  plot(horiz = TRUE)
+
+cor1_ret_hclust$tree_row = cor1_ret_hclust$tree_row %>% color_branches(k=2) %>% color_labels
+
+par(mar = c(3,1,1,7))
+plot(cor1_ret_hclust$tree_row, 
+     horiz  = TRUE, 
+     main = "Heatmap hierachical clustering retrieved for 30 biomarkers")
+```
+
+
+### CELL LINES
+
+#### ggplot integration
+
+```{r}
+d_gg30t <- t(cor1_tab) %>% dist %>% hclust %>% as.dendrogram %>%
+  set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
+  set("branches_lty", c(1,1,3,1,1,2)) %>%
+  set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
+  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA)
+  )
+
+plot(d_gg30t,
+      main = "How Vorinostat biomarkers define the relationship between cell lines")
+```
+
+
+#### Polar dendrogram
+
+```{r}
+hc_pd <- hclust(dist(t(cor1_tab)))
+d_pd <- as.dendrogram(hc_pd)
+
+d_pd30t <- d_pd %>% 
+  color_branches(k=2) %>% 
+  color_labels
+
+par(mar = rep(0,4))
+circlize_dendrogram(d_pd30t, labels_track_height = NA, dend_track_height = .3) 
+
+```
+
+
+#### Retrieving hierachical clustering from the heatmap
+
+```{r}
+cor1_ret_hclust <- pheatmap(t(cor1_tab), silent = TRUE)
+
+hc_hmd <- hclust(dist(t(cor1_tab)), "ave")
+cor1_ret_hclust$tree_row %>% 
+  as.dendrogram() %>%
+  plot(horiz = TRUE)
+
+cor1_ret_hclust$tree_row = cor1_ret_hclust$tree_row %>% color_branches(k=2) %>% color_labels
+
+par(mar = c(2,1,1,7))
+plot(cor1_ret_hclust$tree_row, horiz  = TRUE, 
+     main = "Heatmap hierarchical clustering retrieved showing cell lines")
+```
+
+
+
+####   2.3.2 Dendrogram with 100 Biomarkers and 59 cell lines                                                     
+
+### BIOMARKERS
+
+#### ggplot integration
+
+```{r}
+d_gg100 <- cor1.2_tab %>% dist %>% hclust %>% as.dendrogram %>%
+  set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
+  set("branches_lty", c(1,1,3,1,1,2)) %>%
+  set("labels_colors") %>% set("labels_cex", c(0.28,0.5)) %>% 
+  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA)
+  )
+
+plot(d_gg100,
+     main = "Dendrogram for 100 biomarkers")
+```
+
+
+
+#### Retrieving hierachical clustering from the heatmap
+
+```{r}
+cor1.2_ret_hclust <- pheatmap(cor1.2_tab, silent = TRUE)
+
+hc_hmd <- hclust(dist(cor1.2_tab), "ave")
+cor1.2_ret_hclust$tree_row %>% 
+  as.dendrogram() %>%
+  plot()
+
+cor1_ret_hclust$tree_row = cor1.2_ret_hclust$tree_row %>% color_branches(k=2) %>% color_labels
+
+par(mar = c(3,2,1,7))
+plot(cor1.2_ret_hclust$tree_row)
+```
+
+
+### CELL LINES
+
+#### ggplot integration
+
+```{r}
+d_gg100t <- t(cor1.2_tab) %>% dist %>% hclust %>% as.dendrogram %>%
+  set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
+  set("branches_lty", c(1,1,3,1,1,2)) %>%
+  set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
+  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA)
+  )
+
+plot(d_gg100t,
+     main = "How Vorinostat biomarkers define the relatiosnhip between cell lines")
+```
+
+
+#### Polar dendrogram
+
+```{r}
+hc_pd <- hclust(dist(t(cor1_tab)))
+d_pd <- as.dendrogram(hc_pd)
+
+d_pd100t <- d_pd %>% 
+  color_branches(k=2) %>% 
+  color_labels
+
+par(mar = rep(0,4))
+circlize_dendrogram(d_pd100t, labels_track_height = NA, dend_track_height = .3) 
+
+```
+
+
+#### Retrieving hierachical clustering from the heatmap
+
+```{r}
+cor1_ret_hclust <- pheatmap(t(cor1_tab), silent = TRUE)
+
+hc_hmd <- hclust(dist(t(cor1_tab)), "ave")
+cor1_ret_hclust$tree_row %>% 
+  as.dendrogram() %>%
+  plot(horiz = TRUE)
+
+cor1_ret_hclust$tree_row = cor1_ret_hclust$tree_row %>% color_branches(k=2) %>% color_labels
+
+par(mar = c(3,1,1,7))
+plot(cor1_ret_hclust$tree_row, 
+     horiz  = TRUE, 
+     main = "Heatmap hierarchical clustering retrieved showing cell lines")
+```
+
+
+
+
+####   2.3.3 Comparison of dendrograms with 100 Biomarkers and 30 Biomarkers     
+
+
+##### Comparison of biomarkers
+
+```{r, warning=FALSE}
+
+#Creating a dendlist 
+dl_BM <- dendlist(
+  d_gg30 %>% 
+    set("labels_col", value = c("#1E90FF", "#c05c7e", "#ffb961"), k=3) %>%
+    set("branches_lty", 1) %>%
+    set("branches_k_color", value = c("#1E90FF", "#c05c7e", "#ffb961"), k = 3),
+  d_gg100 %>% 
+    set("labels_col", value = c("#1E90FF", "#c05c7e", "#ffb961"), k=3) %>%
+    set("branches_lty", 1) %>%
+    set("branches_k_color", value = c("#1E90FF", "#c05c7e", "#ffb961"), k = 3)
+                  )
+
+#Plot both dendograms for comparison
+tanglegram(dl_BM, 
+           common_subtrees_color_lines = FALSE, 
+           highlight_distinct_edges  = TRUE, 
+           highlight_branches_lwd=FALSE, 
+           margin_inner=7,
+           lwd=2
+           )
+```
+
+The trees were pruned because the labels in both dendrograms had different values.
+
+The dendogram on the left corresponds to that of the 30 biomarkers and the one on the right to that of 100 biomarkers. Here we can see increasing the number of biomarkers drasticaclly changes the relationships that arise in our data. 
+
+###  2.4   Correlogram and Scatter Plot for 30 Biomarkers and 59 cell lines                                    
+
+#### Correlogram
+```{r}
+corrgram(cor1_tab, order=NULL, panel=panel.shade, text.panel=panel.txt,
+         main="Correlogram of Biomarkers and Cell lines") 
+```
+
+
+#### Scatter plots
+
+Biomarkers 1 to 10
+```{r}
+pairs(cor1_tab, horInd = 1:10, verInd = 1:10, col="#1E90FF")
+```
+
+Biomarkers 10 to 20
+```{r}
+pairs(cor1_tab, horInd = 10:20, verInd = 10:20, col="#1E90FF")
+```
+
+Biomarkers 20 to 30
+```{r}
+pairs(cor1_tab, horInd = 20:30, verInd = 20:30, col="#1E90FF")
+```
+
+The scatter plots lets us get a closer look at the relationship between different cell lines. In this way we can easily observe that some cell lines seem to have a linaer relationship with others, e.g. COLO-205 with CCRF-CEM. 
+
+
+#### Matrix for correlations: with 30 biomarkers and with 100 biomarkers
+
+30 Biomarkers:
+```{r}
+cor = cor(cor1_tab)
+heatmap(cor, col = cm.colors(256))
+```
+
+100 Biomarkers
+```{r}
+cor1.2 = cor(cor1.2_tab)
+heatmap(cor1.2, col = cm.colors(256))
+```
+
+Strangely we do not see a correlation value of 1 between the same cell lines. We also see that different patterns of clustering for the cell lines emerge when we consider 100 biomarkers and when we consider 30 biomarkers. 
+
