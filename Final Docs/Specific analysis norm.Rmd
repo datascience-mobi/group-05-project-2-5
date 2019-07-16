@@ -247,7 +247,7 @@ head(biomarkers.pValues)
 
 For further analysis, we need to create a vector with the gene names of the p.Value Biomarker: 
 ```{r}
-biomarkers.genes=names(biomarkers.pValues)
+biomarkers.genes= rownames(biomarkers.pValues)
 ```
 
 ## 3.2. Biomarkers received from FC values {#anchor7}
