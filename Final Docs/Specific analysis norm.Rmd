@@ -197,10 +197,10 @@ head(colnames(UntreatedVorinostat),3)
 head(colnames(TreatedVorinostat),  3)
 
 # We can split the names before the underline characters, save these informations as data frames and look if the cell line names of both sample groups are identical
-col_names_VU    = as.data.frame(strsplit(x=colnames(Vorinostat_Untreated), split="_"))
+col_names_VU    = as.data.frame(strsplit(x=colnames(UntreatedVorinostat), split="_"))
 col_names_VU    = as.data.frame (t(col_names_VU[1,]))[,1]
 
-col_names_VT    = as.data.frame(strsplit(x=colnames(Vorinostat_Treated),split="_"))
+col_names_VT    = as.data.frame(strsplit(x=colnames(TreatedVorinostat),split="_"))
 col_names_VT    = as.data.frame (t(col_names_VT[1,]))[,1]
 
 identical(colnames(col_names_VU), colnames(col_names_VT))
