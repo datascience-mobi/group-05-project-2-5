@@ -420,14 +420,15 @@ Most_neg_var_change             = Most_neg_var_change[
 Highest_VC                      = head(Most_neg_var_change, 30)
 
 # We get for these genes the drug response (Fold Change) values for depicting with a heatmap
-Highest_VC_Biomarkers           =  FC[ which(row.names(FC) %in% rownames(Highest_VC)),]
+Highest_VC_Biomarkers           = FC[ which(row.names(FC) %in% rownames(Highest_VC)),]
 colnames(Highest_VC_Biomarkers) = col_names_VT
 
 
 # 3  - Depicting the drug responses of these genes with a heatmap
 # 3.1- Manipulate colnames to show only cancer type
-Metadata_Vorinostat             =  Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
-Metadata_Vorinostat             =  Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
+Metadata                        = as.data.frame(Metadata)
+Metadata_Vorinostat             = Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
+Metadata_Vorinostat             = Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
 Metadata_V_after                = subset(Metadata_Vorinostat, Metadata_Vorinostat$dose == "5000nM")
 Metadata_V_after                = Metadata_V_after [, -which(colnames(Metadata_V_after) %in% 
                                                  c( "time", "drug", "sample", "dose" ))]
