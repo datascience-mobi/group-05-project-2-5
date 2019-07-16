@@ -74,22 +74,24 @@ Until now, the T-cell lymphoma is the only cancer-type which indicates vorinosta
        + [3.2.1. General Biomarkers](#anchor8)
        
        + [3.2.2. Up and Downregulation of biomarkers](#anchor9)
+
+* [3.3. Biomarkers received from variance](#anchor10)
        
-* [3.3. Comparison of the differently received biomarkers](#anchor10)
+* [3.4. Comparison of the differently received biomarkers](#anchor11)
 
-[4. Visualizations of biomarkers](#anchor11)
+[4. Visualizations of biomarkers](#anchor12)
 
-* [4.1. Density plot of biomarker gene expression](#anchor12)
+* [4.1. Density plot of biomarker gene expression](#anchor13)
 
-* [4.2. Barplots of up- and downregulation of biomarkers](#anchor13)
+* [4.2. Barplots of up- and downregulation of biomarkers](#anchor14)
 
-* [4.3. Visualization of biomarkers with Vulcanoplot](#anchor14)
+* [4.3. Visualization of biomarkers with Vulcanoplot](#anchor15)
 
-[5.Are the targets for vorinostat (HDACs) part of our biomarkers?](#anchor15)
+[5.Are the targets for vorinostat (HDACs) part of our biomarkers?](#anchor16)
 
-[6.PCA with general-biomarker-matrix](#anchor16)
+[6.PCA with general-biomarker-matrix](#anchor17)
 
-[7.Find biomarkers only for leukemia-celllines](#anchor17)
+[7.Find biomarkers only for leukemia-celllines](#anchor18)
 
 
 
@@ -354,9 +356,89 @@ colnames(top100generalbiomarkers_withUporDown)[1] <- "FCmean"
 head(top100generalbiomarkers_withUporDown)
 ```
 
+### 3.3. Biomarkers received from variance {#anchor10}
+
+In this part, we firstly selected the genes showing high variance among the 59 cell lines. 
+
+We hypothesized that high variance of a gene could signify either 
+- cell line specific
+or
+- cancerogenic activity.
+
+Then, we hypothesized that a decrease in variance would be more probable in cancerogenic genes, rather than cell line specific genes and therefore, selected the genes showing a negative variance change. 
+
+The steps were; 
+
+2.1 - Selecting genes with a variance above 95% quartile of variances before treatment
+2.2 - Selecting genes which showed a significant decrease in their high variances
+2.3 - Depicting the drug responses(FC) of these genes with a heatmap
+
+```{r, echo=TRUE}
+
+# 1- Selecting genes with a variance above 95% quartile of variances before treatment
+Variances_Untreated             = as.data.frame (apply(UntreatedVorinostat,1,var))
+
+colnames(Variances_Untreated)[1]= "var"
+Most_Variances_Unt              = Variances_Untreated[ order(-Variances_Untreated$var), , drop= FALSE ] 
+
+nintyfive_quartile_Untr         = quantile(Variances_Untreated$var, probs = 0.95)
+
+Most_Variances_Unt              = Most_Variances_Unt[
+                                 -which(Most_Variances_Unt$var < nintyfive_quartile_Untr),, drop= FALSE]
+
+# 2 - Selecting genes which showed a significant decrease in their high variances
+
+# Creating smaller data frames from Treated and Untreated with only the selected genes
+Highly_variant_Treated          = TreatedVorinostat  [ which(
+                                  row.names(TreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
+
+Highly_variant_Untreated        = UntreatedVorinostat[ which(
+                                  row.names(UntreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
+ 
+Variances_Untreated             = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
+Variances_Treated               = as.data.frame (apply(Highly_variant_Treated,1,var  ))
+
+Variance_Change                 = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
+
+row.names(Variance_Change)      = rownames(Variances_Treated)
+colnames(Variance_Change)[1]    = "Var_Change"
+
+lower_quartile_VC               = quantile (Variance_Change$Var_Change, probs = 0.05)
+Most_neg_var_change             = Variance_Change[-which(
+                                  Variance_Change$Var_Change > lower_quartile_VC),, drop= FALSE] 
+
+# We focus on the negative part of the variance change, as we expect treatment to diminish the variance
+Most_neg_var_change             = Most_neg_var_change[ 
+                                  order(Most_neg_var_change$Var_Change), ,drop = FALSE ] 
+
+# Here we select 30 genes which had a high variance at the beginning 
+# and showed a variance decrease after treatment
+Highest_VC                      = head(Most_neg_var_change, 30)
+
+# We get for these genes the drug response (Fold Change) values for depicting with a heatmap
+Highest_VC_Biomarkers           =  FC[ which(row.names(FC) %in% rownames(Highest_VC)),]
+colnames(Highest_VC_Biomarkers) = col_names_VT
 
 
-### 3.3. Comparison of the differently received biomarkers {#anchor10}
+# 3  - Depicting the drug responses of these genes with a heatmap
+# 3.1- Manipulate colnames to show only cancer type
+Metadata_Vorinostat             =  Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
+Metadata_Vorinostat             =  Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
+Metadata_V_after                = subset(Metadata_Vorinostat, Metadata_Vorinostat$dose == "5000nM")
+Metadata_V_after                = Metadata_V_after [, -which(colnames(Metadata_V_after) %in% 
+                                                 c( "time", "drug", "sample", "dose" ))]
+rownames(Metadata_V_after)      = Metadata_V_after$cell
+
+colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
+
+# 3.2- Create the heatmap
+
+heatmap(Highest_VC_Biomarkers)
+```
+The heatmap shows that finding biomarkers using variance does not work as expected, since the cancer types do not cluster together.
+
+
+### 3.4. Comparison of the differently received biomarkers {#anchor11}
 
 Now we have determined biomarkers via the 2-sided T-test and want to investigate their FC values, since our biomarkers should cause the largest change in gene expression.
 
@@ -401,9 +483,9 @@ If we compare the values directly, we see that a low p.value does not correlate 
 ***
 
 
-## 4. Visualizations of biomarkers {#anchor11}
+## 4. Visualizations of biomarkers {#anchor12}
 
-### 4.1. Density plot of biomarker gene expression {#anchor12}
+### 4.1. Density plot of biomarker gene expression {#anchor13}
 
 Now we can repeat the the __gene-expression density plot__ from the beginning of our specific analysis with our biomarkers. We can see, that in terms of our identified genes Vorinostat leads to a clearly altered expression:
 ```{r,fig.height= 5, fig.width= 7}
@@ -422,7 +504,7 @@ legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = T
 ```
 
 
-### 4.2. Barplots of up- and downregulation of biomarkers {#anchor13}
+### 4.2. Barplots of up- and downregulation of biomarkers {#anchor14}
 
 ```{r,fig.height= 5, fig.width= 7}
 top100generalbiomarkers_withUporDown=as.data.frame(top100generalbiomarkers_withUporDown)
@@ -462,7 +544,7 @@ barplot( height= biomarkers_FC_values$FC_meanrow,
 We see that most values are very similar to each other. 
 
 
-### 4.3. Visualization of biomarkers with Vulcanoplot {#anchor14}
+### 4.3. Visualization of biomarkers with Vulcanoplot {#anchor15}
 
 First we perform a one-sample t.test with normalized FC data:
 ```{r}
@@ -530,7 +612,7 @@ Now we want to further investigate our biomarkers.
 
 
 
-## 5. Are the targets for vorinostat (HDACs) part of our biomarkers? {#anchor15}
+## 5. Are the targets for vorinostat (HDACs) part of our biomarkers? {#anchor16}
 
 As already mentioned in the introduction, the metadata describe the HDACs as targets of Vorinostat. Now we want to investigate whether these are among our biomarkers. To do this, we first create a vector that contains the target names. 
 
@@ -615,7 +697,7 @@ We can summarize, that the changes in HDAC gene expression are low. Some of the 
 
 
 
-## 6. PCA with general-biomarker-matrix {#anchor16}
+## 6. PCA with general-biomarker-matrix {#anchor17}
 
 Select only those genes from the FC matrix which were identified as biomarkers:
 ```{r, fig.height= 5, fig.width= 7}
@@ -656,7 +738,7 @@ legend("topright", inset = c(-0.3,0),levels(Metadatavorinostattissue),
 ```
 
 
-## 7. Find biomarkers only for leukemia-celllines {#anchor17}
+## 7. Find biomarkers only for leukemia-celllines {#anchor18}
 
 Since we found in the beginning, that Vorinostat is used against T-cell lymphomas, we are interested in how Vorinostat influences especially the leukemia-celllines. Therefore, we now want to investigate these specific samples. 
 
