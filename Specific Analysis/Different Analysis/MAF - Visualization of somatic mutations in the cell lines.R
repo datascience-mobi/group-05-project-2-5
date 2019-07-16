@@ -5,12 +5,35 @@
 if (!require("BiocManager"))
   install.packages("BiocManager")
 BiocManager::install("maftools")
+
 library(maftools)
+
+
+### Install other necessary packages
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("Biostrings")
+
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("VariantAnnotation")
+
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("ComplexHeatmap")
+
+## Load libraries
 
 library(utils)
 library(tidyverse)
 library(data.table)
 
+library(Biostrings)
 library(maftools)
 
 
@@ -56,6 +79,8 @@ write.mafSummary(maf = laml, basename = 'laml')
 
 plotmafSummary(maf = laml, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
 
+## Ploting oncoplot
+
 oncoplot(maf = laml, top = 15)
 #Altered in all samples as this are all cancer cell lines
 
@@ -92,6 +117,21 @@ oncostrip(maf = laml, genes = c('ADAMTS6',
                                 'UPK2',
                                 'CLPS')
         )
+
+## Transitions and Transversion
+
+laml.titv = titv(maf = laml, plot = FALSE, useSyn = TRUE)
+#plot titv summary
+plotTiTv(res = laml.titv)
+
+##Mutation load vs TCGA cohorts
+laml.mutload = tcgaCompare(maf = laml, cohortName = 'Example-LAML')
+
+
+##Mutual exclusivity
+laml.mut.excl = 
+mutExclusive(maf = laml, top = 10)
+head(laml.mut.excl)
 
 
 
