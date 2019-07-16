@@ -1709,8 +1709,7 @@ lm_tab_DHRS2 &lt;- na.omit(lm_tab_DHRS2)</code></pre>
 ## Residual standard error: 0.3024 on 51 degrees of freedom
 ## Multiple R-squared:  1.267e-06,  Adjusted R-squared:  -0.01961 
 ## F-statistic: 6.462e-05 on 1 and 51 DF,  p-value: 0.9936</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 1.267e-06</p>
-<p>*<strong>p-value</strong>: 0.9936</p>
+<p><em><strong>Multiple R-squared</strong>: 1.267e-06 </em><strong>p-value</strong>: 0.9936</p>
 </div>
 </div>
 <div id="linear-regression-for-abat-preparing-the-data" class="section level3">
@@ -1754,8 +1753,7 @@ lm_tab_ABAT &lt;- na.omit(lm_tab_ABAT)</code></pre>
 ## Residual standard error: 0.2942 on 51 degrees of freedom
 ## Multiple R-squared:  0.05358,    Adjusted R-squared:  0.03503 
 ## F-statistic: 2.887 on 1 and 51 DF,  p-value: 0.09537</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 0.05358</p>
-<p>*<strong>p-value</strong>: 0.09537</p>
+<p><em><strong>Multiple R-squared</strong>: 0.05358 </em><strong>p-value</strong>: 0.09537</p>
 </div>
 </div>
 <div id="linear-regression-for-serpini1-preparing-the-data" class="section level3">
@@ -1799,8 +1797,7 @@ lm_tab_SERPINI1 &lt;- na.omit(lm_tab_SERPINI1)</code></pre>
 ## Residual standard error: 0.3014 on 51 degrees of freedom
 ## Multiple R-squared:  0.006903,   Adjusted R-squared:  -0.01257 
 ## F-statistic: 0.3545 on 1 and 51 DF,  p-value: 0.5542</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 0.006903</p>
-<p>*<strong>p-value</strong>: 0.5542</p>
+<p><em><strong>Multiple R-squared</strong>: 0.006903 </em><strong>p-value</strong>: 0.5542</p>
 </div>
 </div>
 </div>
@@ -1848,8 +1845,7 @@ lm_tab_CABP2 &lt;- na.omit(lm_tab_CABP2)</code></pre>
 ## Residual standard error: 0.3024 on 51 degrees of freedom
 ## Multiple R-squared:  8.001e-05,  Adjusted R-squared:  -0.01953 
 ## F-statistic: 0.004081 on 1 and 51 DF,  p-value: 0.9493</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 8.001e-05</p>
-<p>*<strong>p-value</strong>: 0.9493</p>
+<p><em><strong>Multiple R-squared</strong>: 8.001e-05 </em><strong>p-value</strong>: 0.9493</p>
 </div>
 </div>
 <div id="linear-regression-for-upk2-preparing-the-data" class="section level3">
@@ -1893,8 +1889,7 @@ lm_tab_UPK2 &lt;- na.omit(lm_tab_UPK2)</code></pre>
 ## Residual standard error: 0.3021 on 51 degrees of freedom
 ## Multiple R-squared:  0.001952,   Adjusted R-squared:  -0.01762 
 ## F-statistic: 0.09973 on 1 and 51 DF,  p-value: 0.7534</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 0.001952</p>
-<p>*<strong>p-value</strong>: 0.7534</p>
+<p><em><strong>Multiple R-squared</strong>: 0.001952 </em><strong>p-value</strong>: 0.7534</p>
 </div>
 </div>
 <div id="linear-regression-for-clps-preparing-the-data" class="section level3">
@@ -1938,8 +1933,7 @@ lm_tab_CLPS &lt;- na.omit(lm_tab_CLPS)</code></pre>
 ## Residual standard error: 0.3013 on 51 degrees of freedom
 ## Multiple R-squared:  0.007549,   Adjusted R-squared:  -0.01191 
 ## F-statistic: 0.3879 on 1 and 51 DF,  p-value: 0.5362</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 0.007549</p>
-<p>*<strong>p-value</strong>: 0.5362</p>
+<p><em><strong>Multiple R-squared</strong>: 0.007549 </em><strong>p-value</strong>: 0.5362</p>
 </div>
 </div>
 </div>
@@ -1951,24 +1945,20 @@ Copynumber_mean= rowMeans(Copynumber_av)
 
 Copynumber_sav &lt;- sort(Copynumber_mean, decreasing = TRUE)
 Copynumber_sav &lt;- as.matrix(Copynumber_sav)</code></pre>
-<div id="top-10" class="section level4">
-<h4>Top 10</h4>
+<p>####Top 10</p>
 <pre class="r"><code>CN_top10 = Copynumber_sav[1:10,]
 CN_top10</code></pre>
 <pre><code>##      DAZ2       UTY      DAZ1     DDX3Y    TTTY20  FAM197Y5 FAM197Y2P 
 ##  3.645445  3.172730  2.936079  2.818717  2.681708  2.671509  2.671509 
 ##     TSPY1     TSPY3     TSPY4 
 ##  2.671509  2.671509  2.671509</code></pre>
-</div>
-<div id="lowest-10" class="section level4">
-<h4>Lowest 10</h4>
+<p>####Lowest 10</p>
 <pre class="r"><code>CN_lowest10 = Copynumber_sav[23306:23316,]
 CN_lowest10</code></pre>
 <pre><code>##     MIR545     MIR421      ABCB7   KIAA2022       RLIM       XIST 
 ## 0.09233774 0.09233774 0.09197547 0.09197547 0.09197547 0.09192264 
 ##    CXorf26     MAGEE1    ZDHHC15     MAGEE2     TTC3P1 
 ## 0.09169434 0.09169434 0.09134340 0.09126415 0.09126415</code></pre>
-</div>
 <div id="top-3-mean-values-for-copynumber-anchor41" class="section level3">
 <h3>11.3.1. Top 3 mean values for Copynumber (#anchor41)</h3>
 </div>
@@ -2013,8 +2003,7 @@ lm_tab_DAZ2 &lt;- na.omit(lm_tab_DAZ2)</code></pre>
 ## Residual standard error: 0.3023 on 51 degrees of freedom
 ## Multiple R-squared:  0.0009194,  Adjusted R-squared:  -0.01867 
 ## F-statistic: 0.04693 on 1 and 51 DF,  p-value: 0.8294</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 0.0009194</p>
-<p>*<strong>p-value</strong>: 0.8294</p>
+<p><em><strong>Multiple R-squared</strong>: 0.0009194 </em><strong>p-value</strong>: 0.8294</p>
 </div>
 </div>
 <div id="linear-regression-for-uty-preparing-the-data" class="section level3">
@@ -2058,8 +2047,7 @@ lm_tab_UTY &lt;- na.omit(lm_tab_UTY)</code></pre>
 ## Residual standard error: 0.3023 on 51 degrees of freedom
 ## Multiple R-squared:  0.001045,   Adjusted R-squared:  -0.01854 
 ## F-statistic: 0.05337 on 1 and 51 DF,  p-value: 0.8182</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 0.001045</p>
-<p>*<strong>p-value</strong>: 0.8182</p>
+<p><em><strong>Multiple R-squared</strong>: 0.001045 </em><strong>p-value</strong>: 0.8182</p>
 </div>
 </div>
 <div id="linear-regression-for-daz1-preparing-the-data" class="section level3">
@@ -2103,8 +2091,7 @@ lm_tab_DAZ1 &lt;- na.omit(lm_tab_DAZ1)</code></pre>
 ## Residual standard error: 0.3018 on 51 degrees of freedom
 ## Multiple R-squared:  0.003956,   Adjusted R-squared:  -0.01557 
 ## F-statistic: 0.2026 on 1 and 51 DF,  p-value: 0.6546</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 0.003956</p>
-<p>*<strong>p-value</strong>: 0.6546</p>
+<p><em><strong>Multiple R-squared</strong>: 0.003956 </em><strong>p-value</strong>: 0.6546</p>
 </div>
 </div>
 <div id="lowest-3-mean-values-for-copynumber-anchor42" class="section level3">
@@ -2151,8 +2138,7 @@ lm_tab_RBM18 &lt;- na.omit(lm_tab_RBM18)</code></pre>
 ## Residual standard error: 0.3024 on 51 degrees of freedom
 ## Multiple R-squared:  6.488e-07,  Adjusted R-squared:  -0.01961 
 ## F-statistic: 3.309e-05 on 1 and 51 DF,  p-value: 0.9954</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 6.488e-07</p>
-<p>*<strong>p-value</strong>: 0.9954</p>
+<p><em><strong>Multiple R-squared</strong>: 6.488e-07 </em><strong>p-value</strong>: 0.9954</p>
 </div>
 </div>
 <div id="linear-regression-for-mir3974-preparing-the-data" class="section level3">
@@ -2196,8 +2182,7 @@ lm_tab_MIR3974 &lt;- na.omit(lm_tab_MIR3974)</code></pre>
 ## Residual standard error: 0.3002 on 51 degrees of freedom
 ## Multiple R-squared:  0.01483,    Adjusted R-squared:  -0.004492 
 ## F-statistic: 0.7675 on 1 and 51 DF,  p-value: 0.3851</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 0.01483</p>
-<p>*<strong>p-value</strong>: 0.3851</p>
+<p><em><strong>Multiple R-squared</strong>: 0.01483 </em><strong>p-value</strong>: 0.3851</p>
 </div>
 </div>
 <div id="linear-regression-for-skp1p2-preparing-the-data" class="section level3">
@@ -2241,8 +2226,7 @@ lm_tab_SKP1P2 &lt;- na.omit(lm_tab_SKP1P2)</code></pre>
 ## Residual standard error: 0.3002 on 51 degrees of freedom
 ## Multiple R-squared:  0.01483,    Adjusted R-squared:  -0.00449 
 ## F-statistic: 0.7676 on 1 and 51 DF,  p-value: 0.3851</code></pre>
-<p>*<strong>Multiple R-squared</strong>: 0.01483</p>
-<p>*<strong>p-value</strong>: 0.3851</p>
+<p><em><strong>Multiple R-squared</strong>: 0.01483 </em><strong>p-value</strong>: 0.3851</p>
 </div>
 </div>
 </div>
