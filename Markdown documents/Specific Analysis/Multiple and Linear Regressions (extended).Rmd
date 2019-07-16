@@ -1496,6 +1496,7 @@ summary(reg_DHRS2)
 ```
 
 ***Multiple R-squared**:  1.267e-06
+
 ***p-value**: 0.9936
 
 
@@ -1535,6 +1536,7 @@ summary(reg_ABAT)
 ```
 
 ***Multiple R-squared**:  0.05358
+
 ***p-value**: 0.09537
 
 ### Linear Regression for SERPINI1: Preparing the data
@@ -1573,6 +1575,7 @@ summary(reg_SERPINI1)
 ```
 
 ***Multiple R-squared**:  0.006903
+
 ***p-value**: 0.5542
 
 ## 11.2. Linear Regression with 3 non-biomarker genes (#anchor39)
@@ -1615,6 +1618,7 @@ summary(reg_CABP2)
 ```
 
 ***Multiple R-squared**:  8.001e-05
+
 ***p-value**: 0.9493
 
 ### Linear Regression for UPK2: Preparing the data
@@ -1653,6 +1657,7 @@ summary(reg_UPK2)
 ```
 
 ***Multiple R-squared**:  0.001952
+
 ***p-value**: 0.7534
 
 ### Linear Regression for CLPS: Preparing the data
@@ -1691,6 +1696,7 @@ summary(reg_CLPS)
 ```
 
 ***Multiple R-squared**:  0.007549
+
 ***p-value**: 0.5362
 
 
@@ -1708,13 +1714,13 @@ Copynumber_sav <- sort(Copynumber_mean, decreasing = TRUE)
 Copynumber_sav <- as.matrix(Copynumber_sav)
 ```
 
-####Top 10
+#### Top 10
 ```{r}
 CN_top10 = Copynumber_sav[1:10,]
 CN_top10
 ```
 
-####Lowest 10
+#### Lowest 10
 ```{r}
 CN_lowest10 = Copynumber_sav[23306:23316,]
 CN_lowest10
@@ -1760,6 +1766,7 @@ summary(reg_DAZ2)
 ```
 
 ***Multiple R-squared**:  0.0009194
+
 ***p-value**: 0.8294
 
 ### Linear Regression for UTY: Preparing the data
@@ -1798,6 +1805,7 @@ summary(reg_UTY)
 ```
 
 ***Multiple R-squared**:  0.001045
+
 ***p-value**: 0.8182
 
 ### Linear Regression for DAZ1: Preparing the data
@@ -1836,6 +1844,7 @@ summary(reg_DAZ1)
 ```
 
 ***Multiple R-squared**:  0.003956
+
 ***p-value**: 0.6546
 
 
@@ -1878,6 +1887,7 @@ summary(reg_RBM18)
 ```
 
 ***Multiple R-squared**:  6.488e-07
+
 ***p-value**: 0.9954
 
 ### Linear Regression for MIR3974: Preparing the data
@@ -1916,6 +1926,7 @@ summary(reg_MIR3974)
 ```
 
 ***Multiple R-squared**:  0.01483
+
 ***p-value**: 0.3851
 
 ### Linear Regression for SKP1P2: Preparing the data
@@ -1954,6 +1965,7 @@ summary(reg_SKP1P2)
 ```
 
 ***Multiple R-squared**:  0.01483
+
 ***p-value**: 0.3851
 
 
