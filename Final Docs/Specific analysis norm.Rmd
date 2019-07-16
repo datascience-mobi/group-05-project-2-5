@@ -173,98 +173,73 @@ FC <- TreatedVorinostat  - UntreatedVorinostat
 
 ## 3. Finding biomarkers {#anchor5}
 
-### 3.1. Biomarkers received from two-sided T-test {#anchor6}
+Biomarkers are the genes which respond to the treatment. 
+In order to find these, we applied different methods and compared the results.
 
-The two-sided T-test was performed to find those genes with the smallest p-values, since they change most significantly under drug treatment. These can then possibly be used as biomarkers.
+## 3.1. Biomarkers received from two-sided paired T-test {#anchor6}
 
-For the t-test, we need to check if genes and celllines are in the same order in both matrices:
+In order to find the genes who show significant changes in expression levels after treatment, two-sided paired T-test was performed to calculate the p-values of gene expression changes.
+
+Formulation of Hypotheses:
+* __H0 hypothesis__: Gene expression does not change significantly by drug treatment.
+* __H1 hypothesis__: Gene expression changes significantly by drug treatment.
+
+For the application, the data frames "Treated" and "Untreated" should consist of same genes in rows and same cell lines in the sample names.
+
+Are the genes, listed in rows, identical?
 ```{r}
 identical(rownames(UntreatedVorinostat), rownames(TreatedVorinostat))
 ```
--> genes are in the same order
-    
+
+However, columns have different names as these include information about drug dosis. The comparison of sample names, which include cell line information, can show us, whether the same cell lines are used and if the order is identical.
 ```{r}
-identical(colnames(UntreatedVorinostat), colnames(TreatedVorinostat))
+head(colnames(UntreatedVorinostat),3)
+head(colnames(TreatedVorinostat),  3)
+
+# We can split the names before the underline characters, save these informations as data frames and look if the cell line names of both sample groups are identical
+col_names_VU    = as.data.frame(strsplit(x=colnames(Vorinostat_Untreated), split="_"))
+col_names_VU    = as.data.frame (t(col_names_VU[1,]))[,1]
+
+col_names_VT    = as.data.frame(strsplit(x=colnames(Vorinostat_Treated),split="_"))
+col_names_VT    = as.data.frame (t(col_names_VT[1,]))[,1]
+
+identical(colnames(col_names_VU), colnames(col_names_VT))
 ```
 
-The colnames differ, since the the matrices have a different drug dosis. 
-We remove the information about the dosis (replace it with nothing):
 
+ Now we can apply the t-test and observe the significance of changes by investigating p-values.
 ```{r}
-Untreatedcolnames <- sub(pattern = "_0nM_24h", "", colnames(UntreatedVorinostat))
-Treatedcolnames <- sub(pattern = "_5000nM_24h", "", colnames(TreatedVorinostat))
-```
+p_values_Vorinostat = sapply(1:13299, function(i){  
+                      t.test( TreatedVorinostat[i,],UntreatedVorinostat[i,],paired = TRUE,
+                                                        alternative = "two.sided")$p.value
+})
 
-Check, if the colnames are equal:
-```{r}
-identical(Untreatedcolnames, Treatedcolnames)
-```
-Since the colnames are equal now, matrices do not differ regarding their order of celllines.  The dosis was the only difference. Thus, we can use both matrices to perform a two-sided t-test.
+p_values_Vorinostat           = as.data.frame (p_values_Vorinostat)
+rownames(p_values_Vorinostat) = rownames((TreatedVorinostat))
+colnames(p_values_Vorinostat) =  " p_values"
 
-We need to formulate hypotheses:
+hist(p_values_Vorinostat[,1])
+abline(v = summary(p_values_EC[,1]), col = c("blue", "red", "black", "orange"), 
+    lty = 2)
 
-* __H0 hypothesis__: Gene expression does not change significantly by drug treatment.
-* __H1 hypothesis__: Gene expression changes significantly by drug treatment.
-       
-For the t-test we create a common matrix for treated and untreated vorinostat data:  
-```{r}
-VorinostatTotal <- cbind(UntreatedVorinostat, TreatedVorinostat)
-```
+Significance_Treated = sapply(1:13299, function(i) {
+  # Return whether p-value  is < 0.05  
+  Vorinostat_p_Values[i,] < 0.05
+})
 
-Define variables for better readability:
-```{r}
- col_untreated = grep ('_0nM',colnames(VorinostatTotal))
- 
- col_treated = grep ('_5000nM',colnames(VorinostatTotal))
-```
+p_values_Vorinostat$significance = Significance_Treated
 
-Perform the t-test by applying the t-test-function on every gene (indicated by 1):
-```{r}
-t.test.Vorinostat = apply(VorinostatTotal, 1, function(x) t.test(x[col_untreated],
-                                                                 x[col_treated],
-                                                                 paired = TRUE,
-                                                                 alternative = "two.sided")) 
-```
- 
-To get the p-values:
-```{r}
-pValues <- apply(VorinostatTotal, 1, function(x) t.test(x[col_untreated],
-                                                        x[col_treated],
-                                                        paired = TRUE,
-                                                        alternative = "two.sided")$p.value)
-```
--> gives a mean p-value for each gene.
-  
-Next we sort the p-values:
-```{r}
-sortedpValues <- sort(pValues, decreasing = FALSE)
-sortedpValues <- as.matrix(sortedpValues)
+p_values_Vorinostat = p_values_Vorinostat[ order(p_values_Vorinostat$` p_values`), ,drop = FALSE ]
+
+
+p_values_Vorinostat[1:5,]
 ```
   
-Now we can add the p-Values as a new column to each gene:
+A lot of values are essentially zero, which would mean that two thirds of genes have showed significant responses to the treatment. This is ,however, dubious. 
+  
+For now, we will select the 100 genes showing smallest p-values and compare these later with biomarkers found by other methods.
 ```{r}
-VorinostatwithpValues <- cbind(VorinostatTotal, pValues)
-```
- 
-
-Select those rows with smallest p.Values to create a matrix with biomarker-genes:
-```{r}
-VorinostatwithpValues <-  as.data.frame(VorinostatwithpValues)
-Biomarkermatrix2sidedtest <- VorinostatwithpValues[VorinostatwithpValues$pValues
-                                                   <=  sortedpValues[100,],]
-```
-
-Sort biomarkers according to increasing p-Values (most significant p-Values on top of the data frame):
-```{r}
-Biomarker2sidedtestsorted <- Biomarkermatrix2sidedtest[order
-                                                       (Biomarkermatrix2sidedtest$pValues),]
-```
-
-Those 100 genes with the smallest p-Value are most significant:
-```{r}
-biomarkers <- sortedpValues[1:100,]
-biomarkers <- as.matrix(biomarkers)
-biomarkers.genes = row.names(biomarkers)
+   biomarkers.genes = head( p_values_Vorinostat,100 )
 head(biomarkers.genes)
 ```
 
