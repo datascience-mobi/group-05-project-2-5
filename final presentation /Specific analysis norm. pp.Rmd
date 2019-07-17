@@ -39,6 +39,7 @@ Drug_annotation$Mechanism[grep(Drug_annotation$Drug, pattern= "vorinostat")]
 __Target of vorinostat__ 
 ```{r,echo=FALSE}
 target=Drug_annotation$target[grep(Drug_annotation$Drug, pattern= "vorinostat")]
+target
 ```
 
 ***
@@ -238,7 +239,7 @@ biomarkers.genes= rownames(biomarkers.pValues)
 ### 3.2.1.General biomarkers {#anchor8}
 
 
---Find biomarkers using absolute FC Values__
+__Find biomarkers using absolute FC Values__
 ```{r}
 FC <- TreatedVorinostat - UntreatedVorinostat
 
@@ -289,6 +290,9 @@ biomarkergenes_noabs = row.names(FC100)
 ```{r, echo=FALSE}
 knitr::kable(head(FC100), caption = "Top biomarkers without absolute values")
 ```
+
+
+***
 
 __Do we get the same biomarkers?__
 ```{r,echo=FALSE}
@@ -473,8 +477,11 @@ head(pV_FC)
 
 ***
 
+#__TAKE THE BIOMARKERS FROM ABSOLUTE FC VALUES __
 
+***
 ## 4. Visualizations of biomarkers {#anchor12}
+
 
 ### 4.1. Density plot of biomarker gene expression {#anchor13}
 
@@ -495,6 +502,7 @@ legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = T
 ```
 
 
+***
 
 
 ### 4.2. Visualization of biomarkers with Vulcanoplot {#anchor15}
@@ -560,8 +568,8 @@ EnhancedVolcano(FCandpvalues,
 
 ## 5. Are the targets for vorinostat (HDACs) part of our biomarkers? {#anchor16}
 
-
-```{r, include=FALSE}
+__What are the targets of vorinostat?__
+```{r, echo=FALSE}
 ###find target of vorinostat 
 
 target=Drug_annotation$target
@@ -578,14 +586,14 @@ target_vorinostat=c("HDAC1","HDAC10","HDAC11","HDAC2","HDAC3","HDAC5","HDAC6",
 ```
 
 __Do we have HDACs in our biomarkers?__
-```{r}
+```{r, include=FALSE}
 # search for HDAC in biomarkers 
 target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
 length(target)
 ```
 
 __Which FC values do they have?__
-```{r, echo=FALSE}
+```{r, include=FALSE}
 ### find FC values of targets 
 
 # create FC data 
@@ -602,7 +610,9 @@ library(dplyr)
 # filter data 
 FC_target = as.data.frame(filter(FC_new, genes %in% target_vorinostat))
 FC_target
+```
 
+```{r, echo=FALSE}
 knitr::kable(head(FC_target), caption = "FC values vorinostat targets")
 ```
 
@@ -634,6 +644,8 @@ boxplot(t(FC_HDAC), las=3, col = col, ylab="Fold Change Values", cex.axis= 0.65,
 abline(v=7.5, col="blue", lty=5)
 ```
 
+*** 
 
+#__NEXT:  What are the functions of the biomarkers?__
 
 
