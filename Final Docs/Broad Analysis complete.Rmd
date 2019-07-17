@@ -498,8 +498,8 @@ We want to see how much variance is explained by each principle component:
 plot(pca.FC, type = "l", main = "Variances explained by the Principal Components")
 ```
      
-We can interpret, that __PC 1-3__ explain most of the variance because an "elbow" can be seen after the third PC.
-Nevertheless, we should not exclude other PCs from our further analysis.
+We can interpret, that __PC 1__ explains clearly the greatest part of the variance whereas a much lower proportion is explained by __PC2__. However, PC2 to PC6 approximately form a line until a weak "elbow" can be seen after the sixth PC.
+Nevertheless, we should not exclude PCs explaining less variance from our further analysis.
       
           
           
