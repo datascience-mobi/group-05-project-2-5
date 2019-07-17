@@ -1,0 +1,381 @@
+---
+title: "Functional Analysis of Biomarkers"
+author: "Laura Plutowski and Franziska Heinkele"
+date: "25 July 2019"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r, include = FALSE}
+#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05")
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+``` 
+
+
+```{r read_data, message = FALSE, warning = FALSE,include = FALSE}
+library(readr)
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+```
+
+
+
+```{r, include = FALSE}
+#Find cell lines, which belong to vorinostat:
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+#Create Vorinostat matrix:
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+# Create Vorinostat Fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+# work with mean of the rows because we only want to compare the genes:
+FCVorinostatabs= abs(FC)
+FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
+# sort the values to get the 100 largest values:
+sortedgeneralbiomarker <- sort(FCVorinostatmean, decreasing = TRUE)
+sortedgeneralbiomarker <- as.matrix(sortedgeneralbiomarker)
+#select the top 100 general biomarkers:
+top100generalbiomarkers = sortedgeneralbiomarker[1:100,]
+top100generalbiomarkers <- as.matrix(top100generalbiomarkers)
+#create vector with gene names:
+generalbiomarkergenes = row.names(top100generalbiomarkers)
+```
+
+***
+# Functional Analysis of Biomarkers
+***
+
+
+
+#Table of content
+
+[1. Functional Analysis "by hand"](#anchor1)
+
+* [1.1. Create a table with biomarker features](#anchor2)
+
+* [1.2. Barplots of biomarker tissue and function](#anchor3)
+
+[2. Functional Analysis using "cluster profiler"](#anchor4)
+
+* [2.1.Gene Ontology Analysis](#anchor5)
+
+* [2.2.Reactome Pathway Analysis](#anchor6)
+
+* [2.3. KEGG Pathway Analysis](#anchor7)
+
+
+
+
+
+***
+***
+
+## 1. Functional Analysis "by hand" {#anchor1}
+
+
+### 1.1. Create a table with biomarker features {#anchor2}
+
+
+```{r}
+vorinostat_annotation = read.csv2(paste0(wd,"/data/Biomarkers.csv"),header = TRUE, quote="\"")
+tissue = vorinostat_annotation$affected.Tissue..if.specific.
+general.function = vorinostat_annotation$general.Function
+# rename 
+names(vorinostat_annotation)[names(vorinostat_annotation)=="X...Gene"] <- "Gene" 
+names(vorinostat_annotation)[names(vorinostat_annotation)=="affected.Tissue..if.specific."] <- "affected Tissue (if specific)" 
+knitr::kable(head(vorinostat_annotation, caption = "vorinostat annotation"))
+```
+
+***
+
+### 1.2. Barplots of biomarker tissue and function {#anchor3}
+
+
+```{r, fig.height= 5, fig.width= 7,echo = FALSE}
+col=palette(rainbow(9))
+par(mar=c(5, 4, 5, 9))
+barplot(table(tissue), ylab="counts", main="Affected tissues by biomarkers", col=col, las=3, cex.names = 0.7)
+```
+
+***
+
+```{r, fig.height= 5, fig.width= 7,echo = FALSE}
+col=palette(rainbow(16))
+par(mar=c(10, 4, 6, 9))
+barplot(table(general.function), ylab="counts", main="General functions of biomarkers", col=col, las=3, cex.names = 0.7)
+```
+
+***
+
+__How many Biomarkers with "histone cluster" function do we have?__
+```{r}
+length(grep(vorinostat_annotation$Function, pattern = "histone cluster"))
+```
+
+
+***
+***
+
+## 2. Functional Analysis using "cluster profiler" {#anchor4}
+
+
+### 2.1. Gene Ontology Analysis {#anchor5}
+
+
+```{r,include=FALSE }
+library(clusterProfiler)
+library(org.Hs.eg.db)
+```
+
+__Translate Gene ID__
+```{r,warning=FALSE,message=FALSE}
+translated.genes= bitr(generalbiomarkergenes,
+                        fromType="SYMBOL", 
+                        toType="ENTREZID",
+                        OrgDb = org.Hs.eg.db) 
+head(translated.genes)
+```
+
+
+```{r,include=FALSE}
+# load the needed library
+library(DOSE)
+```
+
+```{r,include=FALSE}
+# take the needed gene ID
+gene=translated.genes$ENTREZID
+head(gene)
+```
+
+***
+
+__Gene Ontology__ 
+```{r,warning=FALSE,message=FALSE}
+## Cellular Component
+ggo.cc <- groupGO(gene= gene,
+                  OrgDb = org.Hs.eg.db,  
+                  ont = "CC", 
+                  level = 3, 
+                  readable = FALSE)
+```
+
+```{r,warning=FALSE,message=FALSE, include=FALSE }
+## 2. Molecular Function
+ggo.mf <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "MF", level = 3, readable = FALSE)
+head(summary(ggo.mf))
+## 3. Biological function 
+ggo.bp <- groupGO(gene= gene, OrgDb = org.Hs.eg.db,  ont = "BP", level = 3, readable = FALSE)
+head(summary(ggo.bp))
+```
+
+
+***
+
+__Gene Ontology of Biomakers according Cellular Component__
+```{r, fig.height= 5, fig.width= 7, echo=FALSE}
+# visualization 
+par(mar=c(5, 4, 5, 9), mfrow=c(1,3))
+barplot(ggo.cc, drop=TRUE, showCategory=12)
+```
+
+```{r, fig.height= 5, fig.width= 7, include=FALSE}
+# visualization 
+par(mar=c(5, 4, 5, 9), mfrow=c(1,3))
+barplot(ggo.bp, drop=TRUE, showCategory=12)
+barplot(ggo.mf, drop=TRUE, showCategory=12)
+```
+
+
+
+```{r,warning=FALSE,message=FALSE,include=FALSE}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENSEMBL"),
+                OrgDb = org.Hs.eg.db)
+```
+
+
+
+```{r,warning=FALSE,message=FALSE,include=FALSE}
+## 1. Biological Process
+ego.bp <- enrichGO(gene        = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "BP",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+head(summary(ego.bp))
+## 2. Molecular Function
+ego.mf <- enrichGO(gene        = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "MF",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+head(summary(ego.mf))
+```
+
+***
+
+__Enrichment Analysis Gene Ontology__ 
+```{r,warning=FALSE,message=FALSE}
+##  Cellular Component
+ego.cc <- enrichGO(gene        = gene.df$ENSEMBL,
+                 OrgDb         = org.Hs.eg.db,
+                 keyType       = 'ENSEMBL',
+                 ont           = "CC",
+                 pAdjustMethod = "BH",
+                 pvalueCutoff  = 0.01,
+                 qvalueCutoff  = 0.05)
+```
+
+***
+
+__Enrichment Analysis Gene Ontology of Biomakers according Cellular Component__
+```{r,fig.height= 5, fig.width= 7}
+# Dot Plot 
+dotplot(ego.cc, showCategory=12)
+```
+
+
+***
+
+__Connection between Biomakers according Cellular Component__
+```{r,fig.height= 5, fig.width= 7}
+# Gene-Concept Network
+cnetplot(ego.cc)
+```
+
+***
+
+__Enrichment map from Gene Ontology Analysis Biomakers according Cellular Component__
+```{r,fig.height= 5, fig.width= 7}
+# Enrichment Map 
+emapplot(ego.cc)
+```
+
+
+```{r,fig.height= 5, fig.width= 7, include=FALSE }
+# Dot Plot Molecular Function
+dotplot(ego.mf, showCategory=12)
+# Dot Plot Cellular Component 
+dotplot(ego.cc, showCategory=12)
+```
+
+***
+***
+
+### 2.2. Reactome Pathway Analysis {#anchor6}
+
+
+```{r,warning=FALSE, results='hide',message=FALSE, include=FALSE}
+library(ReactomePA)
+```
+
+```{r, warning=FALSE,message=FALSE,include=FALSE}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+```
+
+__Reactome Pathway Analysis__
+```{r,warning=FALSE,message=FALSE}
+x <- enrichPathway(gene=gene.df$ENTREZID,
+                   pvalueCutoff = 0.05,
+                   readable = T )
+```
+
+***
+
+__Results from Reactome Pathway Analysis with Biomarkers__
+```{r, fig.height= 5, fig.width= 7}
+barplot(x,showCategory=12)
+```
+
+***
+
+__Connection between Reactome Pathways of Biomarkers (colored by Fold Change)__
+```{r, fig.height= 5, fig.width= 7}
+# FC data for coloring 
+FC=TreatedVorinostat-UntreatedVorinostat
+FC<-FC[generalbiomarkergenes,]
+names(FC) <- gene.df$ENTREZID
+cnetplot(x,categorySize="geneNum",foldChange = FC)
+```
+
+***
+***
+
+### 2.3. KEGG Pathway Analysis {#anchor7}
+
+
+```{r,warning=FALSE, results='hide',message=FALSE, include=FALSE}
+library(KEGG.db)
+library(org.Hs.eg.db)
+library(enrichplot)
+library(DOSE)
+```
+
+
+````{r,warning=FALSE,message=FALSE, include=FALSE}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+```
+__KEGG Pathway Analysis__
+```{r,warning=FALSE,message=FALSE}
+kk <- enrichKEGG(gene=gene.df$ENTREZID,
+                 pvalueCutoff = 0.05,
+                 pAdjustMethod = "none")
+head(summary(kk))
+```
+***
+__Biomarker Categories by KEGG__
+
+
+```{r, fig.height= 5, fig.width= 7, echo=FALSE}
+par(mfrow=c(2,1))
+barplot(kk,showCategory=12)
+```
+***
+
+
+__Connection between KEGG Pathways of Biomarkers (colored by Fold Change)__
+
+```{r, fig.height= 5, fig.width= 7, echo=FALSE}
+# FC data for coloring 
+FC=TreatedVorinostat-UntreatedVorinostat
+FC<-FC[generalbiomarkergenes,]
+names(FC) <- gene.df$ENTREZID
+cnetplot(kk,categorySize="pvalue",foldChange=FC)
+```
+***
+
+
+
+__Heatpolt of  KEGG Pathways of Biomarkers (colored by Fold Change)__
+
+```{r, fig.height= 5, fig.width= 7}
+heatplot(kk, foldChange=FC)
+```
+```{r,warning=FALSE, results='hide',message=FALSE, include=FALSE}
+library(pathview)
+```
+***
+
+
+__Example for pathway graph: "Transcriptional misregualtion in cancer- Homo sapiens"__
+```{r, warning=FALSE, message=FALSE,include=FALSE}
+pathview(gene.data = FC, 
+         pathway.id = "hsa05202", 
+         species = "hsa", 
+         limit = list(gene=5, cpd=1))
+```
+
+![](hsa05202.png)
