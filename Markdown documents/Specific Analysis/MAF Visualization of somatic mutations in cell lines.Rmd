@@ -3,8 +3,8 @@ title: "MAF Visualization of somatic mutations in cell lines"
 author: "Florencia Zuniga"
 date: "7/17/2019"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -212,7 +212,7 @@ getSampleSummary(laml)
 
 ```
 
-```{r}
+```{r include=FALSE}
 getGeneSummary(laml)
 
 ```
@@ -325,15 +325,12 @@ laml.mutload = tcgaCompare(maf = laml, cohortName = 'Example-LAML')
 ```{r}
 somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1))
 
-```
 
-
-```{r}
 summary(somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1)))
-
 ```
 
 ```{r}
+
 pairlist(somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1)))
 
 ```
@@ -432,7 +429,7 @@ getSampleSummary(BM_laml)
 ```
 
 
-```{r}
+```{r include=FALSE}
 getGeneSummary(BM_laml)
 
 ```
@@ -494,6 +491,22 @@ laml.mutload = tcgaCompare(maf = BM_laml, cohortName = 'Example-LAML')
 ```
 
 
+#### Somatic interactions
+
+```{r}
+somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1))
+
+
+summary(somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1)))
+```
+
+
+
+```{r}
+
+pairlist(somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1)))
+
+```
 
 
 # Drug Gene interactions
