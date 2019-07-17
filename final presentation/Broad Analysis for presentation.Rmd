@@ -1,0 +1,224 @@
+---
+title: "Broad Analysis for Presentation"
+author: "Laura Plutowski and Franziska Heinkele"
+date: "16 Juli 2019"
+output: html_document
+---
+
+
+#Table of content
+
+
+[1. Searching for batches](#anchor1)
+
+* [1.1. Boxplots of treated data](#anchor2)
+
+* [1.2. Normalized boxplot](#anchor3)
+
+[2. Comparison of treated and untreated gene expression ](#anchor4)
+       
+[3. Analysis of Fold Change matrix](#anchor5)
+
+[4. Principal Component Analysis](#anchor6)
+
+***
+***
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+
+#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+
+library(readr)
+
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), 
+                      header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+Treated <- as.data.frame(Treated)
+Untreated <- as.data.frame(Untreated)
+```
+
+## 1. Searching for batches {#anchor1}
+
+### 1.1. Boxplots of treated data {#anchor2}
+
+
+```{r, fig.height= 5, fig.width= 7, echo=FALSE}
+boxplot(Treated,  
+        xlab="sampels", ylab="gene expression",
+        main= "Gene expression treated samples",
+        names= FALSE, xaxt= "n")
+```
+
+
+```{r, fig.height= 5, fig.width= 7}
+# levels for coloring 
+drug <- Metadata$drug
+# 15 diffrent colors, for each drug one
+palette(rainbow(15))
+# Boxplot 
+par(mar=c(5, 4, 5, 9))
+boxplot(Treated, medcol="black", border = drug, col= drug, 
+        xlab="sampels", ylab="gene expression",
+        main= "Gene expression treated samples colored by drug",
+        names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
+    
+#add a legend to see which color corresponds to which drug:
+levels <- as.factor(levels(drug))
+legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE, pch=19,
+       col = levels, title = "drugs")
+```
+
+
+### 1.2. Normalized boxplot {#anchor3}
+
+
+```{r}
+# normalize the data 
+Untreated_norm <- apply(Untreated, 2, function(x){
+  (x - mean(x)) / sd(x)
+})
+
+
+Treated_norm <- apply(Treated, 2, function(x){
+  (x - mean(x)) / sd(x)
+})
+```
+```{r, fig.height= 5, fig.width= 7, echo=FALSE}
+# repeat creation of boxplot 
+
+# levels for coloring 
+drug <- Metadata$drug
+palette(rainbow(15))
+# Boxplot 
+par(mar=c(5, 4, 5, 9))
+boxplot(Treated_norm, medcol="black", border = drug, col= drug, 
+        xlab="sampels", ylab="gene expression",
+        main= "Gene expression treated celllines with normalized data", 
+        names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
+    
+#add a legend to see which color corresponds to which drug:
+levels <- as.factor(levels(drug))
+legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE, 
+       pch=19, col = levels, title = "drugs")
+```
+
+
+***
+***
+
+## 2. Comparison of treated and untreated gene expression {#anchor4}
+
+
+```{r,fig.height= 5, fig.width= 7, echo = FALSE}
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+
+par(mar=c(5, 4, 5, 9))
+plot(density(Untreated),col="blue" ,xlab = "Gene expression",
+     main = "Comparison of treated and untreated gene expression ")
+
+lines(density(Treated), col = "red")
+
+legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
+       pch=19, col = c("blue", "red"))
+```
+
+
+***
+***
+
+## 3. Analysis of fold change matrix {#anchor5}
+
+
+```{r, fig.height= 5, fig.width= 7}
+# create FC data 
+FC_all = (Treated - Untreated)
+FC_all_mean = colMeans(FC_all)
+
+# create levels for coloring 
+drug <- Metadata$drug
+palette(rainbow(15))
+
+# create boxplot
+par(mar=c(5, 4, 5, 9))
+barplot( height = FC_all_mean, names= FALSE, col = drug, border = NA,
+         main= "Fold changes by treatment with 15 anticancer drugs",
+         xlab="sampels", ylab="mean Fold Change values")
+
+# create a legend 
+levels <- as.factor(levels(drug))
+legend("topright", inset = c(-0.4,0.0), legend= levels(drug), xpd = TRUE,
+       pch=19, col = levels, title = "drugs")
+```
+
+
+***
+***
+
+
+## 4. Principal Component Analysis {#anchor6} 
+
+```{r, echo=FALSE, message = FALSE, warning = FALSE}
+library(readr)
+Metadata = read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
+Metadata <- as.data.frame(Metadata)
+```
+
+```{r, message = FALSE, warning = FALSE}
+
+FC_norm <- Treated_norm - Untreated_norm
+
+pca.FC = prcomp(FC_norm)
+
+plot(pca.FC, type = "l", main = "Variances explained by the Principal Components")
+```
+     
+          
+### FC PCA colored according to drug
+    
+
+```{r, fig.height= 5, fig.width= 7}
+TreatedrowsMetadata <- grep(Metadata$sample, pattern = "_0nM_", invert = TRUE)
+Metadatadrugs <- Metadata[TreatedrowsMetadata,"drug"]
+
+FCwithdrugs <- rbind(FC_norm, Metadatadrugs)
+drugfactorFC <- as.factor(FCwithdrugs["Metadatadrugs",])
+
+palette(rainbow(15))
+par(mar=c(5, 4, 5, 9))
+
+plot(pca.FC$rotation[, 1], pca.FC$rotation[, 2], col = drugfactorFC , pch = 19, xlab = "PC1"
+         , ylab = "PC2", main = "PCA FC colored by drugs")
+
+druglevels <- as.factor(levels(drugfactorFC))
+
+legend("topright", inset = c(-0.4,0), levels(drugfactorFC), xpd = TRUE, pch=19,
+       col = druglevels, title = "Drugs")
+```
+   
+   
+***
+
+### Highlight vorinostat
+
+
+```{r, fig.height= 5, fig.width= 7}
+Metadata <-as.data.frame(Metadata)    
+Marking <- ifelse(Metadata$drug == "vorinostat", "yellow", "black")
+
+HighlightVorinostat <- cbind(`FC_norm` = Marking)
+
+
+par(mar=c(5, 4, 5, 9))
+plot(pca.FC$rotation[, 1], pca.FC$rotation[, 2], col = HighlightVorinostat, pch = 19,
+     xlab = "PC1", ylab = "PC2", main = "PCA FC Highlighted Vorinostat samples")
+legend("topright", inset = c(-0.3,0), legend = c("Vorinostat","Other drugs"),
+       xpd = TRUE, pch=19, col = c("yellow", "black")) 
+
+```
+
+
+
