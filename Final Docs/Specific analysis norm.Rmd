@@ -521,6 +521,7 @@ We see that we have approximately the same number of up and down regulated genes
 
 Another option to visualize the up- and downregulation of the biomarkers:
 ```{r plot_data, fig.height= 5, fig.width= 7}
+FC=TreatedVorinostat-UntreatedVorinostat
 FC_meanrow= rowMeans(FC)
 FC_abs= abs(FC_meanrow)
 
