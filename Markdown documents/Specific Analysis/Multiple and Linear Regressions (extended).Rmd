@@ -43,7 +43,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 * [4.4. Visualization: Plots that describe the linear regression ](#anchor14)
 
-[5.SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with copynumber?](#anchor15)
+[5.SIMPLE LINEAR REGRESSION WITH ALL GENES: Drug sensitivity with copynumber](#anchor15)
 
 * [5.1. Plots and visualization: Predicting how fit linear regression will be as a model to describe our data](#anchor16)
 
@@ -95,9 +95,9 @@ knitr::opts_chunk$set(echo = TRUE)
        
 * [11.3. Linear Regression with genes with the highest and lowest mean values for copynumber](#anchor40)
 
-       + [11.3.1. Top 3 mean values for Copynumber](#anchor41)
+       + [11.3.1.  3 top mean values for Copynumber](#anchor41)
        
-       + [11.3.2. Lowest 3 mean values for copynumber](#anchor42)
+       + [11.3.2. 3 lowest mean values for copynumber](#anchor42)
        
 [12. Table with summary](#anchor43)
 
@@ -1495,9 +1495,9 @@ reg_DHRS2 <- lm(vorinostat ~ DHRS2, data = lm_tab_DHRS2)
 summary(reg_DHRS2)
 ```
 
-***Multiple R-squared**:  1.267e-06
+* **Multiple R-squared**:  1.267e-06
 
-***p-value**: 0.9936
+* **p-value**: 0.9936
 
 
 ### Linear Regression for ABAT: Preparing the data
@@ -1535,9 +1535,9 @@ reg_ABAT <- lm(vorinostat ~ ABAT, data = lm_tab_ABAT)
 summary(reg_ABAT)
 ```
 
-***Multiple R-squared**:  0.05358
+* **Multiple R-squared**:  0.05358
 
-***p-value**: 0.09537
+* **p-value**: 0.09537
 
 ### Linear Regression for SERPINI1: Preparing the data
 
@@ -1574,9 +1574,9 @@ reg_SERPINI1 <- lm(vorinostat ~ SERPINI1, data = lm_tab_SERPINI1)
 summary(reg_SERPINI1)
 ```
 
-***Multiple R-squared**:  0.006903
+* **Multiple R-squared**:  0.006903
 
-***p-value**: 0.5542
+* **p-value**: 0.5542
 
 ## 11.2. Linear Regression with 3 non-biomarker genes (#anchor39)
 
@@ -1617,9 +1617,9 @@ reg_CABP2 <- lm(vorinostat ~ CABP2, data = lm_tab_CABP2)
 summary(reg_CABP2)
 ```
 
-***Multiple R-squared**:  8.001e-05
-
-***p-value**: 0.9493
+* **Multiple R-squared**:  8.001e-05
+ 
+* **p-value**: 0.9493
 
 ### Linear Regression for UPK2: Preparing the data
 
@@ -1656,9 +1656,9 @@ reg_UPK2 <- lm(vorinostat ~ UPK2, data = lm_tab_UPK2)
 summary(reg_UPK2)
 ```
 
-***Multiple R-squared**:  0.001952
+* **Multiple R-squared**:  0.001952
 
-***p-value**: 0.7534
+* **p-value**: 0.7534
 
 ### Linear Regression for CLPS: Preparing the data
 
@@ -1695,9 +1695,9 @@ reg_CLPS <- lm(vorinostat ~ CLPS, data = lm_tab_CLPS)
 summary(reg_CLPS)
 ```
 
-***Multiple R-squared**:  0.007549
-
-***p-value**: 0.5362
+* **Multiple R-squared**:  0.007549
+ 
+* **p-value**: 0.5362
 
 
        
@@ -1765,9 +1765,9 @@ reg_DAZ2 <- lm(vorinostat ~ DAZ2, data = lm_tab_DAZ2)
 summary(reg_DAZ2)
 ```
 
-***Multiple R-squared**:  0.0009194
+* **Multiple R-squared**:  0.0009194
 
-***p-value**: 0.8294
+* **p-value**: 0.8294
 
 ### Linear Regression for UTY: Preparing the data
 
@@ -1804,9 +1804,9 @@ reg_UTY <- lm(vorinostat ~ UTY, data = lm_tab_UTY)
 summary(reg_UTY)
 ```
 
-***Multiple R-squared**:  0.001045
+* **Multiple R-squared**:  0.001045
 
-***p-value**: 0.8182
+* **p-value**: 0.8182
 
 ### Linear Regression for DAZ1: Preparing the data
 
@@ -1843,9 +1843,9 @@ reg_DAZ1 <- lm(vorinostat ~ DAZ1, data = lm_tab_DAZ1)
 summary(reg_DAZ1)
 ```
 
-***Multiple R-squared**:  0.003956
+* **Multiple R-squared**:  0.003956
 
-***p-value**: 0.6546
+* **p-value**: 0.6546
 
 
        
@@ -1886,9 +1886,9 @@ reg_RBM18 <- lm(vorinostat ~ RBM18, data = lm_tab_RBM18)
 summary(reg_RBM18)
 ```
 
-***Multiple R-squared**:  6.488e-07
+* **Multiple R-squared**:  6.488e-07
 
-***p-value**: 0.9954
+* **p-value**: 0.9954
 
 ### Linear Regression for MIR3974: Preparing the data
 
@@ -1925,9 +1925,9 @@ reg_MIR3974 <- lm(vorinostat ~ MIR3974, data = lm_tab_MIR3974)
 summary(reg_MIR3974)
 ```
 
-***Multiple R-squared**:  0.01483
+* **Multiple R-squared**:  0.01483
 
-***p-value**: 0.3851
+* **p-value**: 0.3851
 
 ### Linear Regression for SKP1P2: Preparing the data
 
@@ -1964,11 +1964,31 @@ reg_SKP1P2 <- lm(vorinostat ~ SKP1P2, data = lm_tab_SKP1P2)
 summary(reg_SKP1P2)
 ```
 
-***Multiple R-squared**:  0.01483
+* **Multiple R-squared**:  0.01483
 
-***p-value**: 0.3851
+* **p-value**: 0.3851
 
 
 
 # 12. Table with summary (#anchor43)
 
+
+-------------------------------------------------------------------------------------------------
+| Test                                                         | R-squared      | p-value        |
+| ------------------------------------------------------------ | -------------  | -------------- |
+| Drug sensitivity vs Doubling time                            | Content cell 2 | Content cell 2 |
+| Drug sensitivity vs Copy (biomarkers)                        | Content colu 2 | Content cell 2 |
+| Drug sensitivity vs Copynumber (all genes)                   | Content cell 2 | Content cell 2 |
+| Drug sensitivity vs Copynumber (all genes) and Doubling time | Content cell 2 | Content cell 2 |
+| PCA                                                          | Content cell 2 | Content cell 2 |
+| Drug sensitivity vs Doubling time (no outliers)              | Content cell 2 | Content cell 2 |
+| Top Biomarker 1: DHRS1                                       | Content cell 2 | Content cell 2 |
+| Top Biomarker 2: ABAT                                        | Content cell 2 | Content cell 2 |
+| Top Biomarker 3: SERPINI1                                    | Content cell 2 | Content cell 2 |
+| 1. Highest Copynumber: DAZ2                                  | Content cell 2 | Content cell 2 |
+| 2. Highest Copynumber: UTY                                   | Content cell 2 | Content cell 2 |
+| 3. Highest Copynumber: DAZ1                                  | Content cell 2 | Content cell 2 |
+| 1. Lowest Copynumber: RBM18                                  | Content cell 2 | Content cell 2 |
+| 2. Lowest Copynumber: MIR3974                                | Content cell 2 | Content cell 2 |
+| 3. Lowest Copynumber: SKP1P2                                 | Content cell 2 | Content cell 2 |
+-------------------------------------------------------------------------------------------------
