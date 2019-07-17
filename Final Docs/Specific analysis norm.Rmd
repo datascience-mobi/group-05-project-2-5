@@ -639,14 +639,11 @@ We create a vector with targetnames as strings, because otherwise we have a prob
 ```{r}
 target_vorinostat=c("HDAC1","HDAC10","HDAC11","HDAC2","HDAC3","HDAC5","HDAC6",
                     "HDAC8","HDAC9")
+```
 
-### find FC values of targets 
+Do we have HDACs in our biomarkers? 
 
-# create FC data 
-FC_meanrow = as.data.frame(FC_meanrow)
-genes = row.names(FC_meanrow)
-FC_new=cbind(FC_meanrow,genes)
-
+```{r}
 # search for HDAC in biomarkers 
 target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
 length(target)
@@ -659,6 +656,17 @@ library(dplyr)
 ```
 
 ```{r}
+### find FC values of targets 
+
+# create FC data 
+FC_meanrow = as.data.frame(FC_meanrow)
+genes = row.names(FC_meanrow)
+FC_new=cbind(FC_meanrow,genes)
+
+# search for HDAC in biomarkers 
+target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
+length(target)
+
 # filter data 
 FC_target = as.data.frame(filter(FC_new, genes %in% target_vorinostat))
 FC_target
