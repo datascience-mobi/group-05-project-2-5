@@ -183,8 +183,8 @@ In order to find these, we applied different methods and compared the results.
 In order to find the genes who show significant changes in expression levels after treatment, two-sided paired T-test was performed to calculate the p-values of gene expression changes.
 
 Formulation of Hypotheses:
-* __H0 hypothesis__: Gene expression does not change significantly by drug treatment.
-* __H1 hypothesis__: Gene expression changes significantly by drug treatment.
+ __H0 hypothesis__: Gene expression does not change significantly by drug treatment.
+ __H1 hypothesis__: Gene expression changes significantly by drug treatment.
 
 For the application, the data frames "Treated" and "Untreated" should consist of same genes in rows and same cell lines in the sample names.
 
@@ -221,12 +221,12 @@ rownames(p_values_Vorinostat) = rownames((TreatedVorinostat))
 colnames(p_values_Vorinostat) =  " p_values"
 
 hist(p_values_Vorinostat[,1])
-abline(v = summary(p_values_EC[,1]), col = c("blue", "red", "black", "orange"), 
+abline(v = summary(p_values_Vorinostat [,1]), col = c("blue", "red", "black", "orange"), 
     lty = 2)
 
 Significance_Treated = sapply(1:13299, function(i) {
   # Return whether p-value  is < 0.05  
-  Vorinostat_p_Values[i,] < 0.05
+  p_values_Vorinostat [i,] < 0.05
 })
 
 p_values_Vorinostat$significance = Significance_Treated
@@ -241,10 +241,14 @@ A lot of values are essentially zero, which would mean that two thirds of genes 
   
 For now, we will select the 100 genes showing smallest p-values and compare these later with biomarkers found by other methods.
 ```{r}
-   biomarkers.genes = head( p_values_Vorinostat,100 )
-head(biomarkers.genes)
+   biomarkers.pValues = head( p_values_Vorinostat,100 )
+head(biomarkers.pValues)
 ```
 
+For further analysis, we need to create a vector with the gene names of the p.Value Biomarker: 
+```{r}
+biomarkers.genes= rownames(biomarkers.pValues)
+```
 
 ## 3.2. Biomarkers received from FC values {#anchor7}
 
@@ -416,14 +420,15 @@ Most_neg_var_change             = Most_neg_var_change[
 Highest_VC                      = head(Most_neg_var_change, 30)
 
 # We get for these genes the drug response (Fold Change) values for depicting with a heatmap
-Highest_VC_Biomarkers           =  FC[ which(row.names(FC) %in% rownames(Highest_VC)),]
+Highest_VC_Biomarkers           = FC[ which(row.names(FC) %in% rownames(Highest_VC)),]
 colnames(Highest_VC_Biomarkers) = col_names_VT
 
 
 # 3  - Depicting the drug responses of these genes with a heatmap
 # 3.1- Manipulate colnames to show only cancer type
-Metadata_Vorinostat             =  Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
-Metadata_Vorinostat             =  Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
+Metadata                        = as.data.frame(Metadata)
+Metadata_Vorinostat             = Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
+Metadata_Vorinostat             = Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
 Metadata_V_after                = subset(Metadata_Vorinostat, Metadata_Vorinostat$dose == "5000nM")
 Metadata_V_after                = Metadata_V_after [, -which(colnames(Metadata_V_after) %in% 
                                                  c( "time", "drug", "sample", "dose" ))]
@@ -460,23 +465,21 @@ library(knitr)
 ```
 
 ```{r,results='hide',message=FALSE}
-pValues=as.data.frame(pValues)
-sort(rownames(pValues), decreasing = F)
-
+#sort FC matrix according biomarkers from pValues 
 FC=TreatedVorinostat-UntreatedVorinostat
 FC_m=rowMeans(FC)
 FC_m=as.data.frame(FC_m)
-sort(rownames(FC_m), decreasing = F)
+FC =FC_m[biomarkers.genes,]
+FC=as.data.frame(FC)
 ```
 
 ```{r}
-pV_FC= cbind(FC_m,pValues)
+pV_FC= cbind(FC,biomarkers.pValues)
 pV_FC=as.data.frame(pV_FC)
-pV_FC=pV_FC[generalbiomarkergenes,]
 head(pV_FC)
 ```
 
-Now we know that p.Value and FC value do not deliver the same biomarkers. In fact, 87 out of 100 biomarkers are different.
+Now we know that p.Value and FC value do not deliver the same biomarkers. In fact, 100 out of 100 biomarkers are different.
 If we compare the values directly, we see that a low p.value does not correlate with a high FC value. This is because small values are also assigned small p.values by the T-test and the result of the test is therefore falsified. For this reason, we cannot trust the biomarkers from the two-sided T-test and will trust the biomarkers we received via the __fold change__ values.
 
 
@@ -518,6 +521,7 @@ We see that we have approximately the same number of up and down regulated genes
 
 Another option to visualize the up- and downregulation of the biomarkers:
 ```{r plot_data, fig.height= 5, fig.width= 7}
+FC=TreatedVorinostat-UntreatedVorinostat
 FC_meanrow= rowMeans(FC)
 FC_abs= abs(FC_meanrow)
 
