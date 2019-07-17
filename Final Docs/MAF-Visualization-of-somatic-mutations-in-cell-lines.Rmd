@@ -1,0 +1,533 @@
+---
+title: "MAF Visualization of somatic mutations in cell lines"
+author: "Florencia Zuniga"
+date: "7/17/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+THIS IS AN UNREFINED DATA JUST TO SHOW THE GENERAL IDEA OF WHAT THESE RESULTS WILL LOOK LIKE IN A COUPLE DAYS
+
+
+##  1.  LOADING DATA (#anchor1)                                                                                                     
+
+Needed libraries:
+```{r}
+library(readr)
+library(rstudioapi)
+library(maftools)
+
+```
+
+
+```{r echo = FALSE}
+### Install maftools package
+
+
+if (!require("BiocManager"))
+  install.packages("BiocManager")
+BiocManager::install("maftools")
+```
+
+
+```{r,include = FALSE}
+
+wd = ("/GitHub/project-02-group-05")
+```
+
+
+Reading the data
+```{r}
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), 
+                      header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+Sensitivity <- readRDS(paste0(wd,"/data/NegLogGI50.rds"))
+
+
+Basal <- readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
+Copynumber <- readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
+Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
+
+Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), 
+                                 header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), 
+                             header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+```
+
+Transforming the data
+```{r}
+Treated <- as.data.frame(Treated)
+Untreated <- as.data.frame(Untreated)
+Sensitivity<- as.data.frame(Sensitivity)
+```
+
+Data normalization
+```{r}
+Untreated_norm <- apply(Untreated, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+```
+
+
+```{r}
+Treated_norm <- apply(Treated, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+
+
+FC <- Treated - Untreated
+FC_norm <- apply(FC, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+```
+
+##   1.1 Biomarkers (#anchor2)                                                                                                 
+###  (1)  Creating Vorinostat
+```{r}
+#Untreated matrix
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+
+#Same with treated matrix
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+
+#Define Vorinostat-data: 
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+#fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#Sensitivity 
+vorinostat_Sensitivity_alleZeilen= grep ('vorinostat', rownames(Sensitivity))
+vorinostat_Sensitivity_data= Sensitivity[vorinostat_Sensitivity_alleZeilen,]
+```
+
+###  (2)  Creating FC Data -  Finding the Biomarkers
+
+```{r}
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#We work with mean of the rows because we only want to compare the genes 
+FC_meanrow= rowMeans(FC)
+
+## Sorting the data 
+#We work with absolute value to find the highest values, 
+#because we want to have the most up and down regulated genes.
+FC_abs= abs(FC_meanrow)
+
+#We sort the values to get the 100 largest values 
+sortedFC_abs <- sort(FC_abs, decreasing = TRUE)
+sortedFC_abs <- as.matrix(sortedFC_abs)
+
+#We select the first n for biomarkers 
+biomarkers_FC30 = sortedFC_abs[1:30,]
+biomarkers_FC30 <- as.matrix(biomarkers_FC30)
+
+biomarkers_FC100 = sortedFC_abs[1:100,]
+biomarkers_FC100 <- as.matrix(biomarkers_FC100)
+
+## Creating a matrix with FC values, that are both positive and negative 
+FC_both= cbind(FC_meanrow,FC_abs)
+FC_both=as.data.frame(FC_both)
+
+#Ordering this matrix 
+FC_both_sorted <- FC_both[order(FC_both$FC_abs, decreasing = TRUE),]
+
+#FC values of biomarkers: We select the first 100 of the sorted matrix. 
+biomarkers_FC_values30 = FC_both_sorted[1:30,]
+
+biomarkers_FC_values100 = FC_both_sorted[1:100,]
+
+#Removing the absolute values
+biomarkers_FC_values30 <- subset( biomarkers_FC_values30, select = -FC_abs)
+biomarkers_FC_values30 = as.matrix(biomarkers_FC_values30)
+
+biomarkers_FC_values100 <- subset( biomarkers_FC_values100, select = -FC_abs)
+biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
+
+```
+
+
+## Creating a polished MAF file
+
+### Editing the original mutation file, so that the table has all the columns that are needed so that it can be read with the package
+
+```{r}
+Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
+
+names(Mutations)[names(Mutations) == "Tumor_Seq_Allele1"] <- "Tumor_Seq_Allele2"
+names(Mutations)[names(Mutations) == "Start_position"] <- "Start_Position"
+names(Mutations)[names(Mutations) == "End_position"] <- "End_Position"
+names(Mutations)[names(Mutations) == "Hugo_Symbol"] <- "Hugo_Symbol"
+rownames(Mutations) <- c()
+MutationsT <- Mutations[,c(1,4,5,6,10,11,8,9,16,2,3,7,12,13,14,15,17,18)]
+```
+
+
+### Create a file with all genes
+
+```{r}
+write.table(MutationsT, file = "MutationsT.csv", row.names = F, sep = "\t")
+```
+
+
+### Creating a MAF file 
+
+```{r}
+laml <- read.maf(maf ="C:/GitHub/project-02-group-05/MutationsT.csv", useAll = T, verbose = T)
+
+
+laml
+```
+
+
+## Create a File with 100 Biomarkers
+
+
+```{r}
+BM_mut = MutationsT[ which((MutationsT$Hugo_Symbol) 
+                                  %in% rownames(biomarkers_FC_values100)), ]
+
+write.table(BM_mut, file = "BM_mut.csv", row.names = F, sep = "\t")
+
+BM_laml <- read.maf(maf ="C:/GitHub/project-02-group-05/BM_mut.csv", useAll = T, verbose = T)
+```
+
+
+## Mutations in all genes
+
+### Generating summaries
+
+
+```{r, include=FALSE}
+getSampleSummary(laml)
+
+```
+
+```{r, include=FALSE}
+getGeneSummary(laml)
+
+```
+
+```{r}
+write.mafSummary(maf = laml, basename = 'laml')
+
+```
+
+
+### Visualizations
+
+
+#### Ploting MAF summary
+
+```{r}
+plotmafSummary(maf = laml, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
+
+```
+
+
+#### Ploting oncoplot with Transversions/Transitions
+
+```{r}
+oncoplot(maf = laml, top = 15, draw_titv = TRUE)
+
+```
+
+##### oncoplot(maf = laml, top = 15, draw_titv = TRUE, additionalFeature = c("Tumor_Sample_Barcode", "MALME-3M"))
+
+#Altered in all samples as this are all cancer cell lines
+
+#### Oncoplot expression values
+
+```{r}
+set.seed(seed = 1024)
+exprs_tbl = data.frame(genes = getGeneSummary(x = laml)[1:20, Hugo_Symbol],
+                       exprn = rnorm(n = 10, mean = 12, sd = 5))
+head(exprs_tbl)
+
+```
+
+
+```{r}
+oncoplot(maf = laml, exprsTbl = exprs_tbl)
+
+```
+
+##### CHANGE EXPRESSION VALUES
+
+
+#### Oncostrips for the top10 biomarkers
+
+```{r}
+oncostrip(maf = laml, genes = c('DHRS2',
+                                'ABAT', 
+                                'SERPINI1', 
+                                'MIR612///NEAT1	',
+                                'HBA2///HBA1	',
+                                'CLU',
+                                'NMI',
+                                'STC1',
+                                'AREG',
+                                'NSMAF',
+                                'SERPINH1')
+          )
+```
+
+
+
+#### Oncostrips for the 10 genes with the least change in expression
+
+
+```{r}
+oncostrip(maf = laml, genes = c('ADAMTS6', 
+                                'YWHAQ',
+                                'EMID1', 
+                                'PLCH2', 
+                                'HRH2',
+                                'WNT10B',
+                                'RGPD6///RGPD8///RGPD3///RGPD4///RGPD5',
+                                'ANGPTL8',
+                                'CABP2',
+                                'UPK2',
+                                'CLPS')
+        )
+```
+
+
+#### Transitions and Transversion
+
+```{r}
+laml.titv = titv(maf = laml, plot = FALSE, useSyn = TRUE)
+
+#plot titv summary
+plotTiTv(res = laml.titv)
+```
+
+
+#### Mutation load vs TCGA cohorts
+
+```{r}
+laml.mutload = tcgaCompare(maf = laml, cohortName = 'Example-LAML')
+```
+
+
+
+#### Somatic interactions
+
+```{r, include = FALSE}
+somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1))
+
+
+summary(somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1)))
+```
+
+```{r}
+
+pairlist(somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1)))
+
+```
+
+
+
+```{r}
+oncostrip(maf = laml, genes = c('LRP1B', 'PCDH15', 'MT-ND5'))
+
+```
+
+# Drug Gene interactions
+```{r}
+dgi = drugInteractions(maf = laml, fontSize = 0.75)
+
+```
+
+```{r}
+dnmt3a.dgi = drugInteractions(genes = "MUC16", drugs = TRUE)
+dnmt3a.dgi[,.(Gene, interaction_types, drug_name, drug_claim_name)]
+```
+
+
+
+```{r}
+OncogenicPathways(maf = laml)
+
+```
+
+```{r}
+PlotOncogenicPathways(maf = laml, pathways = "RTK-RAS")
+
+```
+
+```{r}
+PlotOncogenicPathways(maf = laml, pathways = "NOTCH")
+
+```
+
+```{r}
+PlotOncogenicPathways(maf = laml, pathways = "TGF-Beta")
+
+```
+
+
+### Mutational signatures
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+
+BiocManager::install("BSgenome.Hsapiens.UCSC.hg19")
+
+
+library(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)
+
+if (!requireNamespace("BiocManager", quietly = TRUE))
+  install.packages("BiocManager")
+BiocManager::install()
+
+BiocInstaller::biocValid()
+
+biocLite("stringi")
+biocLite("TxDb.Hsapiens.UCSC.hg19.knownGene")
+
+
+
+library(BiocManager)
+
+library(BSgenome.Hsapiens.UCSC.hg19)
+
+
+
+laml.tnm = trinucleotideMatrix(maf = laml, prefix = 'chr', add = TRUE, ref_genome = "BSgenome.Hsapiens.UCSC.hg19")
+plotApobecDiff(tnm = laml.tnm, maf = laml, pVal = 0.2)
+
+
+
+
+
+
+
+
+## Mutations in the biomarkers
+
+```{r}
+BM_laml
+```
+
+
+
+##### Summaries
+
+```{r, include=FALSE}
+getSampleSummary(BM_laml)
+
+```
+
+
+```{r, include=FALSE}
+getGeneSummary(BM_laml)
+
+```
+
+```{r}
+write.mafSummary(maf = BM_laml, basename = 'laml')
+
+```
+
+### Visualization
+
+
+##### Ploting MAF summary
+```{r}
+plotmafSummary(maf = BM_laml, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
+
+```
+
+#### Ploting oncoplot
+```{r}
+oncoplot(maf = BM_laml, top = 15, draw_titv = TRUE)
+
+```
+#Altered in all samples as this are all cancer cell lines
+
+
+#### Oncostrips for the top10 biomarkers
+```{r}
+oncostrip(maf = laml, genes = c('DHRS2',
+                                'ABAT', 
+                                'SERPINI1', 
+                                'MIR612///NEAT1	',
+                                'HBA2///HBA1	',
+                                'CLU',
+                                'NMI',
+                                'STC1',
+                                'AREG',
+                                'NSMAF',
+                                'SERPINH1')
+          )
+```
+
+
+
+#### Transitions and Transversion
+```{r}
+BM_laml.titv = titv(maf = BM_laml, plot = FALSE, useSyn = TRUE)
+
+#plot titv summary
+plotTiTv(res = BM_laml.titv)
+```
+
+
+#### Mutation load vs TCGA cohorts
+
+```{r}
+laml.mutload = tcgaCompare(maf = BM_laml, cohortName = 'Example-LAML')
+
+```
+
+
+#### Somatic interactions
+
+```{r}
+somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1))
+
+
+summary(somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1)))
+```
+
+
+
+```{r}
+
+pairlist(somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1)))
+
+```
+
+
+# Drug Gene interactions
+```{r}
+dgi = drugInteractions(maf = BM_laml, fontSize = 0.75)
+
+```
+
+```{r}
+dnmt3a.dgi = drugInteractions(genes = "MUC16", drugs = TRUE)
+dnmt3a.dgi[,.(Gene, interaction_types, drug_name, drug_claim_name)]
+```
+
+
+
+```{r}
+OncogenicPathways(maf = BM_laml)
+
+```
+
+
+
+
+
