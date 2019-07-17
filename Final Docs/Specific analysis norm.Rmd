@@ -440,6 +440,8 @@ colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
 
 heatmap(Highest_VC_Biomarkers)
 ```
+
+
 The heatmap shows that finding biomarkers using variance does not work as expected, since the cancer types do not cluster together.
 
 
