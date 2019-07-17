@@ -1,6 +1,6 @@
 ---
-title: "MAF- Visualization of somatic mutations in cell lines"
-author: "Florencia Zúñiga"
+title: "MAF Visualization of somatic mutations in cell lines"
+author: "Florencia Zuniga"
 date: "7/17/2019"
 output:
   pdf_document: default
@@ -207,7 +207,7 @@ BM_laml <- read.maf(maf ="C:/GitHub/project-02-group-05/BM_mut.csv", useAll = T,
 ### Generating summaries
 
 
-```{r}
+```{r include=FALSE}
 getSampleSummary(laml)
 
 ```
@@ -426,7 +426,7 @@ BM_laml
 
 ##### Summaries
 
-```{r}
+```{r include=FALSE}
 getSampleSummary(BM_laml)
 
 ```
@@ -438,7 +438,7 @@ getGeneSummary(BM_laml)
 ```
 
 ```{r}
-write.mafSummary(maf = laml, basename = 'laml')
+write.mafSummary(maf = BM_laml, basename = 'laml')
 
 ```
 
@@ -479,19 +479,40 @@ oncostrip(maf = laml, genes = c('DHRS2',
 
 #### Transitions and Transversion
 ```{r}
-BM.laml.titv = titv(maf = BM_laml, plot = FALSE, useSyn = TRUE)
+BM_laml.titv = titv(maf = BM_laml, plot = FALSE, useSyn = TRUE)
 
 #plot titv summary
-plotTiTv(res = BM.laml.titv)
+plotTiTv(res = BM_laml.titv)
 ```
 
 
-####Mutation load vs TCGA cohorts
+#### Mutation load vs TCGA cohorts
+
 ```{r}
-laml.mutload = tcgaCompare(maf = laml, cohortName = 'Example-LAML')
+laml.mutload = tcgaCompare(maf = BM_laml, cohortName = 'Example-LAML')
 
 ```
 
+
+
+
+# Drug Gene interactions
+```{r}
+dgi = drugInteractions(maf = BM_laml, fontSize = 0.75)
+
+```
+
+```{r}
+dnmt3a.dgi = drugInteractions(genes = "MUC16", drugs = TRUE)
+dnmt3a.dgi[,.(Gene, interaction_types, drug_name, drug_claim_name)]
+```
+
+
+
+```{r}
+OncogenicPathways(maf = BM_laml)
+
+```
 
 
 
