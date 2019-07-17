@@ -21,7 +21,7 @@ Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
 Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
 ```
 
-Filter Vorinostat data: 
+
 
 ```{r, include = FALSE}
 #Find cell lines, which belong to vorinostat:
