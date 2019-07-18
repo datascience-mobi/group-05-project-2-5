@@ -1,7 +1,7 @@
 ---
 title: "Broad Analysis for Presentation"
 author: "Laura Plutowski and Franziska Heinkele"
-date: "16 Juli 2019"
+date: "25 July 2019"
 output: html_document
 ---
 
@@ -25,9 +25,9 @@ output: html_document
 ***
 
 ```{r, echo=FALSE, message = FALSE, warning = FALSE}
-wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
 
-#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 
 library(readr)
 

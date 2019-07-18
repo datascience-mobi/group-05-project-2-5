@@ -585,13 +585,15 @@ target_vorinostat=c("HDAC1","HDAC10","HDAC11","HDAC2","HDAC3","HDAC5","HDAC6",
                     "HDAC8","HDAC9")
 ```
 
+***
 __Do we have HDACs in our biomarkers?__
-```{r, include=FALSE}
+```{r, echo=FALSE}
 # search for HDAC in biomarkers 
 target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
 length(target)
 ```
 
+***
 __Which FC values do they have?__
 ```{r, include=FALSE}
 ### find FC values of targets 
@@ -636,7 +638,7 @@ FC_HDAC <-FC[c,]
 ```{r, include=FALSE}
 FC_HDAC =na.omit(FC_HDAC)
 ```
-
+***
 
 ```{r, fig.height= 5, fig.width= 7, echo=FALSE}
 palette(rainbow(17))
