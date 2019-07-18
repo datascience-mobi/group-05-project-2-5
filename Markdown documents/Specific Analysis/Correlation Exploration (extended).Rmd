@@ -3,8 +3,8 @@ title: "Correlation Exploration: Heatmaps, scatter plots and other fun things"
 author: "Florencia Zúñiga"
 date: "7/10/2019"
 output:
-  pdf_document: default
   html_document: default
+  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
