@@ -168,12 +168,10 @@ __Comparison of rows and columns of data frames Treated and Untreated__
 identical(rownames(UntreatedVorinostat), rownames(TreatedVorinostat))
 ```
 
-
 ```{r}
 head(colnames(UntreatedVorinostat),3)
 head(colnames(TreatedVorinostat),  3)
 
-# We can split the names before the underline characters, save these informations as data frames and look if the cell line names of both sample groups are identical
 col_names_VU    = as.data.frame(strsplit(x=colnames(UntreatedVorinostat), split="_"))
 col_names_VU    = as.data.frame (t(col_names_VU[1,]))[,1]
 
@@ -212,7 +210,7 @@ p_values_Vorinostat = p_values_Vorinostat[ order(p_values_Vorinostat$` p_values`
 p_values_Vorinostat[1:5,]
 ```
   
-__Chosing the genes showing expression level changes with smallest p-values__
+__Chosing 100 genes showing the smallest p-values__
 ```{r}
    biomarkers.pValues = head( p_values_Vorinostat,100 )
 head(biomarkers.pValues)
@@ -364,7 +362,7 @@ Highly_variant_Untreated        = UntreatedVorinostat[ which(
                                   row.names(UntreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
  
  
- __Selecting genes with diminished variances after treatment__
+__Selecting genes with diminished variances after treatment__
  
 Variances_Untreated             = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
 Variances_Treated               = as.data.frame (apply(Highly_variant_Treated,1,var  ))
