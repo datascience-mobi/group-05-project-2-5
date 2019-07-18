@@ -237,7 +237,7 @@ p_values_Vorinostat = p_values_Vorinostat[ order(p_values_Vorinostat$` p_values`
 p_values_Vorinostat[1:5,]
 ```
   
-A lot of values are essentially zero, which would mean that two thirds of genes have showed significant responses to the treatment. This is ,however, dubious. 
+A lot of values are essentially zero, which would mean that one forth of all genes have showed significant responses to the treatment. This is ,however, dubious. 
   
 For now, we will select the 100 genes showing smallest p-values and compare these later with biomarkers found by other methods.
 ```{r}
