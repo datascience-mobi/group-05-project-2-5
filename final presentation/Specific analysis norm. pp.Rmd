@@ -161,23 +161,14 @@ FC <- TreatedVorinostat  - UntreatedVorinostat
 ## 3. Finding biomarkers {#anchor5}
 
 
-
 ## 3.1. Biomarkers received from two-sided paired T-test {#anchor6}
 
-In order to find the genes who show significant changes in expression levels after treatment, two-sided paired T-test was performed to calculate the p-values of gene expression changes.
-
-Formulation of Hypotheses:
- __H0 hypothesis__: Gene expression does not change significantly by drug treatment.
- __H1 hypothesis__: Gene expression changes significantly by drug treatment.
-
-For the application, the data frames "Treated" and "Untreated" should consist of same genes in rows and same cell lines in the sample names.
-
-Are the genes, listed in rows, identical?
+__Comparison of rows and columns of data frames Treated and Untreated__
 ```{r}
 identical(rownames(UntreatedVorinostat), rownames(TreatedVorinostat))
 ```
 
-However, columns have different names as these include information about drug dosis. The comparison of sample names, which include cell line information, can show us, whether the same cell lines are used and if the order is identical.
+
 ```{r}
 head(colnames(UntreatedVorinostat),3)
 head(colnames(TreatedVorinostat),  3)
@@ -192,13 +183,13 @@ col_names_VT    = as.data.frame (t(col_names_VT[1,]))[,1]
 identical(colnames(col_names_VU), colnames(col_names_VT))
 ```
 
-
- Now we can apply the t-test and observe the significance of changes by investigating p-values.
+__Calculation of significance using p-values__
 ```{r}
 p_values_Vorinostat = sapply(1:13299, function(i){  
                       t.test( TreatedVorinostat[i,],UntreatedVorinostat[i,],paired = TRUE,
                                                         alternative = "two.sided")$p.value
 })
+
 
 p_values_Vorinostat           = as.data.frame (p_values_Vorinostat)
 rownames(p_values_Vorinostat) = rownames((TreatedVorinostat))
@@ -221,15 +212,12 @@ p_values_Vorinostat = p_values_Vorinostat[ order(p_values_Vorinostat$` p_values`
 p_values_Vorinostat[1:5,]
 ```
   
-A lot of values are essentially zero, which would mean that two thirds of genes have showed significant responses to the treatment. This is ,however, dubious. 
-  
-For now, we will select the 100 genes showing smallest p-values and compare these later with biomarkers found by other methods.
+__Chosing the genes showing expression level changes with smallest p-values__
 ```{r}
    biomarkers.pValues = head( p_values_Vorinostat,100 )
 head(biomarkers.pValues)
 ```
 
-For further analysis, we need to create a vector with the gene names of the p.Value Biomarker: 
 ```{r}
 biomarkers.genes= rownames(biomarkers.pValues)
 ```
@@ -353,24 +341,9 @@ barplot(table(change), ylab="counts", main="Number of up and down regulated gene
 
 ### 3.3. Biomarkers received from variance {#anchor10}
 
-In this part, we firstly selected the genes showing high variance among the 59 cell lines. 
-
-We hypothesized that high variance of a gene could signify either 
-- cell line specific
-or
-- cancerogenic activity.
-
-Then, we hypothesized that a decrease in variance would be more probable in cancerogenic genes, rather than cell line specific genes and therefore, selected the genes showing a negative variance change. 
-
-The steps were; 
-
-2.1 - Selecting genes with a variance above 95% quartile of variances before treatment
-2.2 - Selecting genes which showed a significant decrease in their high variances
-2.3 - Depicting the drug responses(FC) of these genes with a heatmap
-
+__Selecting genes showing high variance__   
 ```{r, echo=TRUE}
 
-# 1- Selecting genes with a variance above 95% quartile of variances before treatment
 Variances_Untreated             = as.data.frame (apply(UntreatedVorinostat,1,var))
 
 colnames(Variances_Untreated)[1]= "var"
@@ -381,14 +354,17 @@ nintyfive_quartile_Untr         = quantile(Variances_Untreated$var, probs = 0.95
 Most_Variances_Unt              = Most_Variances_Unt[
                                  -which(Most_Variances_Unt$var < nintyfive_quartile_Untr),, drop= FALSE]
 
-# 2 - Selecting genes which showed a significant decrease in their high variances
 
-# Creating smaller data frames from Treated and Untreated with only the selected genes
+__Creating data frames from Treated and Untreated only with the selected genes__
+
 Highly_variant_Treated          = TreatedVorinostat  [ which(
                                   row.names(TreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
 
 Highly_variant_Untreated        = UntreatedVorinostat[ which(
                                   row.names(UntreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
+ 
+ 
+ __Selecting genes with diminished variances after treatment__
  
 Variances_Untreated             = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
 Variances_Treated               = as.data.frame (apply(Highly_variant_Treated,1,var  ))
@@ -401,22 +377,21 @@ colnames(Variance_Change)[1]    = "Var_Change"
 lower_quartile_VC               = quantile (Variance_Change$Var_Change, probs = 0.05)
 Most_neg_var_change             = Variance_Change[-which(
                                   Variance_Change$Var_Change > lower_quartile_VC),, drop= FALSE] 
-
-# We focus on the negative part of the variance change, as we expect treatment to diminish the variance
+                                  
 Most_neg_var_change             = Most_neg_var_change[ 
                                   order(Most_neg_var_change$Var_Change), ,drop = FALSE ] 
 
-# Here we select 30 genes which had a high variance at the beginning 
-# and showed a variance decrease after treatment
+
+ __Selecting 30 genes with highest negative variance change__
+ 
 Highest_VC                      = head(Most_neg_var_change, 30)
 
-# We get for these genes the drug response (Fold Change) values for depicting with a heatmap
+
 Highest_VC_Biomarkers           = FC[ which(row.names(FC) %in% rownames(Highest_VC)),]
 colnames(Highest_VC_Biomarkers) = col_names_VT
 
+__Do these genes show similar responses in a specific cancer type?__
 
-# 3  - Depicting the drug responses of these genes with a heatmap
-# 3.1- Manipulate colnames to show only cancer type
 Metadata                        = as.data.frame(Metadata)
 Metadata_Vorinostat             = Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
 Metadata_Vorinostat             = Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
@@ -427,13 +402,8 @@ rownames(Metadata_V_after)      = Metadata_V_after$cell
 
 colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
 
-# 3.2- Create the heatmap
-
 heatmap(Highest_VC_Biomarkers)
 ```
-
-
-The heatmap shows that finding biomarkers using variance does not work as expected, since the cancer types do not cluster together.
 
 
 ### 3.4. Comparison of the differently received biomarkers {#anchor11}
