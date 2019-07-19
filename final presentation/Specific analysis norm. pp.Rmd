@@ -351,19 +351,21 @@ nintyfive_quartile_Untr         = quantile(Variances_Untreated$var, probs = 0.95
 
 Most_Variances_Unt              = Most_Variances_Unt[
                                  -which(Most_Variances_Unt$var < nintyfive_quartile_Untr),, drop= FALSE]
-
+```
 
 __Creating data frames from Treated and Untreated only with the selected genes__
-
+```{r, echo=TRUE}
 Highly_variant_Treated          = TreatedVorinostat  [ which(
                                   row.names(TreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
 
 Highly_variant_Untreated        = UntreatedVorinostat[ which(
                                   row.names(UntreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
- 
+ ```
  
 __Selecting genes with diminished variances after treatment__
- 
+
+```{r, echo=TRUE}
+
 Variances_Untreated             = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
 Variances_Treated               = as.data.frame (apply(Highly_variant_Treated,1,var  ))
 
@@ -378,18 +380,18 @@ Most_neg_var_change             = Variance_Change[-which(
                                   
 Most_neg_var_change             = Most_neg_var_change[ 
                                   order(Most_neg_var_change$Var_Change), ,drop = FALSE ] 
-
+ ```
 
  __Selecting 30 genes with highest negative variance change__
- 
+ ```{r, echo=TRUE}
 Highest_VC                      = head(Most_neg_var_change, 30)
 
 
 Highest_VC_Biomarkers           = FC[ which(row.names(FC) %in% rownames(Highest_VC)),]
 colnames(Highest_VC_Biomarkers) = col_names_VT
-
+ ```
 __Do these genes show similar responses in a specific cancer type?__
-
+ ```{r, echo=TRUE}
 Metadata                        = as.data.frame(Metadata)
 Metadata_Vorinostat             = Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
 Metadata_Vorinostat             = Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
