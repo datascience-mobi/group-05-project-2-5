@@ -271,7 +271,7 @@ palette(rainbow(15))
 par(mar=c(5, 4, 5, 9))
 barplot( height = FC_all_mean, names= FALSE, col = drug, border = NA,
          main= "Fold changes by treatment with 15 anticancer drugs",
-         xlab="sampels", ylab="mean Fold Change values")
+         xlab="samples", ylab="mean Fold Change values")
 
 # create a legend 
 levels <- as.factor(levels(drug))
