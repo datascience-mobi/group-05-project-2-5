@@ -375,7 +375,7 @@ p_values_Vorinostat[1:5,]</code></pre>
 ## PI4K2A   6.295537e-29         TRUE
 ## MEPCE    6.616561e-29         TRUE
 ## ATG101   8.029874e-29         TRUE</code></pre>
-<p>A lot of values are essentially zero, which would mean that two thirds of genes have showed significant responses to the treatment. This is ,however, dubious.</p>
+<p>A lot of values are essentially zero, which would mean that one forth of all genes have showed significant responses to the treatment. This is ,however, dubious.</p>
 <p>For now, we will select the 100 genes showing smallest p-values and compare these later with biomarkers found by other methods.</p>
 <pre class="r"><code>   biomarkers.pValues = head( p_values_Vorinostat,100 )
 head(biomarkers.pValues)</code></pre>
