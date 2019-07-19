@@ -340,7 +340,7 @@ barplot(table(change), ylab="counts", main="Number of up and down regulated gene
 ### 3.3. Biomarkers received from variance {#anchor10}
 
 __Selecting genes showing high variance__   
-```{r, echo=TRUE}
+```{r, echo= TRUE}
 
 Variances_Untreated             = as.data.frame (apply(UntreatedVorinostat,1,var))
 
@@ -354,7 +354,7 @@ Most_Variances_Unt              = Most_Variances_Unt[
 ```
 
 __Creating data frames from Treated and Untreated only with the selected genes__
-```{r, echo=TRUE}
+```{r, echo= FALSE}
 Highly_variant_Treated          = TreatedVorinostat  [ which(
                                   row.names(TreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
 
@@ -383,7 +383,7 @@ Most_neg_var_change             = Most_neg_var_change[
  ```
 
  __Selecting 30 genes with highest negative variance change__
- ```{r, echo=TRUE}
+ ```{r, echo=FALSE}
 Highest_VC                      = head(Most_neg_var_change, 30)
 
 
@@ -391,7 +391,7 @@ Highest_VC_Biomarkers           = FC[ which(row.names(FC) %in% rownames(Highest_
 colnames(Highest_VC_Biomarkers) = col_names_VT
  ```
 __Do these genes show similar responses in a specific cancer type?__
- ```{r, echo=TRUE}
+ ```{r, echo=FALSE}
 Metadata                        = as.data.frame(Metadata)
 Metadata_Vorinostat             = Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
 Metadata_Vorinostat             = Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
@@ -401,8 +401,10 @@ Metadata_V_after                = Metadata_V_after [, -which(colnames(Metadata_V
 rownames(Metadata_V_after)      = Metadata_V_after$cell
 
 colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
+```
 
-heatmap(Highest_VC_Biomarkers)
+```{r, echo=TRUE}
+pheatmap(Highest_VC_Biomarkers, main = "Expression Changes of Genes in 59 Cell Lines")
 ```
 
 
