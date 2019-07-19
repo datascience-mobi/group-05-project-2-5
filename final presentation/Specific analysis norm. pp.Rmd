@@ -193,7 +193,7 @@ p_values_Vorinostat           = as.data.frame (p_values_Vorinostat)
 rownames(p_values_Vorinostat) = rownames((TreatedVorinostat))
 colnames(p_values_Vorinostat) =  " p_values"
 
-hist(p_values_Vorinostat[,1])
+hist(p_values_Vorinostat[,1], main="Distribution of P Values", xlab= "p-values")
 abline(v = summary(p_values_Vorinostat [,1]), col = c("blue", "red", "black", "orange"), 
     lty = 2)
 
