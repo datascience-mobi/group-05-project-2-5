@@ -9,12 +9,11 @@ output:
 
 ```{r, include = FALSE}
 # Franzi
-#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
 
 # Laura 
-wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
-
 
 ```{r read_data, message = FALSE, warning = FALSE, include=FALSE}
 library(readr)
@@ -26,71 +25,25 @@ library(readr)
     
 ```
 
-***
-# SPECIFIC ANALYSIS 
-***
-
 __Mechanism of vorinostat__ 
 ```{r, echo=FALSE}
 Drug_annotation$Mechanism[grep(Drug_annotation$Drug, pattern= "vorinostat")]
 ```
 
-***
+
 __Target of vorinostat__ 
 ```{r,echo=FALSE}
 target=Drug_annotation$target[grep(Drug_annotation$Drug, pattern= "vorinostat")]
 target
 ```
 
-***
+
 __Cancer type vorinostat__ 
 ```{r,echo=FALSE}
 Drug_annotation$indication[grep(Drug_annotation$Drug, pattern= "vorinostat")]
 ```
 
-
-
-#Table of content
-
-[1. General visualizations](#anchor1)
-
-* [1.1. Pie chart of tissue types](#anchor2)
-
-* [1.2.Density plot of general gene expression](#anchor3)
-
-[2. Creation of Vorinostat-FC-matrix](#anchor4)
-
-[3. Finding biomarkers](#anchor5)
-
-* [3.1. Biomarkers received from two-sided T-test](#anchor6)
-
-* [3.2. Biomarkers received from FC values](#anchor7)
-
-       + [3.2.1. General Biomarkers](#anchor8)
-       
-       + [3.2.2. Up and Downregulation of biomarkers](#anchor9)
-
-* [3.3. Biomarkers received from variance](#anchor10)
-       
-* [3.4. Comparison of the differently received biomarkers](#anchor11)
-
-[4. Visualizations of biomarkers](#anchor12)
-
-* [4.1. Density plot of biomarker gene expression](#anchor13)
-
-* [4.2. Visualization of biomarkers with Vulcanoplot](#anchor15)
-
-[5.Are the targets for vorinostat (HDACs) part of our biomarkers?](#anchor16)
-
-
-
-
-***
-## 1. General visualizations {#anchor1}
-
-### 1.1. Pie chart of tissue types {#anchor2}
-
-```{r, echo=FALSE }
+```{r, echo=FALSE, include=FALSE}
 Metadata <- as.matrix(Metadata)
 Metadatatissue <- Metadata[1:819,"tissue"]
 Treatedwithtissue <- rbind(Treated, Metadatatissue)
@@ -107,11 +60,7 @@ pie(table(TreatedVorinostattissue["Metadatatissue",]),
     cex=0.8)
 ```
 
-
-### 1.2.Density plot of general gene expression {#anchor3}
-
-
-```{r,fig.height= 5, fig.width= 7, echo=FALSE}
+```{r,fig.height= 5, fig.width= 7, include=FALSE}
 TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
 
     UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
@@ -124,11 +73,6 @@ lines(density(TreatedVorinostat), col = "red")
 legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
        pch=19, col = c("blue", "red"))
 ```
-
-
-***
-
-## 2. Create a Vorinostat-FC-matrix {#anchor4}
 
 ```{r,include=FALSE}
 UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
@@ -156,12 +100,10 @@ TreatedVorinostat <- apply(TreatedVorinostat, 2, function(x){
 FC <- TreatedVorinostat  - UntreatedVorinostat
 ```
 
-***
-
-## 3. Finding biomarkers {#anchor5}
+##Find biomarkers
 
 
-## 3.1. Biomarkers received from two-sided paired T-test {#anchor6}
+##Biomarkers received from two-sided paired T-test
 
 __Comparison of rows and columns of data frames Treated and Untreated__
 ```{r}
@@ -221,7 +163,7 @@ biomarkers.genes= rownames(biomarkers.pValues)
 ```
 
 
-### 3.2. Biomarkers received from variance {#anchor10}
+###Biomarkers received from variance
 
 __Selecting genes showing high variance__   
 ```{r, echo= TRUE}
@@ -295,21 +237,22 @@ heatmap(Highest_VC_Biomarkers, main = "Expression Changes of Genes in 59 Cell Li
 ```
 
 
-
-## 3.3. Biomarkers received from FC values {#anchor7}
-
-### 3.3.1.General biomarkers {#anchor8}
+##Biomarkers received from FC values 
 
 
 __Find biomarkers using absolute FC Values__
-```{r}
+```{r, include=FALSE}
 FC <- TreatedVorinostat - UntreatedVorinostat
+```
 
+```{r}
 FCVorinostatabs= abs(FC)
 FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
 
-#sort the values to get the 100 largest values:
 sortedgeneralbiomarker <- sort(FCVorinostatmean, decreasing = TRUE)
+```
+
+```{r, include=FALSE}
 sortedgeneralbiomarker <- as.matrix(sortedgeneralbiomarker)
 
 #select the top 100 general biomarkers:
@@ -325,13 +268,9 @@ knitr::kable(head(top100generalbiomarkers), caption = "Top generalbiomarkers")
 ```
 
 
+###Up- and Downregulation of biomarkers
 
-
-
-### 3.3.2. Up- and Downregulation of biomarkers {#anchor9}
-
-__Biomarker without absolute values__
-```{r}
+```{r, include=FALSE}
 FC_meanrow= rowMeans(FC)
 
 # look at the absolute values:
@@ -349,36 +288,28 @@ FC100 <- as.matrix(FC100)
 biomarkergenes_noabs = row.names(FC100)
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, include=FALSE}
 knitr::kable(head(FC100), caption = "Top biomarkers without absolute values")
 ```
 
-
-***
-
-__Do we get the same biomarkers?__
-```{r,echo=FALSE}
+```{r,echo=FALSE, include=FALSE}
 setequal(biomarkergenes_noabs,generalbiomarkergenes)
 ```
 
-
-__How many of the biomarkers are different?__
-```{r,echo=FALSE}
+```{r,echo=FALSE, include=FALSE}
 # biomarkers in biomarkergenes_noabs but not in generalbiomarkergenes
 diff1= setdiff(biomarkergenes_noabs,generalbiomarkergenes)
 length(diff1)
 diff1
 ```
 
-
-***
-__Are the genes up- or down regulated?__
 ```{r}
 FCVorinostatmean_noabs= rowMeans(FC)
+```
 
+```{r, include=FALSE}
 #Matrix with information about general up- or downregulation:
 FCVorinostatmean_noabs_matrix <- as.matrix(FCVorinostatmean_noabs)
-
 #loop, which adds those biomarkergenes to a vector, which are mostly upregulated:
 i=1
 Upregulated <- c()
@@ -388,7 +319,9 @@ while(i<=100) {
   }
   i=i+1}
 
-#Create a vector that includes for each gene sequentially if it is up- or downregulated:
+``` 
+
+```{r}
 i=1
 Generalchange <- c()
 while(i<=100) {
@@ -398,7 +331,9 @@ while(i<=100) {
     Generalchange <- append(Generalchange, "Down")
   }
   i=i+1}
+```
 
+```{r, echo=FALSE}
 # Bind the information about up/downregulation as a new column to the biomarkermatrix:
 top100generalbiomarkers_withUporDown <- cbind(top100generalbiomarkers, Generalchange)
 # rename
@@ -406,7 +341,7 @@ colnames(top100generalbiomarkers_withUporDown)[1] <- "FCmean"
 head(top100generalbiomarkers_withUporDown)
 ```
 
-```{r,fig.height= 5, fig.width= 7, echo=FALSE}
+```{r,fig.height= 5, fig.width= 7, echo=FALSE, echo=FALSE}
 top100generalbiomarkers_withUporDown=as.data.frame(top100generalbiomarkers_withUporDown)
 change=top100generalbiomarkers_withUporDown$Generalchange
 col=palette(rainbow(2))
@@ -414,44 +349,41 @@ barplot(table(change), ylab="counts", main="Number of up and down regulated gene
 ```
 
 
+###Vorinostat affects only single genes
 
-
-#__TAKE THE BIOMARKERS FROM ABSOLUTE FC VALUES __
-
-***
-## 4. Visualizations of biomarkers {#anchor12}
-
-
-### 4.1. Density plot of biomarker gene expression {#anchor13}
-
-
-```{r,fig.height= 5, fig.width= 7, echo=FALSE}
+```{r, fig.height= 7, fig.width= 13, echo=FALSE}
 
 Treated_Vorinostat_biomarker <- Treated[generalbiomarkergenes,TreatedVorinostatcolumns]
 Untreated_Vorinostat_biomarker <- Untreated[generalbiomarkergenes,UntreatedVorinostatcolumns]
 
-par(mar=c(5, 4, 5, 9))
+par(mar=c(4, 1, 4, 1), mfrow = c(1, 2))
+
+par(mar=c(5, 4, 5, 7))
+plot(density(UntreatedVorinostat), col="blue" ,xlab = "Gene expression",
+     main = "Effects of Vorinostat on overall gene expression")
+lines(density(TreatedVorinostat), col = "red")
+legend("topright", inset = c(-0.3,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
+       pch=19, col = c("blue", "red"))
+
+par(mar=c(5, 4, 5, 7))
 plot(density(Untreated_Vorinostat_biomarker),col="blue" ,xlab = "Gene expression",
      main = "Effects of Vorinostat on biomarker gene expression")
 
 lines(density(Treated_Vorinostat_biomarker), col = "red")
 
-legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
+legend("topright", inset = c(-0.3,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
        pch=19, col = c("blue", "red"))
+
 ```
 
 
-***
-
-
-### 4.2. Visualization of biomarkers with Vulcanoplot {#anchor15}
+###Visualization of biomarkers with Vulcanoplot
 
 
 ```{r, include=FALSE}
 FC=TreatedVorinostat-UntreatedVorinostat
 T.testFC <- apply(FC, 1, t.test)
 ```
-
 
 ```{r,include=FALSE}
 TResults <- lapply(T.testFC, function(.tres) {      
@@ -463,7 +395,6 @@ TResults <- lapply(T.testFC, function(.tres) {
 Tfinalresults <- do.call(rbind, TResults)
 ```
 
-
 ```{r message=FALSE, warning=FALSE,include=FALSE}
 library(EnhancedVolcano)
 ```
@@ -472,12 +403,9 @@ library(EnhancedVolcano)
 log2FC <- apply(FC, 1, mean)
 ```
 
-```{r,include=FALSE}
+```{r,echo=FALSE, fig.height= 5, fig.width= 7}
 FCandpvalues <- cbind(Tfinalresults, log2FC)
-```
 
-
-```{r, fig.height= 5, fig.width= 7, echo=FALSE}
 keyvals <- rep('black', nrow(FCandpvalues))
 names(keyvals) <- rep('FC<Top100', nrow(FCandpvalues))
 
@@ -502,12 +430,8 @@ EnhancedVolcano(FCandpvalues,
 
 
 
+##Are the targets for vorinostat (HDACs) part of our biomarkers?
 
-
-
-## 5. Are the targets for vorinostat (HDACs) part of our biomarkers? {#anchor16}
-
-__What are the targets of vorinostat?__
 ```{r, echo=FALSE}
 ###find target of vorinostat 
 
@@ -524,16 +448,12 @@ target_vorinostat=c("HDAC1","HDAC10","HDAC11","HDAC2","HDAC3","HDAC5","HDAC6",
                     "HDAC8","HDAC9")
 ```
 
-***
-__Do we have HDACs in our biomarkers?__
 ```{r, echo=FALSE}
 # search for HDAC in biomarkers 
 target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
 length(target)
 ```
 
-***
-__Which FC values do they have?__
 ```{r, include=FALSE}
 ### find FC values of targets 
 
@@ -553,12 +473,9 @@ FC_target = as.data.frame(filter(FC_new, genes %in% target_vorinostat))
 FC_target
 ```
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
 knitr::kable(head(FC_target), caption = "FC values vorinostat targets")
 ```
-
-
-***
 
 ```{r, include=FALSE}
 first10biomarkers= generalbiomarkergenes[1:10]
@@ -577,7 +494,6 @@ FC_HDAC <-FC[c,]
 ```{r, include=FALSE}
 FC_HDAC =na.omit(FC_HDAC)
 ```
-***
 
 ```{r, fig.height= 5, fig.width= 7, echo=FALSE}
 palette(rainbow(17))
