@@ -69,13 +69,13 @@ Until now, the T-cell lymphoma is the only cancer-type which indicates vorinosta
 
 * [3.1. Biomarkers received from two-sided T-test](#anchor6)
 
-* [3.2. Biomarkers received from FC values](#anchor7)
+* [3.2. Biomarkers received from variance](#anchor10)
 
-       + [3.2.1. General Biomarkers](#anchor8)
+* [3.3. Biomarkers received from FC values](#anchor7)
+
+       + [3.3.1. General Biomarkers](#anchor8)
        
-       + [3.2.2. Up and Downregulation of biomarkers](#anchor9)
-
-* [3.3. Biomarkers received from variance](#anchor10)
+       + [3.3.2. Up and Downregulation of biomarkers](#anchor9)
        
 * [3.4. Comparison of the differently received biomarkers](#anchor11)
 
@@ -178,7 +178,7 @@ FC <- TreatedVorinostat  - UntreatedVorinostat
 Biomarkers are the genes which respond to the treatment. 
 In order to find these, we applied different methods and compared the results.
 
-## 3.1. Biomarkers received from two-sided paired T-test {#anchor6}
+## 3.1. Biomarkers received from two-sided paired T-test (by Mert Mayadag) {#anchor6}
 
 In order to find the genes who show significant changes in expression levels after treatment, two-sided paired T-test was performed to calculate the p-values of gene expression changes.
 
@@ -250,117 +250,7 @@ For further analysis, we need to create a vector with the gene names of the p.Va
 biomarkers.genes= rownames(biomarkers.pValues)
 ```
 
-## 3.2. Biomarkers received from FC values {#anchor7}
-
-### 3.2.1.General biomarkers {#anchor8}
-
-The FC value is a measure of the change in gene expression. Therefore, it is also well suited for the determination of biomarkers. In order to avoid mutually canceling effects and to find the largest change (regardless of its direction), we only use absolute values here.
-
-```{r}
-FC <- TreatedVorinostat - UntreatedVorinostat
-
-FCVorinostatabs= abs(FC)
-FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
-
-#sort the values to get the 100 largest values:
-sortedgeneralbiomarker <- sort(FCVorinostatmean, decreasing = TRUE)
-sortedgeneralbiomarker <- as.matrix(sortedgeneralbiomarker)
-
-#select the top 100 general biomarkers:
-top100generalbiomarkers = sortedgeneralbiomarker[1:100,]
-top100generalbiomarkers <- as.matrix(top100generalbiomarkers)
-head(top100generalbiomarkers)
-```
-
-Create a vector with gene names:
-```{r}
-generalbiomarkergenes = row.names(top100generalbiomarkers)
-```
-
-Now we have determined biomarkers via the fold change. However, since we have worked only with absolute values, we cannot say whether our genes are up- or downregulated.
-
-
-### 3.2.2. Up- and Downregulation of biomarkers {#anchor9}
-
-We determine rowmeans of FC values. But unlike before, we do not use absolute values to calculate the averages. Consequently, we get a general overview which genes are mostly up- or downregulated.
-
-```{r}
-FC_meanrow= rowMeans(FC)
-
-# look at the absolute values:
-FC_meanrow = abs(FC_meanrow)
-
-# sort the FC 
-sortedFC <- sort(FC_meanrow, decreasing = TRUE)
-sortedFC <- as.matrix(sortedFC)
-
-# take the first 100 values for comparison 
-FC100<- sortedFC[1:100,]
-FC100 <- as.matrix(FC100)
-
-# create a vector with genenames 
-biomarkergenes_noabs = row.names(FC100)
-```
-
-We want to compare the top biomarkers with and without using absolute values to determine how much they differ:
-```{r}
-setequal(biomarkergenes_noabs,generalbiomarkergenes)
-```
-
-How many of the biomarkers are different? 
-
-```{r}
-# biomarkers in biomarkergenes_noabs but not in generalbiomarkergenes
-diff1= setdiff(biomarkergenes_noabs,generalbiomarkergenes)
-length(diff1)
-diff1
-
-# biomarkers in generalbiomarkergenes but not in biomarkergenes_noabs
-diff2= setdiff(generalbiomarkergenes,biomarkergenes_noabs)
-length(diff2)
-diff2
-```
-
-We see that only 5 genes differ in the top biomarkers. Nevertheless, it is better to trust the absolute values, as they indicate the largest change in gene expression. So we avoid, that up- or down-regulating effects cancel each other out.
-
-In order to be able to work better with the biomarkers, we creat a matrix with the information, whether the genes are up or down regulated.  
-
-```{r}
-FCVorinostatmean_noabs= rowMeans(FC)
-
-#Matrix with information about general up- or downregulation:
-FCVorinostatmean_noabs_matrix <- as.matrix(FCVorinostatmean_noabs)
-
-#loop, which adds those biomarkergenes to a vector, which are mostly upregulated:
-i=1
-Upregulated <- c()
-while(i<=100) {
-  if(FCVorinostatmean_noabs_matrix[generalbiomarkergenes[i],1] >0) {
-    Upregulated <- union(Upregulated, generalbiomarkergenes[i])
-  }
-  i=i+1}
-
-#Create a vector that includes for each gene sequentially if it is up- or downregulated:
-i=1
-Generalchange <- c()
-while(i<=100) {
-  if(FCVorinostatmean_noabs_matrix[generalbiomarkergenes[i],1] >0) {
-    Generalchange <- append(Generalchange, "Up")
-  } else {
-    Generalchange <- append(Generalchange, "Down")
-  }
-  i=i+1}
-```
-
-Bind the information about up/downregulation as a new column to the biomarkermatrix:
-```{r}
-top100generalbiomarkers_withUporDown <- cbind(top100generalbiomarkers, Generalchange)
-# rename
-colnames(top100generalbiomarkers_withUporDown)[1] <- "FCmean"
-head(top100generalbiomarkers_withUporDown)
-```
-
-### 3.3. Biomarkers received from variance {#anchor10}
+### 3.2. Biomarkers received from variance (by Mert Mayadag){#anchor10}
 
 In this part, we firstly selected the genes showing high variance among the 59 cell lines. 
 
@@ -444,6 +334,118 @@ heatmap(Highest_VC_Biomarkers)
 
 The heatmap shows that finding biomarkers using variance does not work as expected, since the cancer types do not cluster together.
 
+## 3.3. Biomarkers received from FC values {#anchor7}
+
+### 3.3.1.General biomarkers {#anchor8}
+
+The FC value is a measure of the change in gene expression. Therefore, it is also well suited for the determination of biomarkers. In order to avoid mutually canceling effects and to find the largest change (regardless of its direction), we only use absolute values here.
+
+```{r}
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+FCVorinostatabs= abs(FC)
+FCVorinostatmean <- apply(FCVorinostatabs, 1, mean)
+
+#sort the values to get the 100 largest values:
+sortedgeneralbiomarker <- sort(FCVorinostatmean, decreasing = TRUE)
+sortedgeneralbiomarker <- as.matrix(sortedgeneralbiomarker)
+
+#select the top 100 general biomarkers:
+top100generalbiomarkers = sortedgeneralbiomarker[1:100,]
+top100generalbiomarkers <- as.matrix(top100generalbiomarkers)
+head(top100generalbiomarkers)
+```
+
+Create a vector with gene names:
+```{r}
+generalbiomarkergenes = row.names(top100generalbiomarkers)
+```
+
+Now we have determined biomarkers via the fold change. However, since we have worked only with absolute values, we cannot say whether our genes are up- or downregulated.
+
+
+### 3.3.2. Up- and Downregulation of biomarkers {#anchor9}
+
+We determine rowmeans of FC values. But unlike before, we do not use absolute values to calculate the averages. Consequently, we get a general overview which genes are mostly up- or downregulated.
+
+```{r}
+FC_meanrow= rowMeans(FC)
+
+# look at the absolute values:
+FC_meanrow = abs(FC_meanrow)
+
+# sort the FC 
+sortedFC <- sort(FC_meanrow, decreasing = TRUE)
+sortedFC <- as.matrix(sortedFC)
+
+# take the first 100 values for comparison 
+FC100<- sortedFC[1:100,]
+FC100 <- as.matrix(FC100)
+
+# create a vector with genenames 
+biomarkergenes_noabs = row.names(FC100)
+```
+
+We want to compare the top biomarkers with and without using absolute values to determine how much they differ:
+```{r}
+setequal(biomarkergenes_noabs,generalbiomarkergenes)
+```
+
+How many of the biomarkers are different? 
+
+```{r}
+# biomarkers in biomarkergenes_noabs but not in generalbiomarkergenes
+diff1= setdiff(biomarkergenes_noabs,generalbiomarkergenes)
+length(diff1)
+diff1
+
+# biomarkers in generalbiomarkergenes but not in biomarkergenes_noabs
+diff2= setdiff(generalbiomarkergenes,biomarkergenes_noabs)
+length(diff2)
+diff2
+```
+
+We see that only 5 genes differ in the top biomarkers. Nevertheless, it is better to trust the absolute values, as they indicate the largest change in gene expression. So we avoid, that up- or down-regulating effects cancel each other out.
+
+In order to be able to work better with the biomarkers, we creat a matrix with the information, whether the genes are up or down regulated.  
+
+```{r}
+FCVorinostatmean_noabs= rowMeans(FC)
+
+#Matrix with information about general up- or downregulation:
+FCVorinostatmean_noabs_matrix <- as.matrix(FCVorinostatmean_noabs)
+
+#loop, which adds those biomarkergenes to a vector, which are mostly upregulated:
+i=1
+Upregulated <- c()
+while(i<=100) {
+  if(FCVorinostatmean_noabs_matrix[generalbiomarkergenes[i],1] >0) {
+    Upregulated <- union(Upregulated, generalbiomarkergenes[i])
+  }
+  i=i+1}
+
+#Create a vector that includes for each gene sequentially if it is up- or downregulated:
+i=1
+Generalchange <- c()
+while(i<=100) {
+  if(FCVorinostatmean_noabs_matrix[generalbiomarkergenes[i],1] >0) {
+    Generalchange <- append(Generalchange, "Up")
+  } else {
+    Generalchange <- append(Generalchange, "Down")
+  }
+  i=i+1}
+```
+
+Bind the information about up/downregulation as a new column to the biomarkermatrix:
+```{r}
+top100generalbiomarkers_withUporDown <- cbind(top100generalbiomarkers, Generalchange)
+# rename
+colnames(top100generalbiomarkers_withUporDown)[1] <- "FCmean"
+head(top100generalbiomarkers_withUporDown)
+```
+
+
+
 
 ### 3.4. Comparison of the differently received biomarkers {#anchor11}
 
@@ -482,7 +484,8 @@ head(pV_FC)
 ```
 
 Now we know that p.Value and FC value do not deliver the same biomarkers. In fact, 100 out of 100 biomarkers are different.
-If we compare the values directly, we see that a low p.value does not correlate with a high FC value. This is because small values are also assigned small p.values by the T-test and the result of the test is therefore falsified. For this reason, we cannot trust the biomarkers from the two-sided T-test and will trust the biomarkers we received via the __fold change__ values.
+If we compare the values directly, we see that a low p.value does not correlate with a high FC value. This is because small values are also assigned small p.values by the T-test and the result of the test is therefore falsified. We have also seen before that almost all genes were found to be significant in the T test, but this is not credible. 
+For this reasons, we cannot trust the biomarkers from the two-sided T-test. We will trust the biomarkers we received via the __fold change__ values, because they give us the genes that have been most altered.
 
 
 ***
