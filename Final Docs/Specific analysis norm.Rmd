@@ -9,10 +9,10 @@ output:
 
 ```{r, include = FALSE}
 # Franzi
-#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
 
 # Laura 
-wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 Load data:
@@ -128,7 +128,7 @@ This plot is done to compare the gene expression of all provided genes with and 
 ```{r,fig.height= 5, fig.width= 7}
 TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
 
-    UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
 UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
 
 par(mar=c(5, 4, 5, 9))
@@ -177,7 +177,7 @@ FC <- TreatedVorinostat  - UntreatedVorinostat
 
 ## 3. Finding biomarkers {#anchor5}
 <div style="text-align: justify">
-Biomarkers are the genes which respond to the treatment. 
+Biomarkers are the genes which show the greatest response to the treatment. 
 In order to find these, we applied different methods and compared the results.
 </div>
 ## 3.1. Biomarkers received from two-sided paired T-test (by Mert Mayadag) {#anchor6}
@@ -369,7 +369,7 @@ Create a vector with gene names:
 generalbiomarkergenes = row.names(top100generalbiomarkers)
 ```
 <div style="text-align: justify">
-Now we have determined biomarkers via the fold change. However, since we have worked only with absolute values, we cannot say whether our genes are up- or downregulated.
+Now we have determined biomarkers via the fold change. However, since we have worked only with absolute values, we cannot say whether those identified genes are mostly up- or downregulated by Vorinostat.
 </div>
 
 ### 3.3.2. Up- and Downregulation of biomarkers {#anchor9}
@@ -452,7 +452,6 @@ top100generalbiomarkers_withUporDown <- cbind(top100generalbiomarkers, Generalch
 colnames(top100generalbiomarkers_withUporDown)[1] <- "FCmean"
 head(top100generalbiomarkers_withUporDown)
 ```
-
 
 
 
@@ -742,7 +741,7 @@ FCbiomarkers <- FC[generalbiomarkergenes,]
 
 Execute the PCA:
 ```{r, fig.height= 5, fig.width= 7}
-FCbiomarkers.pca = prcomp(FCbiomarkers, center=T, scale. = T)
+FCbiomarkers.pca = prcomp(FCbiomarkers)
 
 #For coloring according to tissue type we use information from Metadata:
 Metadata <- as.data.frame(Metadata)
@@ -760,17 +759,16 @@ FCbiomarkerswithtissue <- rbind(FCbiomarkers, Metadatavorinostattissue)
 vorinostattissuefactor <- as.factor(FCbiomarkerswithtissue["Metadatavorinostattissue",])
 
 
-#PC 3 & 4 group the tissues best but a clear grouping is not shown as well:
 par(mar=c(5, 4, 5, 9))
 palette(rainbow(9))
-plot(FCbiomarkers.pca$rotation[, 3], FCbiomarkers.pca$rotation[, 4],
-     col = Metadatavorinostattissue, pch = 19, xlab = "PC3", ylab = "PC4",
+plot(FCbiomarkers.pca$rotation[, 1], FCbiomarkers.pca$rotation[, 2],
+     col = vorinostattissuefactor, pch = 19, xlab = "PC1", ylab = "PC2",
      main = "PCA with FC of biomarkers colored according to tissue")
 
 #Add a legend to the plot:
 levels <- as.factor(levels(vorinostattissuefactor))
-legend("topright", inset = c(-0.3,0),levels(Metadatavorinostattissue),
-       xpd = TRUE, pch=19, col = palette(rainbow(9)))
+legend("topright", inset = c(-0.3,0),levels(vorinostattissuefactor),
+     xpd = TRUE, pch=19, col = palette(rainbow(9)))
 ```
 
 
