@@ -9,10 +9,10 @@ output:
 
 ```{r, include = FALSE}
 # Franzi
-#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
 
 # Laura 
-wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 Load data:
@@ -93,9 +93,7 @@ Until now, the T-cell lymphoma is the only cancer-type which indicates vorinosta
 
 [5.Are the targets for vorinostat (HDACs) part of our biomarkers?](#anchor16)
 
-[6.PCA with general-biomarker-matrix](#anchor17)
-
-[7.Find biomarkers only for leukemia-celllines](#anchor18)
+[6.Find biomarkers only for leukemia-celllines](#anchor17)
 
 
 
@@ -131,11 +129,12 @@ This plot is done to compare the gene expression of all provided genes with and 
 ```{r,fig.height= 5, fig.width= 7}
 TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
 
-    UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
 UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
 
 par(mar=c(5, 4, 5, 9))
-plot(density(UntreatedVorinostat), col="blue" ,xlab = "Gene expression",
+plot(density(UntreatedVorinostat), col="blue",
+     xlab = "Gene expression",
      main = "Effects of Vorinostat on overall gene expression")
 lines(density(TreatedVorinostat), col = "red")
 legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
@@ -180,7 +179,7 @@ FC <- TreatedVorinostat  - UntreatedVorinostat
 
 ## 3. Finding biomarkers {#anchor5}
 <div style="text-align: justify">
-Biomarkers are the genes which respond to the treatment. 
+Biomarkers are the genes which respond most to the treatment. 
 In order to find these, we applied different methods and compared the results.
 </div>
 
@@ -351,7 +350,7 @@ colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
 ```
 
 ```{r,fig.height=5, fig.width= 10}
-pheatmap(Highest_VC_Biomarkers, main = "Expression Changes of Highly Variant Genes in 59 Cell Lines")
+heatmap(Highest_VC_Biomarkers, main = "Expression Changes of Highly Variant Genes in 59 Cell Lines")
 ```
 
 <div style="text-align: justify">
@@ -543,7 +542,7 @@ col=palette(rainbow(2))
 barplot(table(change), ylab="counts", main="Number of up and down regulated genes", col=col)
 ```
 <div style="text-align: justify">
-We see that we have approximately the same number of up and down regulated genes.
+We see that similar numbers of genes are up- and downregulated. This is surprising if we remember Vorinostats working mechanism as a HDAC inhibitor, which is expected to promote better accessibility to  genes. Altough most biomarkers are generally mostly upregulated, 40 % of them are less expressed in most samples after treatment.
 
 
 Another option to visualize the up- and downregulation of the biomarkers:
@@ -646,7 +645,7 @@ Now we want to further investigate our biomarkers.
 
 ## 5. Are the targets for vorinostat (HDACs) part of our biomarkers? {#anchor16}
 <div style="text-align: justify">
-As already mentioned in the introduction, the metadata describe the HDACs as targets of Vorinostat. Now we want to investigate whether these are among our biomarkers. To do this, we first create a vector that contains the target names. 
+As already mentioned in the introduction, metadata describes the HDACs as targets of Vorinostat. Now we want to investigate whether these are among our biomarkers. To do this, we first create a vector that contains the target names. 
 </div>
 ```{r}
 ###find target of vorinostat 
@@ -699,11 +698,13 @@ knitr::kable(head(FC_target), caption = "FC values vorinostat targets")
 
 
 <div style="text-align: justify">
-The changes in gene expression are really small. Most of the HDAC genes are up regulated insted of being down regulated. This could be because the cell wants to compensate the inhibition of the enzymes by their increased formation.
+The changes in gene expression are really small. Most of the HDAC genes are slightly upregulated. The cells might want to compensate the inhibition of the enzymes by their increased formation.
 </div>
 
+
+__Create a boxplot of HDACs in comparison to biomarkers__
+
 <div style="text-align: justify">
-__Create boxplot of HDACs in comparison to biomarkers__
 To compare the FC of the HDAC genes with some of our biomarkers, we create a vector which contains both biomarkers and HDAC-genes. 
 </div>
 ```{r}
@@ -734,55 +735,24 @@ boxplot(t(FC_HDAC), las=3, col = col, ylab="Fold Change Values", cex.axis= 0.65,
 abline(v=7.5, col="blue", lty=5)
 ```
 <div style="text-align: justify">
-We can summarize, that the changes in HDAC gene expression are low. Some of the them are slightly upregulated. As already mentioned, it might be that treated cells try to compensate the inhibition of the enzymes by their increased production.
+We can summarize, that the changes in HDAC gene expression are low. The fold changes do not differ much in different samples and contain almost no outliers.
 </div>
 
 
-## 6. PCA with general-biomarker-matrix {#anchor17}
+## 6. Find biomarkers only for leukemia-celllines {#anchor17}
 
-Select only those genes from the FC matrix which were identified as biomarkers:
-```{r, fig.height= 5, fig.width= 7}
-FCbiomarkers <- FC[generalbiomarkergenes,]
-```
-
-Execute the PCA:
-```{r, fig.height= 5, fig.width= 7}
-FCbiomarkers.pca = prcomp(FCbiomarkers, center=T, scale. = T)
-
-#For coloring according to tissue type we use information from Metadata:
-Metadata <- as.data.frame(Metadata)
-
-#We only need the tissueinformation of those samples treated with Vorinostat.
-#Since Metadata includes them twice, once with and once without drug treatment,
-#we select only the Treated samplenames:
-Vorinostatsamples <- grep(Metadata$sample, pattern= "vorinostat_5000nM")
-Metadatavorinostattissue <- Metadata[Vorinostatsamples,"tissue"]
-
-#Add the tissueinformation as a new row to the Biomarkermatrix:
-FCbiomarkerswithtissue <- rbind(FCbiomarkers, Metadatavorinostattissue)
-
-#save tissue information as factors so it can be used for coloring:
-vorinostattissuefactor <- as.factor(FCbiomarkerswithtissue["Metadatavorinostattissue",])
-
-
-#PC 3 & 4 group the tissues best but a clear grouping is not shown as well:
-par(mar=c(5, 4, 5, 9))
-palette(rainbow(9))
-plot(FCbiomarkers.pca$rotation[, 3], FCbiomarkers.pca$rotation[, 4],
-     col = Metadatavorinostattissue, pch = 19, xlab = "PC3", ylab = "PC4",
-     main = "PCA with FC of biomarkers colored according to tissue")
-
-#Add a legend to the plot:
-levels <- as.factor(levels(vorinostattissuefactor))
-legend("topright", inset = c(-0.3,0),levels(Metadatavorinostattissue),
-       xpd = TRUE, pch=19, col = palette(rainbow(9)))
-```
-
-
-## 7. Find biomarkers only for leukemia-celllines {#anchor18}
 <div style="text-align: justify">
-Since we found in the beginning, that Vorinostat is used against T-cell lymphomas, we are interested in how Vorinostat influences especially the leukemia-celllines. Therefore, we now want to investigate these specific samples. 
+Since we found in the beginning, that Vorinostat is used against T-cell lymphomas, we are interested in how Vorinostat influences especially the leukemia-celllines. Therefore, we now want to investigate the most affected genes in those specific samples. 
 </div>
+
+<div style="text-align: justify">
+We thought about possible reasons, why vorinostat works better for certain cancer types like T-cell lymphomas compared to other cancer types. Altought each sample contains a lot of different HDACs, which regulate the chromatin structure of different areas or rather of different histone types, the composition of HDACs probably differs in different samples. It might be, that vorinostat has the greatest inhibition effect on those HDAC types present in T-cell lymphomas. The areas regulated by the affected HDACs might contribute most to the harmful effect on tumor cells.
+</div>
+
+<div style="text-align: justify">
+The general biomarkers we found before are representative for all samples but we do not know whether the genes showing a significantly altered expression after treatment do really contribute to vorinostats anticancer-effect. It is important to remember, that some genes might only be up- or downregulated as a side effect if adjacent genes are exposed or the chromatin of adjacent areas is compacted. Now we identify the genes with the highest expression changes only in leukemia celllines since we expect that those genes may contribute more to Vorinostats anticancer effect. We compare our biomarkers representative for all samples with the biomarkers received from leukemia samples. The overlap might identify those genes which were significantly altered expressed in a lot of different samples and additionally probably contribute to vorinostats anticancer effect since their expressions distinctly changed in those samples the treatment was most successful.
+</div>
+
 ```{r}
 #We only need the tissueinformation of those samples treated with Vorinostat
 #Since Metadata includes them twice, once with and once without drug treatment,
@@ -823,6 +793,10 @@ intersect(biomarkersLeukemiaGenes, generalbiomarkergenes)
 biomarkersLeukemiaGenes[biomarkersLeukemiaGenes == generalbiomarkergenes]
 ```
 
+<div style="text-align: justify">
+We found, that 40 % of our general biomarkers show a great change in leukemia-samples as well. We still can not assume, that those are the genes involved in cancer development but we can say that they are reliably changed in different samples and that at least some of them play a role in cancer progress.
+</div>
+
 
 ```{r,fig.height= 5, fig.width= 7}
 
@@ -837,5 +811,6 @@ legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = T
        pch=19, col = c("blue", "red"))
 ```
 <div style="text-align: justify">
-The plot looks quite similar to the plot before which contained the general biomarkers. Since the biomarkers of leukemia are partly the same as the general biomarkers(38 out of 100 biomarkers), the similarity of the plots is not surprising.
+The plot looks quite similar to the plot before which contained the general biomarkers. Since the biomarkers of leukemia are partly the same as the general biomarkers, the similarity of the plots is not surprising.
 </div>
+
