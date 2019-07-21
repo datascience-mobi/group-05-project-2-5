@@ -184,12 +184,7 @@ Biomarkers are the genes which respond to the treatment.
 In order to find these, we applied different methods and compared the results.
 </div>
 
-## 3. Finding biomarkers (by Mert Mayadag) {#anchor5}
-<div style="text-align: justify">
-Biomarkers are the genes which respond to the treatment. 
-In order to find these, we applied different methods and compared the results.
-</div>
-## 3.1. Biomarkers received from two-sided paired T-test {#anchor6}
+## 3.1. Biomarkers received from two-sided paired T-test (by Mert Mayadag){#anchor6}
 <div style="text-align: justify">
 In order to find the genes which show significant changes in expression levels after treatment, two-sided paired T-test was performed to calculate the p-values of gene expression changes.
 
