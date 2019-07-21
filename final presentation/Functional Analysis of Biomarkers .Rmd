@@ -84,21 +84,6 @@ par(mar=c(5, 4, 5, 9))
 barplot(table(tissue), ylab="counts", main="Affected tissues by biomarkers", col=col, las=3, cex.names = 0.7)
 ```
 
-***
-
-```{r, fig.height= 5, fig.width= 7,echo = FALSE}
-col=palette(rainbow(16))
-par(mar=c(10, 4, 6, 9))
-barplot(table(general.function), ylab="counts", main="General functions of biomarkers", col=col, las=3, cex.names = 0.7)
-```
-
-***
-
-__How many Biomarkers with "histone cluster" function do we have?__
-```{r}
-length(grep(vorinostat_annotation$Function, pattern = "histone cluster"))
-```
-
 
 ***
 ***
@@ -114,8 +99,8 @@ library(clusterProfiler)
 library(org.Hs.eg.db)
 ```
 
-__Translate Gene ID__
-```{r,warning=FALSE,message=FALSE}
+
+```{r,warning=FALSE,message=FALSE,include=FALSE }
 translated.genes= bitr(generalbiomarkergenes,
                         fromType="SYMBOL", 
                         toType="ENTREZID",
@@ -174,7 +159,42 @@ dotplot(ego.cc, showCategory=12)
 ***
 ***
 
-### 2.2. Reactome Pathway Analysis {#anchor6}
+### 2.2. KEGG Pathway Analysis {#anchor7}
+
+
+```{r,warning=FALSE, results='hide',message=FALSE, include=FALSE}
+library(KEGG.db)
+library(org.Hs.eg.db)
+library(enrichplot)
+library(DOSE)
+```
+
+
+````{r,warning=FALSE,message=FALSE, include=FALSE}
+gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
+                toType = c("ENTREZID"),
+                OrgDb = org.Hs.eg.db)
+```
+
+```{r,warning=FALSE,message=FALSE, include=FALSE}
+kk <- enrichKEGG(gene=gene.df$ENTREZID,
+                 pvalueCutoff = 0.05,
+                 pAdjustMethod = "none")
+head(summary(kk))
+```
+***
+__Biomarker Categories by KEGG__
+
+
+```{r, fig.height= 5, fig.width= 7, echo=FALSE}
+par(mfrow=c(2,1))
+barplot(kk,showCategory=12)
+```
+
+***
+***
+
+### 2.3. Reactome Pathway Analysis {#anchor6}
 
 
 ```{r,warning=FALSE, results='hide',message=FALSE, include=FALSE}
@@ -214,38 +234,6 @@ cnetplot(x,categorySize="geneNum",foldChange = FC)
 ***
 ***
 
-### 2.3. KEGG Pathway Analysis {#anchor7}
-
-
-```{r,warning=FALSE, results='hide',message=FALSE, include=FALSE}
-library(KEGG.db)
-library(org.Hs.eg.db)
-library(enrichplot)
-library(DOSE)
-```
-
-
-````{r,warning=FALSE,message=FALSE, include=FALSE}
-gene.df <- bitr(generalbiomarkergenes, fromType = "SYMBOL",
-                toType = c("ENTREZID"),
-                OrgDb = org.Hs.eg.db)
-```
-
-```{r,warning=FALSE,message=FALSE, include=FALSE}
-kk <- enrichKEGG(gene=gene.df$ENTREZID,
-                 pvalueCutoff = 0.05,
-                 pAdjustMethod = "none")
-head(summary(kk))
-```
-***
-__Biomarker Categories by KEGG__
-
-
-```{r, fig.height= 5, fig.width= 7, echo=FALSE}
-par(mfrow=c(2,1))
-barplot(kk,showCategory=12)
-```
-***
 
 
 
