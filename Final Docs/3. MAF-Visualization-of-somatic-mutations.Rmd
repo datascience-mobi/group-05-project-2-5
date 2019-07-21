@@ -1,8 +1,9 @@
 ---
-title: "MAF: Visualization of somatic mutations"
+title: 'MAF: Visualization of somatic mutations'
 author: "Florencia Zuniga"
 date: "7/17/2019"
 output:
+  pdf_document: default
   html_document: default
 ---
 
@@ -10,7 +11,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-Which types of mutations affect affect the genes we explore in this analysis? Can we exploit this information to know which types of therapy might be effective? This analysis will focus on visualizing the somatic mutations of several genes and the samples they affect. We aim to find differences in patterns of mutations when we consider all genes and when we consider only 100 biomarkers. 
+<p> <div style="text-align: justify"> Which types of mutations affect the genes we explore in this analysis? Can we exploit this information to know which types of therapy might be effective? This analysis will focus on visualizing the somatic mutations of several genes and the samples they affect. We aim to find differences in patterns of mutations when we consider all genes and when we consider only 100 biomarkers. </div>
 
 [1. LOADING DATA](#anchor1)
 
@@ -34,7 +35,9 @@ Which types of mutations affect affect the genes we explore in this analysis? Ca
 
 * [3.2 Pathways](#anchor11)
 
-[4. References ](#anchor12)
+[4. General conclusions ](#anchor12)
+
+[5. References ](#anchor13)
 
 
 
@@ -329,38 +332,81 @@ oncostrip(maf = laml,
 ***
 ### 2.3 Somatic interactions {#anchor8}
 
-In this portion of the analysis we explore the somatic interactions of genes, in that we observe which genes are co-occuring and wich ones show strong exclussiveness. To find such genes, the function relies on pairwise Fisher’s Exact tests. 
-
+<p> <div style="text-align: justify"> In this portion of the analysis we explore the somatic interactions of genes, in that we observe which genes are co-occuring and wich ones show strong exclussiveness. To find such genes, the function relies on pairwise Fisher’s Exact tests. </div>
+<p>
 **All genes**
-
-```{r, fig.align= 'center'}
+<p>
+#### Somatic Interactions
+```{r, include=TRUE, results='hide', fig.align= 'center'}
 somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1))
 ```
+<p> <div style="text-align: justify"> Here we see that although co-occurance is a rather common trait, exclusivity is rare. When we consider 30 genes, exclusivity happens only 3 times and it always includes the gene **MT-ND5**, which encodes for the protein NADH-ubiquinone oxidoreductase chain 5. This gene is one of the top 10 mutated genes, which can be seen in the summary for all genes at the begining of this analysis. The gene is altered in 41% of the samples. </div>
+<p>
+
+#### Oncostrip
+<p> <div style="text-align: justify"> Here we plot 2 genes which are mutually exclusive (HERC2 and MT-ND5) and two genes that are co-occurrent (USH2A and XIRP2). </div>
+
+<p> The function of each gene can be obtained in the table below: 
+<p> 
+|   | Codes for   | Protein name  | Function  |   
+|:-:|:-:|:-:|:-:|
+| HERC2 | Protein  |  E3 ubiquitin-protein ligase  | DNA repair regulation |   
+| MT-ND5 |Protein | NADH-ubiquinone oxidoreductase chain 5  | Part of the respiratory complex I|   
+| USH2A  | Protein | Usherin | Component of basement membranes  |   
+| XIRP2  |  Protein | Xin actin-binding repeat-containing protein 2 | Protects actin filaments from depolymerization |  
+|   |   |   |   |
+<p> 
+
 
 
 ```{r, fig.align= 'center'}
 oncostrip(maf = laml, genes = c('USH2A', 'XIRP2','MT-ND5', 'HERC2'))
 
 ```
+<p> <div style="text-align: justify"> Both pairs show different patterns of mutations. Some mutations can be observed in each gene of the pair in the same sample. </div>
+<p>
+<p>
 
 **Biomarker genes**
+<p>
+#### Somatic Interactions
 
-
-```{r, echo=FALSE, fig.align= 'center'}
+```{r, include=TRUE, results='hide', fig.align= 'center'}
 somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1))
 
 ```
+<p> <div style="text-align: justify">  Now that only the biomarkers are being considered, we see that for the 30 shown genes co-occurrence is rare and exclusivity does not appear. As less than 30 genes have co-occurrence, less than 30 genes are shown, eventhough the code asks for 30. Instead 18 genes appear in the plot. </div>
+<p>
+
+#### Oncostrip
+<p> <div style="text-align: justify"> As there is only strong co-occurrence between two genes (NSMAF and DHRS2), we plot these two in the oncostrip along with the LMNB1 gene that has no co-occurence and no exclusivity . </div>
+
+<p> The function of each gene can be obtained in the table below: 
+<p> 
+|   | Codes for   | Protein name  | Function  |   
+|:-:|:-:|:-:|:-:|
+| NSMAF | Protein  | FAN  | Neutral sphingomyelinase activation |   
+| DHRS2 |Protein | Dehydrogenase/reductase SDR family member 2  | Metabolism of different compunds|   
+| LMNB1  | Protein | Lamin B1 | Intermediate filament protein  |   
+|   |   |   |   |
+<p> 
+
 
 ```{r, echo=FALSE, fig.align= 'center'}
 oncostrip(maf = BM_laml, genes = c('NSMAF', 'DHRS2', 'LMNB1'))
 
 ```
+<p> <div style="text-align: justify">The first two genes only show the same type of mutation in ine cell line. </div>
+
+<p> <div style="text-align: justify">As very few events of co-occurence are observed when we consider only the biomarkers, we can conclude that there are few genes that affect various samples when another gene is affected by a mutation. This, of courses, poses the question as to how biomarkers and diferent cell lines relate to each other and among themselves, and of whether we would see clusters if we plotted both in a heatmap. </div>
+
 
 ***
 ## 3. Drug-gene interactions: which types of therapy should be considered with the given mutations {#anchor10}
 ***
-The [The Drug Gene Interaction Database](http://www.dgidb.org/) defines drug-gene interaction as a known interaction of a gene and a drug. One category here is 'druggable gene. This is a set of genes that are believed to be most likely be treatble with certain drugs. Genes in these categories may or may not have existing drugs that target do them.
+<p> <div style="text-align: justify"> The [The Drug Gene Interaction Database](http://www.dgidb.org/) defines drug-gene interaction as a known interaction of a gene and a drug. One category here is 'druggable gene. This is a set of genes that are believed to be most likely be treatble with certain drugs. Genes in these categories may or may not have existing drugs that target do them. </div>
 ***
+
 ### 3.1 Druggable categories {#anchor9}
 
 **All genes**
@@ -369,13 +415,9 @@ The [The Drug Gene Interaction Database](http://www.dgidb.org/) defines drug-gen
 dgi = drugInteractions(maf = laml, fontSize = 0.75)
 
 ```
+<p> <div style="text-align: justify"> The plot shows druggable categories and up to 5 genes that might be involved in the gene category. 
 
-```{r}
-dnmt3a.dgi = drugInteractions(genes = "LRP1B", drugs = TRUE)
-dnmt3a.dgi[,.(Gene, interaction_types, drug_name, drug_claim_name)]
-```
-
-
+<p>  <div style="text-align: justify"> One category called  'the druggable genome' represens the subset of about 30,000 genes in the human genome that express proteins that are capable of binding to drug-like molecules. </div>
 
 **Biomarker genes**
 
@@ -384,38 +426,60 @@ dgi = drugInteractions(maf = BM_laml, fontSize = 0.75)
 
 ```
 
+<p> <div style="text-align: justify"> We can also explore other details about the druggable genes, such as the existing drugs and the mechanism of action. </div>
+
+```{r}
+dnmt3a.dgi = drugInteractions(genes = "AREG", drugs = TRUE)
+dnmt3a.dgi[,.(Gene, interaction_types, drug_name, drug_claim_name)]
+```
+
+<p> <div style="text-align: justify"> Surprisingly, there are more druggable genes related to histone modification when we consider all genes tha when we consider only the biomarkers. This is suprising because of the mechanism of action of vorinostat. Nonetheless, more genes of the category 'clinically actionable' related to histone expression appear when we only consider the biomarkers. Therefore our results still coincide with the the information in the drug annotation about our drug of interest. </div>
+
+
 ***
 ### 3.2 Pathways {#anchor11}
 
+<p> <div style="text-align: justify"> In this last part of the analysis we focus on the oncogenic pathways that result from the mutations. As we see in the table below there are 10 possible pathway categories ("Cell Cycle","Hippo", "MYC", "NOTCH", "NRF2", "PI3K"       "RTK-RAS"    "TGF-Beta", "TP53", and  "WNT"). Number of occurences  and of affected genes appear aswell. </div>
 
 **All genes**
 
 
-
+<p>
 ```{r}
 OncogenicPathways(maf = laml)
 
 ```
-
-
+<p>
+<p> <div style="text-align: justify"> We can also plot the genes affected by the pathway and the samples in which these genes are mutated. </div>
+<p>
 ```{r}
 PlotOncogenicPathways(maf = laml, pathways = "PI3K")
 
 ```
-
+<p>
+<p> <div style="text-align: justify"> Tumor suppressor genes are shown in red and oncogenes and shown in blue. Mutations in the PI3K pathway are common for our data, appearing once or several times per sample. </div>
+<p>
 **Biomarker genes**
-
+<p>
 
 ```{r, echo=FALSE}
 OncogenicPathways(maf = BM_laml)
 
 ```
 
+<p> <div style="text-align: justify">  None of these pathways are affected in the biomarkers genes. </div>
+
+***
+
+## 4. General conclusions {#anchor12}
+***
+
+<p> <div style="text-align: justify">  There are clear differences between the mutations of all genes and the mutations of the biomarkers. The most obvious one is in the level of mutational variation for both categories, with the level being much higher for all genes. For the biomarkers, we observe amost exlusively missense mutations. Another interesting finding of this exploration is the relevance of genes related to histones, that appear in relevant positions several times during this analysis. </div>
 
 
 
 ***
-## 4. References {#anchor12}
+## 5. References {#anchor13}
 ***
 <p> <div style="text-align: justify"> Gene Cards. 2019. GeneCards®: The Human Gene Database. [ONLINE] Available at: https://www.genecards.org/. [Accessed 17 July 2019]. </div>
 
@@ -426,12 +490,10 @@ OncogenicPathways(maf = BM_laml)
 <p> <div style="text-align: justify"> The Drug Gene Interaction Database. 2019. FAQ. [ONLINE] Available at: http://www.dgidb.org/faq. [Accessed 17 July 2019].  </div>
 
 
+<p> <div style="text-align: justify"> Mayakonda A, Lin DC, Assenov Y, Plass C, Koeffler HP. 2018. Maftools: efficient and comprehensive analysis of somatic variants in cancer. Genome Resarch. </div>
 
 
-
-
-
-
+<p> <div style="text-align: justify">  Hopkins, A., & Groom, C. (2002). The druggable genome. Nature Reviews Drug Discovery, 1(9), 727-730. doi: 10.1038/nrd892 </div>
 
 
 
