@@ -74,7 +74,7 @@ First of all, we performed a boxplot of the treated data without coloring:
 
 ```{r, fig.height= 5, fig.width= 7}
 boxplot(Treated,  
-        xlab="sampels", ylab="gene expression",
+        xlab="samples", ylab="gene expression",
         main= "Gene expression treated samples",
         names= FALSE, xaxt= "n")
 ```
@@ -89,7 +89,7 @@ palette(rainbow(15))
 # Boxplot 
 par(mar=c(5, 4, 5, 9))
 boxplot(Treated, medcol="black", border = drug, col= drug, 
-        xlab="sampels", ylab="gene expression",
+        xlab="samples", ylab="gene expression",
         main= "Gene expression treated samples colored by drug",
         names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
     
@@ -108,7 +108,7 @@ If we normalize the data, we can remove the batch effects. Our plot will change 
 </div>
 
 ```{r, fig.height= 5, fig.width= 7}
-# normalize the data 
+ 
 Untreated_norm <- apply(Untreated, 2, function(x){
   (x - mean(x)) / sd(x)
 })
@@ -127,8 +127,8 @@ palette(rainbow(15))
 # Boxplot 
 par(mar=c(5, 4, 5, 9))
 boxplot(Treated_norm, medcol="black", border = drug, col= drug, 
-        xlab="sampels", ylab="gene expression",
-        main= "Gene expression treated celllines with normalized data", 
+        xlab="samples", ylab="gene expression",
+        main= "Gene expression treated samples with normalized data", 
         names= FALSE, xaxt= "n", boxwex=1, boxlty =0)
     
 #add a legend to see which color corresponds to which drug:
@@ -291,7 +291,7 @@ legend("topright", inset = c(-0.4,0.0), legend= levels(drug), xpd = TRUE,
 
 <div style="text-align: justify">
 Here we can see that most FC values are in a similar value range.This is beacuse we used the column mean, so we get one value for each sample. 
-Only 5-Azacytidine and bortezomib have clear outliers. Moreover brotezomib and geldanamycin show mostly downregulated genes. 
+Only 5-Azacytidine and bortezomib have clear outliers. Moreover bortezomib and geldanamycin show mostly downregulated genes. 
 
 
 Coloring the scatter plot according to the tissue type shows that there is no correlation between FC values and tissue type, if we look at all drugs:
@@ -311,7 +311,7 @@ legend("topright", inset = c(-0.4,0), legend= levels(tissue), xpd = TRUE, pch=19
 ```
 
 <div style="text-align: justify">
-We can identify the Top 10 values from the FC matrix, which indicate the ten most up and down regulated samples by a specific drug in a specific cell line. 
+We can identify the Top 10 values from the FC matrix, which indicate the ten most up and down regulated samples by a specific drug in a specific sample. 
 </div>
 
 ``` {r include = FALSE}
@@ -338,9 +338,9 @@ knitr::kable(largest10_FC_all_max, caption = "10 highest FC values")
 ```
 
 <div style="text-align: justify">
-Here we can see, that vorinostat (occurs 3 times for downregulated and 2 times for up regulated), bortezomib (occurs 3 times for downregulated and 6 times for up regulated) seem to have great effects on the gene expression in the celllines. Moreover, the OVCAR-4 cell line, which bellows to the ovarian cancer, occurs the most (3 times) in the down regulated data. 
+Here we can see, that vorinostat (occurs 3 times for downregulated and 2 times for upregulated) and bortezomib (occurs 3 times for downregulated and 6 times for up regulated) seem to have great effects on the gene expression of certain samples. Moreover, the OVCAR-4 cellline, which bellows to the ovarian cancer, occurs the most (3 times) in the down regulated data. 
 
-Now we want to see which genes are changed the most. Therefore we are looking for the highest and lowest FC values of our genes.
+Now we want to see which genes altered their expression most after treatment. Therefore we have a look at the highest and lowest FC values of our genes.
 </div>
 
 ```{r}
@@ -383,7 +383,7 @@ Execute the PCA for Treated data:
 treated.pca = prcomp(Treated_norm)
 ```
 <div style="text-align: justify">
-Hereinafter, we want to use __information from Metadata__ to color different celllines in the PCA. Therefore we need to check, if the celllines in the sample-column of Metadata are in the same order as in the Treated matrix. First of all we test, if the number of samples is equal.
+Hereinafter, we want to use __information from Metadata__ to color samples in the PCA. Therefore we need to check, if the samples in the sample-column of Metadata are in the same order as in the Treated matrix. First of all we test, if the number of samples is equal.
 </div>
 Load Metadata:
 ```{r, message = FALSE, warning = FALSE}
@@ -398,7 +398,7 @@ ncol(Treated_norm)
 ```
 
 <div style="text-align: justify">
-Metadata consists of twice as much celllines as the Treated matrix since Metadata contains information for treated and untreated celllines.
+Metadata consists of twice as much samples as the Treated matrix since Metadata contains information for treated and untreated samples.
 We want to print those rows from Metadata which do not contain a zero concentration because they belong to the treated samples.
 </div>
 
@@ -499,7 +499,7 @@ legend("topright", inset = c(-0.3,0), levels(tissuefactor), xpd = TRUE, pch=19,
 ```
 
 <div style="text-align: justify">
-PC 1 and PC 2 group the treated celllines as well as other PC combinations. Thus, most of the celllines of the same tissue-type seem to have similarities regarding their gene expression.
+PC 1 and PC 2 group the treated samples as well as other PC combinations. Thus, most of the samples of the same tissue-type seem to have similarities regarding their gene expression.
 </div>       
                  
 ***
@@ -560,13 +560,13 @@ legend("topright", inset = c(-0.3,0), levels(tissuefactorFC), xpd = TRUE, pch=19
 ```
 
 <div style="text-align: justify">
-Since we are not able to identify groups of celllines of the same tissue, fold changes might be not very tissue-specific.   
+Since we are not able to identify groups of samples of the same tissue, fold changes might be not very tissue-specific.   
 </div>
     
 ### FC PCA colored according to drug
 
 <div style="text-align: justify">
-Create a new matrix ("FCwithdrugs") where the druginformation is added as a new row to the FC-matrix:
+Create a new matrix ("FCwithdrugs") where the drug information is added as a new row to the FC-matrix:
 </div>
 
 ```{r}
@@ -605,7 +605,7 @@ legend("topright", inset = c(-0.4,0), levels(drugfactorFC), xpd = TRUE, pch=19,
 ```
 
 <div style="text-align: justify">
-Many combinations of Principal Components clearly group celllines treated with the same drug. Consequently, the FC of celllines seems to be drug-specific.
+Many combinations of Principal Components clearly group samples treated with the same drug. Consequently, the FC of samples seems to be drug-specific.
 </div>
 
 ***
