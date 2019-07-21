@@ -788,9 +788,9 @@ summary(reg_m2)
 <p> Eventhough our results for multiple R-suared are positively high, because the p-value for reg_m2 is significantly larger than 0.05 it is not safe to reject the H0-hypothesis.
 <p> 
 <p> **F-statistic** 
-<p>  * F-statistic (multiple regression 1) : 1.72
-<p>  * F-statistic (drug sensitivity vs copynumber):  1.32
-<p>  * F-statistic (multiple regression 1) : 0.9481
+<p>   F-statistic (multiple regression 1) : 1.72
+<p>   F-statistic (drug sensitivity vs copynumber):  1.32
+<p>   F-statistic (multiple regression 1) : 0.9481
 <p> 
 <p> The t-values show that both genes with a low copynumber are better predictors for drug-sensitivity than those with a high copynumber. Whether a gene is a biomarker or not does not really correlate with a better t-value. 
 <p>
