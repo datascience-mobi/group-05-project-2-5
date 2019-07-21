@@ -351,7 +351,7 @@ colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
 ```
 
 ```{r,fig.height=5, fig.width= 10}
-pheatmap(Highest_VC_Biomarkers, main = "Expression Changes of Genes in 59 Cell Lines")
+pheatmap(Highest_VC_Biomarkers, main = "Expression Changes of Highly Variant Genes in 59 Cell Lines")
 ```
 
 <div style="text-align: justify">
