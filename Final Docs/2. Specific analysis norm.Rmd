@@ -272,8 +272,8 @@ Then, we hypothesized that a decrease in variance would be more probable in canc
 </div>
 The steps were: 
 
-2.1 - Selecting genes with a variance above 95% quartile of variances before treatment
-2.2 - Selecting genes which showed a significant decrease in their high variances
+2.1 - Selecting the upper 5% of genes with highest variances
+2.2 - Selecting genes which showed highest decreases in their high variance
 2.3 - Depicting the drug responses(FC) of these genes with a heatmap
 
 ```{r, echo=FALSE}
