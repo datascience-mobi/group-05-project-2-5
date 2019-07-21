@@ -278,7 +278,7 @@ The steps were:
 
 ```{r, echo=FALSE}
 
-# 1- Selecting genes with a variance above 95% quartile of variances before treatment
+# 1- Selecting the upper 5% of genes with highest variances
 Variances_Untreated             = as.data.frame (apply(UntreatedVorinostat,1,var))
 
 colnames(Variances_Untreated)[1]= "var"
@@ -293,7 +293,7 @@ Most_Variances_Unt              = Most_Variances_Unt[
 ```
 
 ```{r, echo=FALSE}
-# 2 - Selecting genes which showed a significant decrease in their high variances
+# 2 - Selecting genes which showed highest decreases in their high variance
 
 # Creating smaller data frames from Treated and Untreated with only the selected genes
 Highly_variant_Treated          = TreatedVorinostat  [ which(
