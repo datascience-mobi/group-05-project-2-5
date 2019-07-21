@@ -268,7 +268,7 @@ We hypothesized that high variance of a gene could signify either
 or
 - cancerogenic activity.
 
-Then, we hypothesized that a decrease in variance would be more probable in cancerogenic genes, rather than cell line specific genes and therefore, selected the genes showing a negative variance change. 
+Then, we hypothesized that a decrease in variance would be more probable in cancerogenic genes, rather than cell line specific genes and therefore, selected the genes showing a negative variance decrease. 
 </div>
 The steps were: 
 
