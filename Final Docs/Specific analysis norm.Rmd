@@ -90,9 +90,7 @@ Until now, the T-cell lymphoma is the only cancer-type which indicates vorinosta
 
 [5.Are the targets for vorinostat (HDACs) part of our biomarkers?](#anchor16)
 
-[6.PCA with general-biomarker-matrix](#anchor17)
-
-[7.Find biomarkers only for leukemia-celllines](#anchor18)
+[6.Find biomarkers only for leukemia-celllines](#anchor17)
 
 
 
@@ -732,15 +730,9 @@ We can summarize, that the changes in HDAC gene expression are low. Some of the 
 </div>
 
 
-## 6. PCA with general-biomarker-matrix {#anchor17}
-
-Select only those genes from the FC matrix which were identified as biomarkers:
-```{r, fig.height= 5, fig.width= 7}
+```{r, fig.height= 5, fig.width= 7, include=FALSE}
 FCbiomarkers <- FC[generalbiomarkergenes,]
-```
 
-Execute the PCA:
-```{r, fig.height= 5, fig.width= 7}
 FCbiomarkers.pca = prcomp(FCbiomarkers)
 
 #For coloring according to tissue type we use information from Metadata:
@@ -758,21 +750,20 @@ FCbiomarkerswithtissue <- rbind(FCbiomarkers, Metadatavorinostattissue)
 #save tissue information as factors so it can be used for coloring:
 vorinostattissuefactor <- as.factor(FCbiomarkerswithtissue["Metadatavorinostattissue",])
 
-
 par(mar=c(5, 4, 5, 9))
 palette(rainbow(9))
-plot(FCbiomarkers.pca$rotation[, 1], FCbiomarkers.pca$rotation[, 2],
-     col = vorinostattissuefactor, pch = 19, xlab = "PC1", ylab = "PC2",
+plot(FCbiomarkers.pca$rotation[, 1], FCbiomarkers.pca$rotation[, 3],
+     col = Metadatavorinostattissue, pch = 19, xlab = "PC1", ylab = "PC2",
      main = "PCA with FC of biomarkers colored according to tissue")
 
 #Add a legend to the plot:
 levels <- as.factor(levels(vorinostattissuefactor))
-legend("topright", inset = c(-0.3,0),levels(vorinostattissuefactor),
-     xpd = TRUE, pch=19, col = palette(rainbow(9)))
+legend("topright", inset = c(-0.3,0),levels(Metadatavorinostattissue),
+       xpd = TRUE, pch=19, col = palette(rainbow(9)))
 ```
 
 
-## 7. Find biomarkers only for leukemia-celllines {#anchor18}
+## 6. Find biomarkers only for leukemia-celllines {#anchor17}
 <div style="text-align: justify">
 Since we found in the beginning, that Vorinostat is used against T-cell lymphomas, we are interested in how Vorinostat influences especially the leukemia-celllines. Therefore, we now want to investigate these specific samples. 
 </div>
@@ -808,14 +799,22 @@ biomarkersLeukemia <- as.matrix(biomarkersLeukemia)
 
 # create a vector with gene names of Leukemia-biomarkers: 
 biomarkersLeukemiaGenes = row.names(biomarkersLeukemia)
+```
 
+<div style="text-align: justify">
+We thought about possible reasons, why vorinostat works better for certain cancer types like T-cell lymphomas compared to other cancer types. Altought each sample contains a lot of different HDACs, which regulate the chromatin structure of different areas or rather of different histone types, the composition of HDACs differs in different samples. It might be, that vorinostat has the greatest inhibition effect on those HDAC types present in T-cell lymphomas. The areas regulated by the affected HDACs might contribute most to the harmful effect on tumor cells. 
+The general biomarkers we found before are representative for all samples but we do not know whether the genes showing a significantly altered expression after treatment do really contribute to vorinostats anticancer-effect. It is important to remember, that some genes might only be up- or downregulated as a side effect if adjacent genes are exposed or the chromatin of adjacent areas is compacted. Now we identified the genes with the highest expression change only in leukemia celllines since we expect that those genes may contribute more to Vorinostats anticancer effect. We compare our biomarkers representative for all samples with the biomarkers received from leukemia samples. The overlap might identify those genes which were significantly altered expressed in a lot of different samples and additionally probably contribute to vorinostats anticancer effect since their epressions are distinctly changed in those samples the treatment was most successful.
+</div>
 
-#Comparison with general biomarkers:
+```{r}
 intersect(biomarkersLeukemiaGenes, generalbiomarkergenes)
 
 biomarkersLeukemiaGenes[biomarkersLeukemiaGenes == generalbiomarkergenes]
 ```
 
+<div style="text-align: justify">
+We found, that 40 % of our general biomarkers show a great change in leukemia-samples as well. We still can not assume, that those are the genes involved in cancer development but we can say that they are reliably changed in different samples and that at least some of them play a role in cancer progress.
+</div>
 
 ```{r,fig.height= 5, fig.width= 7}
 
