@@ -324,15 +324,15 @@ cor1 = pheatmap(cor1_tab,
 <p> <div style="text-align: justify"> Another interesting thing is that several, but not all, melanoma and leukemia cells are very up-regulated in comparison to cells of other tissues. Nevertheless, as this observation can only be made for some melanoma and some leukemia cells, it is not enough to say that vorinostat has a higher impact on those types of cancer cells. If anything, what we can conlcude is that vorinostat does not appear to affect any tipe of cell belonging to a particular tissue in a specific way. This is surprising and gives rise to some questions. If this drug is not tissue specific, why is it used mostly for akute myeloid leukemia? If it does not affect the level of expression, through which mechanism does it help treat cancer? </div>
 
 ***
-####   2.2.2 Heatmap with 100 Biomarkers and 59 cell lines {#anchor6}
+###   2.2.2 Heatmap with 100 Biomarkers and 59 cell lines {#anchor6}
 ***
-##### **Annotations**
+#### **Annotations**
 
 <div style="text-align: justify"> Here we can use the same annotation functions as in Heatmap with 30 Biomarkers and 59 cell lines: cor1_tissue and cor1_colour. </div>
 
 
 #### **Heatmap for 100 Biomarkers**
-
+<p> <div style="text-align: justify"> As the function for the heatmap with 100 biomarkers is the same, with the only differences being fontsize and the numeric matrix to be plotted, the code is not shown to avoid redundancy and extending this analysis more than necessary. The code is excluded in other parts of this exploration then when the only difference is the matrix to be plotted. </div>
 ```{r, fig.align= 'center', echo=FALSE}
 # Heatmap with annotations and breaks 
 cor1.2 = pheatmap(cor1.2_tab,
@@ -364,7 +364,8 @@ cor1.2 = pheatmap(cor1.2_tab,
 
 ***
 
-###  2.3   Dendrogram {#anchor7}                                                                                           
+###  2.3   Dendrogram {#anchor7}   
+***
 <div style="text-align: justify"> Plotting the heatmaps using different amounts of biomarkers makes it clear that the relationship between these genes changes as more biomarkers are considered. Here we aim to explore those changes and consider the impact they might have. </div>
 
 ***
@@ -372,6 +373,7 @@ cor1.2 = pheatmap(cor1.2_tab,
 
 ##### **Recreation of the hierachichal clustering of both heatmaps**
 
+Below we see a dendrogram showing the same hierchichal clustering of the heatmap for 30 biomarkers.
 ```{r, fig.align= 'center'}
 # Dedrogram for 30 biomarkers
 d_gg30 <- cor1_tab %>% dist %>% hclust %>% as.dendrogram %>%
@@ -385,6 +387,7 @@ plot(d_gg30,
      main = "Hierarchical clustering of 30 biomarkers")
 ```
 
+Below we see a dendrogram of similar nature, but showing the relationship between 100 biomarkers. 
 ```{r, fig.align= 'center', echo=FALSE}
 
 # Dedrogram for 100 biomarkers
@@ -399,8 +402,9 @@ plot(d_gg100,
      main = "Hierarchical clustering of 100 biomarkers")
 ```
 
-To which cluster do some of our genes belong, when we consider only 30 biomarkers?
-```{r, include=FALSE}
+<p>
+<p> To which cluster do some of our genes belong, when we consider only 30 biomarkers?
+```{r, fig.align= 'center', include=FALSE}
 d_gg30_t <- hclust(dist(cor1_tab), method = "complete")
 
 as.dendrogram(d_gg30_t) %>%
@@ -414,9 +418,9 @@ d_gg30_t <- cutree(tree = as.dendrogram(d_gg30_t),
 head(d_gg30_t, n=10)
 ```
 We can see that different genes belong to one of two different clusters.
-
-
-To which cluster do some of our genes belong, when we consider 100 biomarkers?
+<p>
+<p>
+<p>To which cluster do some of our genes belong, when we consider 100 biomarkers?
 ```{r, include=FALSE}
 d_gg100_t <- hclust(dist(cor1.2_tab), method = "complete")
 
@@ -438,6 +442,7 @@ head(d_gg100_t, n=10)
 
 ##### **Recreation of the hierachichal clustering of both heatmaps**
 
+The dendrogram shown below serves as a visualization of the clustering between cell lines when 30 biomarkers are used. This dendrogram is the same that appears in the heatmap.
 ```{r, fig.align= 'center'}
 # Dedrogram for 59 cell lines with 30 biomarkers 
 d_gg30t <- t(cor1_tab) %>% dist %>% hclust %>% as.dendrogram %>%
@@ -452,7 +457,7 @@ plot(d_gg30t,
 ```
 
 
-
+This dendrogram shows the relationship between cell lines as well, but here 100 biomarkers dictated their clustering. 
 ```{r, fig.align= 'center', echo=FALSE}
 # Dedrogram for 59 cell lines with 100 biomarkers 
 d_gg100t <- t(cor1.2_tab) %>% dist %>% hclust %>% as.dendrogram %>%
