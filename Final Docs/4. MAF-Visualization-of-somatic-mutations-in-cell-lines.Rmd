@@ -1,5 +1,5 @@
 ---
-title: "MAF Visualization of somatic mutations in cell lines"
+title: "MAF: Visualization of somatic mutations"
 author: "Florencia Zuniga"
 date: "7/17/2019"
 output:
@@ -10,8 +10,7 @@ output:
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-THIS IS AN UNREFINED DATA JUST TO SHOW THE GENERAL IDEA OF WHAT THESE RESULTS WILL LOOK LIKE IN A COUPLE DAYS
-
+Which types of mutations affect affect the genes we explore in this analysis? Can we exploit this information to know which types of therapy might be effective? This analysis will focus on visualizing the somatic mutations of several genes and the samples they affect. We aim to find differences in patterns of mutations when we consider all genes and when we consider only 100 biomarkers. 
 
 [1. LOADING DATA](#anchor1)
 
@@ -27,15 +26,16 @@ THIS IS AN UNREFINED DATA JUST TO SHOW THE GENERAL IDEA OF WHAT THESE RESULTS WI
 
 * [2.2 Oncoplots and oncostrips](#anchor7)
 
-* [2.3 Transitions and Transversions](#anchor8)
+* [2.4 Somatic interactions](#anchor8)
 
-* [2.4 Somatic interactions with oncostrips](#anchor9)
+[3. Drug-gene interactions: which types of therapy should be considered with the given mutations ](#anchor9)
 
-[3. Grug-gene interactions: which types of therapy should be considered with the given mutations ](#anchor10)
+* [3.1 Druggable categories)](#anchor10)
 
-* [3.1 Druggable categories)](#anchor11)
+* [3.2 Pathways](#anchor11)
 
-* [3.2 Pathways](#anchor12)
+[4. References ](#anchor12)
+
 
 
 
@@ -45,7 +45,7 @@ THIS IS AN UNREFINED DATA JUST TO SHOW THE GENERAL IDEA OF WHAT THESE RESULTS WI
 
 
 ##  1.  LOADING DATA {#anchor1}                                                                                             
-
+***
 ### Loading packages
 
 ```{r read_data, message = FALSE, warning = FALSE}
@@ -56,7 +56,6 @@ library(maftools)
 
 
 ```{r,include = FALSE}
-
 wd = ("/GitHub/project-02-group-05")
 ```
 
@@ -181,7 +180,7 @@ biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
 
 ##  2. Creation of polished MAF files {#anchor2}
 
-For the 'Mutations' file to be read using the 'maftools' package, we must first edit it so that the resultung 'table' has all the mandatory columns.
+<p> <div style="text-align: justify"> For the 'CCLE_mutations' file to be read using the 'maftools' package, we must first edit it so that the resultung 'table' has all the mandatory columns. </div>
 
 ```{r}
 Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
@@ -205,6 +204,8 @@ laml <- read.maf(maf ="C:/GitHub/project-02-group-05/MutationsT.csv", useAll = T
 
 ### 2.2 Creation of a polished MAF file for 100 biomarkers {#anchor4}
 
+<div style="text-align: justify"> To create this table, the biomarkers found using the fold change in the first part of the specific analysis are used. </div>
+
 ```{r echo = T, results = 'hide'}
 BM_mut = MutationsT[ which((MutationsT$Hugo_Symbol) 
                                   %in% rownames(biomarkers_FC_values100)), ]
@@ -213,56 +214,77 @@ write.table(BM_mut, file = "BM_mut.csv", row.names = F, sep = "\t")
 
 BM_laml <- read.maf(maf ="C:/GitHub/project-02-group-05/BM_mut.csv", useAll = T, verbose = T)
 ```
-
+***
 
 ## 2. General visualizations {#anchor5}
-
+***
 ### 2.1 Summaries of both MAF files {#anchor6}
-
+<p> 
+<p> <div style="text-align: justify">  To begin our analysis, we visualize different plots that summarize the most important informations. </div>
+<p> 
 **Summary for all genes**
 ```{r, fig.align= 'center'}
 plotmafSummary(maf = laml, 
                rmOutlier = TRUE, 
-               addStat = 'median', 
+               addStat = 'mean', 
                dashboard = TRUE, 
                titvRaw = FALSE)
 
 ```
 
 **Summary for the biomarker genes**
+
+<p> <div style="text-align: justify"> As the code for some plots only differs in the MAF file that is to be read or other small details, only the plots and not the code is shown in those cases to avoid redundancy. </div>
+
 ```{r, echo=FALSE, fig.align= 'center'}
 plotmafSummary(maf = BM_laml, 
                rmOutlier = TRUE, 
-               addStat = 'median', 
+               addStat = 'mean', 
                dashboard = TRUE, 
                titvRaw = FALSE)
 ```
 
+<p> <div style="text-align: justify"> We can already observe that plenty of differences arise when we consider all genes vs 100 biomarkers. Although the most common type of mutation is the missense one in both cases, in the summary of all genes more types of mutations affect the genes in the samples. Only 4 distinct type of mutations can be observed for the biomarkers. </div>
+
+
+<p> <div style="text-align: justify"> Another interesting observation, is that when all genes are considered, there are mutations that happen because of an insertion. This is no longer true when we only consider the biomarkers. However, in both cases the variant type plot shows that the most common type of variation is the single nucleotide polymorphism. </div>
+
+<p> <div style="text-align: justify"> If we look at the plot 'Variants per sample' in both summaries, another surprising result is that there is a drastic change in the mean. This is probably a result of less variation of variation when we consider only the biomarkers, as we would hope those genes would act in a similar way, because the biomarkers are the most affected genes by vorinostat in general in all samples. </div>
+
+<p> <div style="text-align: justify"> The top 10 mutated genes are all different in the two summaries. It is worth nothing that 2 of the top ten genes affected when only considering the biomarkers are related to the expression of histones. These genes are **HIST1H1C**, which encodes the protein Histone H1.2, and the gene **HIST1H2BD**, which encodes the protein Histone H2B type 1-D. This finding is of particular relevance, because the mechanisms of vorinostat is to inhibit HDACs. </div>
+***
 ### 2.2 Oncoplots and oncostrips {#anchor7}
 
+<p> <div style="text-align: justify"> We can also plot the top n genes that shows the most variation in the samples. For this, we use waterfall plots that show the different mutations that affect each sample on the top, the percentage of samples that have been affected by mutations in certain genes on the right, the names of the mutated genes on the left and the transitions/transversions of nucleotides per sample on the bottom. </div>
 
 #### Ploting oncoplot with Transversions/Transitions
+
+**All genes**
 
 ```{r, fig.align= 'center'}
 oncoplot(maf = laml, top = 15, draw_titv = TRUE)
 
 ```
 
-As all the samples we are handling are of cancerous nature, all of them have mutations in one or several genes, with the most common mutation being a missense one and the most common transition of nucleotide is from cytosine to thymine. 
-
-
+<p> <div style="text-align: justify"> As all the samples we are handling are of cancerous nature, all of them have mutations in one or several genes, with the most common mutation being a missense one and the most common transition of nucleotide being the one from cytosine to thymine. </div>
+<p>
+<p> **Biomarker genes**
+<p>
 ```{r, echo=FALSE, fig.align= 'center'}
 oncoplot(maf = BM_laml, top = 15, draw_titv = TRUE)
 
 ```
 
-When we consider only the biomarkers, within the top 15 genes there are only 21 samples that are mutated. What is also interesting, is that when we consider 100 biomarkers, only 28 samples of the 58 that were studied in total, show some type of mutation. 
-
+<p> <div style="text-align: justify">  When we consider only the biomarkers, within the top 15 genes there are only 21 samples that are mutated. What is also interesting, is that when we consider 100 biomarkers only 28 samples of the 58 that were studied in total show some type of mutation. There is less variation in the type of mutations than in the previous oncoplot. Most biomarkers have one or several missense mutations, with other kinds of mutations appearing only rarely. </div>
+<p>
+***
 #### Oncostrips
-
+<p>
+<p> <div style="text-align: justify"> Are there mutational differences between the top 10 biomarkers and the 10 genes with the least change in expression? These genes are obtained from the matrixes in the first part of the specific analysis when the biomarkers were found.</div>
+<p>
 ##### **Oncostrip of the top 10 biomarkers**
 
-```{r}
+```{r, fig.align= 'center'}
 oncostrip(maf = laml, 
           genes = c('DHRS2',
                     'ABAT', 
@@ -281,7 +303,7 @@ oncostrip(maf = laml,
 ```
 
 
-##### **Oncostrips for the 10 genes with the least change in expression**
+##### **Oncostrip for the 10 genes with the least change in expression**
 
 
 ```{r, echo=FALSE, fig.align= 'center'}
@@ -302,83 +324,71 @@ oncostrip(maf = laml,
         )
 ```
 
-### 2.3 Transitions and Transversions {#anchor8}
+<p> <div style="text-align: justify"> The results we observe in these plots coincide with our previous findings: when we consider the biomarkers, in this case the top 10, most of them are affected by missense mutations, which are point mutations that causes the formation of a codon that codes for a different aminoacid. The second oncostrip shows more variation in the types of mutation present. </div>
+<p>
+***
+### 2.3 Somatic interactions {#anchor8}
 
-**Plot for all genes**
-```{r}
-laml.titv = titv(maf = laml, plot = FALSE, useSyn = TRUE)
-
-#plot titv summary
-plotTiTv(res = laml.titv)
-```
-
-
-**Plot for the biomarker genes**
-
-```{r, echo=FALSE, fig.align= 'center'}
-BM_laml.titv = titv(maf = BM_laml, plot = FALSE, useSyn = TRUE)
-
-#plot titv summary
-plotTiTv(res = BM_laml.titv)
-```
-
-
-### 2.4 Somatic interactions with oncostrips {#anchor9}
-
+In this portion of the analysis we explore the somatic interactions of genes, in that we observe which genes are co-occuring and wich ones show strong exclussiveness. To find such genes, the function relies on pairwise Fisher’s Exact tests. 
 
 **All genes**
 
-```{r}
+```{r, fig.align= 'center'}
 somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1))
-
-```
-
-```{r}
-summary(somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1)))
-
-pairlist(somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1)))
-
 ```
 
 
-
-```{r}
-oncostrip(maf = laml, genes = c('LRP1B', 'USH2A', 'TTN'))
+```{r, fig.align= 'center'}
+oncostrip(maf = laml, genes = c('USH2A', 'XIRP2','MT-ND5', 'HERC2'))
 
 ```
 
 **Biomarker genes**
 
 
-```{r}
+```{r, echo=FALSE, fig.align= 'center'}
 somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1))
 
-
-summary(somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1)))
 ```
 
-
-
-```{r}
-
-pairlist(somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1)))
+```{r, echo=FALSE, fig.align= 'center'}
+oncostrip(maf = BM_laml, genes = c('NSMAF', 'DHRS2', 'LMNB1'))
 
 ```
 
+***
+## 3. Drug-gene interactions: which types of therapy should be considered with the given mutations {#anchor10}
+***
+The [The Drug Gene Interaction Database](http://www.dgidb.org/) defines drug-gene interaction as a known interaction of a gene and a drug. One category here is 'druggable gene. This is a set of genes that are believed to be most likely be treatble with certain drugs. Genes in these categories may or may not have existing drugs that target do them.
+***
+### 3.1 Druggable categories {#anchor9}
 
+**All genes**
 
-
-
-# Drug Gene interactions
-```{r}
+```{r, fig.align= 'center'}
 dgi = drugInteractions(maf = laml, fontSize = 0.75)
 
 ```
 
 ```{r}
-dnmt3a.dgi = drugInteractions(genes = "MUC16", drugs = TRUE)
+dnmt3a.dgi = drugInteractions(genes = "LRP1B", drugs = TRUE)
 dnmt3a.dgi[,.(Gene, interaction_types, drug_name, drug_claim_name)]
 ```
+
+
+
+**Biomarker genes**
+
+```{r, echo= FALSE, fig.align= 'center'}
+dgi = drugInteractions(maf = BM_laml, fontSize = 0.75)
+
+```
+
+***
+### 3.2 Pathways {#anchor11}
+
+
+**All genes**
 
 
 
@@ -387,172 +397,41 @@ OncogenicPathways(maf = laml)
 
 ```
 
-```{r}
-PlotOncogenicPathways(maf = laml, pathways = "RTK-RAS")
-
-```
 
 ```{r}
-PlotOncogenicPathways(maf = laml, pathways = "NOTCH")
+PlotOncogenicPathways(maf = laml, pathways = "PI3K")
 
 ```
 
-```{r}
-PlotOncogenicPathways(maf = laml, pathways = "TGF-Beta")
+**Biomarker genes**
 
-```
 
-
-### Mutational signatures
-
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-
-BiocManager::install("BSgenome.Hsapiens.UCSC.hg19")
-
-
-library(BSgenome.Hsapiens.UCSC.hg19, quietly = TRUE)
-
-if (!requireNamespace("BiocManager", quietly = TRUE))
-  install.packages("BiocManager")
-BiocManager::install()
-
-BiocInstaller::biocValid()
-
-biocLite("stringi")
-biocLite("TxDb.Hsapiens.UCSC.hg19.knownGene")
-
-
-
-library(BiocManager)
-
-library(BSgenome.Hsapiens.UCSC.hg19)
-
-
-
-laml.tnm = trinucleotideMatrix(maf = laml, prefix = 'chr', add = TRUE, ref_genome = "BSgenome.Hsapiens.UCSC.hg19")
-plotApobecDiff(tnm = laml.tnm, maf = laml, pVal = 0.2)
-
-
-
-
-
-
-
-
-## Mutations in the biomarkers
-
-```{r}
-BM_laml
-```
-
-
-
-##### Summaries
-
-```{r, include=FALSE}
-getSampleSummary(BM_laml)
-
-```
-
-
-```{r, include=FALSE}
-getGeneSummary(BM_laml)
-
-```
-
-```{r}
-write.mafSummary(maf = BM_laml, basename = 'laml')
-
-```
-
-### Visualization
-
-
-##### Ploting MAF summary
-```{r}
-plotmafSummary(maf = BM_laml, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
-
-```
-
-#### Ploting oncoplot
-```{r}
-oncoplot(maf = BM_laml, top = 15, draw_titv = TRUE)
-
-```
-#Altered in all samples as this are all cancer cell lines
-
-
-#### Oncostrips for the top10 biomarkers
-```{r}
-oncostrip(maf = laml, genes = c('DHRS2',
-                                'ABAT', 
-                                'SERPINI1', 
-                                'MIR612///NEAT1	',
-                                'HBA2///HBA1	',
-                                'CLU',
-                                'NMI',
-                                'STC1',
-                                'AREG',
-                                'NSMAF',
-                                'SERPINH1')
-          )
-```
-
-
-
-#### Transitions and Transversion
-```{r}
-BM_laml.titv = titv(maf = BM_laml, plot = FALSE, useSyn = TRUE)
-
-#plot titv summary
-plotTiTv(res = BM_laml.titv)
-```
-
-
-#### Mutation load vs TCGA cohorts
-
-```{r}
-laml.mutload = tcgaCompare(maf = BM_laml, cohortName = 'Example-LAML')
-
-```
-
-
-#### Somatic interactions
-
-```{r}
-somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1))
-
-
-summary(somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1)))
-```
-
-
-
-```{r}
-
-pairlist(somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1)))
-
-```
-
-
-# Drug Gene interactions
-```{r}
-dgi = drugInteractions(maf = BM_laml, fontSize = 0.75)
-
-```
-
-```{r}
-dnmt3a.dgi = drugInteractions(genes = "MUC16", drugs = TRUE)
-dnmt3a.dgi[,.(Gene, interaction_types, drug_name, drug_claim_name)]
-```
-
-
-
-```{r}
+```{r, echo=FALSE}
 OncogenicPathways(maf = BM_laml)
 
 ```
+
+
+
+
+***
+## 4. References {#anchor12}
+***
+<p> <div style="text-align: justify"> Gene Cards. 2019. GeneCards®: The Human Gene Database. [ONLINE] Available at: https://www.genecards.org/. [Accessed 17 July 2019]. </div>
+
+
+<p> <div style="text-align: justify"> National Human Genome Research Institute. 2019. Missense Mutation. [ONLINE] Available at: https://www.genome.gov/genetics-glossary/Missense-Mutation. [Accessed 17 July 2019]. </div>
+
+
+<p> <div style="text-align: justify"> The Drug Gene Interaction Database. 2019. FAQ. [ONLINE] Available at: http://www.dgidb.org/faq. [Accessed 17 July 2019].  </div>
+
+
+
+
+
+
+
+
 
 
 
