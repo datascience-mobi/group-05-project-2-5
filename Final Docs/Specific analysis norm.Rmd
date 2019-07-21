@@ -27,8 +27,6 @@ library(readr)
 ```
 
 ***
-# SPECIFIC ANALYSIS 
-***
 <div style="text-align: justify">From now on, we decided to focus our analysis on Vorinostat.</div>
 
 ```{r}
