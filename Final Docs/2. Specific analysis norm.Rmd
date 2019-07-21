@@ -255,11 +255,7 @@ For now, we will select the 100 genes showing smallest p-values and compare thes
 </div>
 ```{r, echo= FALSE}
 biomarkers.pValues = head( p_values_Vorinostat,100 )
-```
-<div style="text-align: justify">
-For further analysis, we need to create a vector with the gene names of the p.Value Biomarker: 
-</div>
-```{r}
+
 biomarkers.genes= rownames(biomarkers.pValues)
 ```
 
