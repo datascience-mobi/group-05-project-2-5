@@ -1,10 +1,9 @@
 ---
-title: "Correlation Exploration: Heatmaps, dendrograms and other fun things"
+title: 'Correlation Exploration: Heatmaps, dendrograms and other fun things'
 author: "Florencia Zúñiga"
 date: "7/10/2019"
 output:
   html_document: default
-  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -12,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-<div style="text-align: justify"> In this portion of the analysis, we aim to better understand how our biomaerkers relate to each other. Using heatmaps and dendograms we can see how cell lines from different tissues and genes cluster together and make predictions about how efficient the treatment of vorinostat might be when used to treat different kinds of cancer. Therefore, the goal of this document is to answer the following questions: Is there a connection between the drug effectiveness and cell line? Are there specific types of cancer for which vorinostat can be used with more positive results? </div> 
+<div style="text-align: justify"> In this portion of the analysis, we aim to better understand how our biomarkers relate to each other. Using heatmaps and dendograms we can see how cell lines from different tissues and genes cluster together and make predictions about how efficient the treatment of vorinostat might be when used to treat different kinds of cancer. Therefore, the goal of this document is to answer the following questions: Is there a connection between drug effectiveness and cell line? Are there specific types of cancer for which vorinostat can be used with more positive results? </div> 
 
 # Table of contents
 
@@ -35,6 +34,8 @@ knitr::opts_chunk$set(echo = TRUE)
     + [2.3.2. A comparison of the clustering of cell lines](#anchor9)
        
     + [2.3.3. Comparison of dendrograms with 100 Biomarkers and 30 Biomarkers](#anchor10)
+
+***
 
 ##  1.  LOADING DATA {#anchor1}                                                                                             
 
@@ -179,6 +180,7 @@ biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
 
 ```
 
+***
 
 ## 2.    Visualization of the relationship between biomarkers and cell lines {#anchor2}                                
 
@@ -243,7 +245,9 @@ is.numeric(cor1.2_tab)
 
 Now that we have these tables with the class 'numeric matrix', we can proceed to use them for the heatmap
 
+***
 ###   2.2 Heatmaps {#anchor4}                                                        
+***
 ####  2.2.1 Heatmap with 30 Biomarkers and 59 cell lines {#anchor5}                                                        
 
 ##### **Creation of a dataframe**
@@ -276,6 +280,8 @@ names(cor1_tissue)[names(cor1_tissue)=="V1"] <- "Tissue"
 ```{r, include=FALSE}
 cor1_tissue = as.data.frame(cor1_tissue)
 ```
+
+***
 
 #### **Heatmap**
 
@@ -317,9 +323,9 @@ cor1 = pheatmap(cor1_tab,
 
 <p> <div style="text-align: justify"> Another interesting thing is that several, but not all, melanoma and leukemia cells are very up-regulated in comparison to cells of other tissues. Nevertheless, as this observation can only be made for some melanoma and some leukemia cells, it is not enough to say that vorinostat has a higher impact on those types of cancer cells. If anything, what we can conlcude is that vorinostat does not appear to affect any tipe of cell belonging to a particular tissue in a specific way. This is surprising and gives rise to some questions. If this drug is not tissue specific, why is it used mostly for akute myeloid leukemia? If it does not affect the level of expression, through which mechanism does it help treat cancer? </div>
 
-
+***
 ####   2.2.2 Heatmap with 100 Biomarkers and 59 cell lines {#anchor6}
-
+***
 ##### **Annotations**
 
 <div style="text-align: justify"> Here we can use the same annotation functions as in Heatmap with 30 Biomarkers and 59 cell lines: cor1_tissue and cor1_colour. </div>
@@ -356,10 +362,12 @@ cor1.2 = pheatmap(cor1.2_tab,
 
 <p> <div style="text-align: justify"> Just as in the previous heatmap, cell lines belonging to the same tissue form small gruops showing similar behaviour, but these groups are not formed for all the cell lines belonging to one tissue. Therefore, we can conclude that using vorinostat on different cell lines belonging to one tissue will not show specific nor equal results, and that with our results there are no types of cancer that are better suited for the treatment with vorinostat.  </div>
 
+***
 
 ###  2.3   Dendrogram {#anchor7}                                                                                           
 <div style="text-align: justify"> Plotting the heatmaps using different amounts of biomarkers makes it clear that the relationship between these genes changes as more biomarkers are considered. Here we aim to explore those changes and consider the impact they might have. </div>
 
+***
 ####   2.3.1 A comparison of the clustering of biomarkers {#anchor8}                                                    
 
 ##### **Recreation of the hierachichal clustering of both heatmaps**
@@ -425,7 +433,7 @@ head(d_gg100_t, n=10)
 
 <div style="text-align: justify"> We can see that different genes belong to different clusters. The clusters to which the genes belong are different when the relationship between more biomarkers is explored. </div>
 
-
+***
 ####   2.3.2 A comparison of the clustering of cell lines {#anchor9}                                                 
 
 ##### **Recreation of the hierachichal clustering of both heatmaps**
@@ -459,10 +467,10 @@ plot(d_gg100t,
 ```
 
 
-
+***
 ####   2.3.3 Comparison of dendrograms with 100 Biomarkers and 30 Biomarkers {#anchor10}
 
-```{r}
+```{r, warning=FALSE}
 #Creating a dendlist 
 dl_BM <- dendlist(
   d_gg30 %>% 
@@ -495,5 +503,6 @@ tanglegram(dl_BM,
 <p> <div style="text-align: justify"> This rises some questions about research in general, and how relatively small changes can alter the results of a study completely. When we choose how many genes should be considered biomarkers, we can take the p-value into consideration, but as it could be seen with the t-test, many genes could be biomarkers because many had low p-values. So, in cases like that one, where do we draw the line? And when our results can drastically change we we consider some more biomarkers, how do we know we are choosing the exact right number? The answer to such questions is beyond our interest for this exploration. However, these questions remain relevant and should be kept in mind. </div>
 
 
-<p> <div style="text-align: justify"> ***The goal of this document was to answer the following questions: Is there a connection between the drug effectiveness and cell line? Are there specific types of cancer for which vorinostat can be used with more positive results?*** Relying on the results of the heatmap, we can conclude that there is no significant connection between the drug effectiveness and cell line, and that vorinostat does not appear to affect one or some types of cancer in a particular way in a consistent manner.However, it should be pointed that some interesting results were rendered. For eample, groups of 3-4 cell lines belonging to one type of tissue form small goups with similar behaviour. Another interesting result is that many melanoma and leukemia cells have biomarkers with a higher expression than most cell lines belonging to other tissues. </div>
+<p> <div style="text-align: justify"> **The goal of this document was to answer the following questions: Is there a connection between the drug effectiveness and cell line? Are there specific types of cancer for which vorinostat can be used with more positive results?** Relying on the results of the heatmap, we can conclude that there is no significant connection between the drug effectiveness and cell line, and that vorinostat does not appear to affect one or some types of cancer in a particular way in a consistent manner.However, it should be pointed that some interesting results were rendered. For eample, groups of 3-4 cell lines belonging to one type of tissue form small goups with similar behaviour. Another interesting result is that many melanoma and leukemia cells have biomarkers with a higher expression than most cell lines belonging to other tissues. </div>
 
+***

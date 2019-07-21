@@ -4,7 +4,6 @@ author: "Florencia Zuniga"
 date: "7/17/2019"
 output:
   html_document: default
-  pdf_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -14,24 +13,45 @@ knitr::opts_chunk$set(echo = TRUE)
 THIS IS AN UNREFINED DATA JUST TO SHOW THE GENERAL IDEA OF WHAT THESE RESULTS WILL LOOK LIKE IN A COUPLE DAYS
 
 
-##  1.  LOADING DATA (#anchor1)                                                                                                     
+[1. LOADING DATA](#anchor1)
 
-Needed libraries:
-```{r}
+[2. Creation of polished MAF files ](#anchor2)
+
+* [2.1 Creation of a polished MAF file for all genes](#anchor3)
+
+* [2.2 Creation of a polished MAF file for 100 Biomarkers](#anchor4)
+
+[2. General visualizations ](#anchor5)
+
+* [2.1 Summaries of both MAF files)](#anchor6)
+
+* [2.2 Oncoplots and oncostrips](#anchor7)
+
+* [2.3 Transitions and Transversions](#anchor8)
+
+* [2.4 Somatic interactions with oncostrips](#anchor9)
+
+[3. Grug-gene interactions: which types of therapy should be considered with the given mutations ](#anchor10)
+
+* [3.1 Druggable categories)](#anchor11)
+
+* [3.2 Pathways](#anchor12)
+
+
+
+***
+
+
+
+
+##  1.  LOADING DATA {#anchor1}                                                                                             
+
+### Loading packages
+
+```{r read_data, message = FALSE, warning = FALSE}
 library(readr)
 library(rstudioapi)
 library(maftools)
-
-```
-
-
-```{r echo = FALSE}
-### Install maftools package
-
-
-if (!require("BiocManager"))
-  install.packages("BiocManager")
-BiocManager::install("maftools")
 ```
 
 
@@ -43,6 +63,8 @@ wd = ("/GitHub/project-02-group-05")
 
 Reading the data
 ```{r}
+
+# Reading the data
 Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
 Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
 
@@ -56,28 +78,28 @@ Basal <- readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
 Copynumber <- readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
 Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
 
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
 Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), 
                                  header = TRUE, sep ="\t", stringsAsFactors = TRUE)
 Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), 
                              header = TRUE, sep ="\t", stringsAsFactors = TRUE)
-```
 
-Transforming the data
-```{r}
+# Transforming the data
+
 Treated <- as.data.frame(Treated)
 Untreated <- as.data.frame(Untreated)
 Sensitivity<- as.data.frame(Sensitivity)
 ```
+
 
 Data normalization
 ```{r}
 Untreated_norm <- apply(Untreated, 2, function(x){
   (x - mean(x)) / sd(x)
  })
-```
 
 
-```{r}
 Treated_norm <- apply(Treated, 2, function(x){
   (x - mean(x)) / sd(x)
  })
@@ -89,9 +111,11 @@ FC_norm <- apply(FC, 2, function(x){
  })
 ```
 
-##   1.1 Biomarkers (#anchor2)                                                                                                 
-###  (1)  Creating Vorinostat
-```{r}
+
+```{r, include=FALSE}
+### Loading data of the biomarkers                                                                                                    
+##  (1)  Creating Vorinostat
+
 #Untreated matrix
 UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
 
@@ -108,11 +132,9 @@ FC <- TreatedVorinostat - UntreatedVorinostat
 #Sensitivity 
 vorinostat_Sensitivity_alleZeilen= grep ('vorinostat', rownames(Sensitivity))
 vorinostat_Sensitivity_data= Sensitivity[vorinostat_Sensitivity_alleZeilen,]
-```
 
-###  (2)  Creating FC Data -  Finding the Biomarkers
+##  (2)  Creating FC Data -  Finding the Biomarkers
 
-```{r}
 FC <- TreatedVorinostat - UntreatedVorinostat
 
 #We work with mean of the rows because we only want to compare the genes 
@@ -155,10 +177,11 @@ biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
 
 ```
 
+***
 
-## Creating a polished MAF file
+##  2. Creation of polished MAF files {#anchor2}
 
-### Editing the original mutation file, so that the table has all the columns that are needed so that it can be read with the package
+For the 'Mutations' file to be read using the 'maftools' package, we must first edit it so that the resultung 'table' has all the mandatory columns.
 
 ```{r}
 Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
@@ -166,33 +189,23 @@ Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
 names(Mutations)[names(Mutations) == "Tumor_Seq_Allele1"] <- "Tumor_Seq_Allele2"
 names(Mutations)[names(Mutations) == "Start_position"] <- "Start_Position"
 names(Mutations)[names(Mutations) == "End_position"] <- "End_Position"
-names(Mutations)[names(Mutations) == "Hugo_Symbol"] <- "Hugo_Symbol"
 rownames(Mutations) <- c()
 MutationsT <- Mutations[,c(1,4,5,6,10,11,8,9,16,2,3,7,12,13,14,15,17,18)]
 ```
 
 
-### Create a file with all genes
+### 2.1 Creation of a polished MAF file for all genes {#anchor3}
 
-```{r}
+```{r echo = T, results = 'hide'}
 write.table(MutationsT, file = "MutationsT.csv", row.names = F, sep = "\t")
-```
 
-
-### Creating a MAF file 
-
-```{r}
 laml <- read.maf(maf ="C:/GitHub/project-02-group-05/MutationsT.csv", useAll = T, verbose = T)
-
-
-laml
 ```
 
 
-## Create a File with 100 Biomarkers
+### 2.2 Creation of a polished MAF file for 100 biomarkers {#anchor4}
 
-
-```{r}
+```{r echo = T, results = 'hide'}
 BM_mut = MutationsT[ which((MutationsT$Hugo_Symbol) 
                                   %in% rownames(biomarkers_FC_values100)), ]
 
@@ -202,108 +215,96 @@ BM_laml <- read.maf(maf ="C:/GitHub/project-02-group-05/BM_mut.csv", useAll = T,
 ```
 
 
-## Mutations in all genes
+## 2. General visualizations {#anchor5}
 
-### Generating summaries
+### 2.1 Summaries of both MAF files {#anchor6}
 
-
-```{r, include=FALSE}
-getSampleSummary(laml)
-
-```
-
-```{r, include=FALSE}
-getGeneSummary(laml)
-
-```
-
-```{r}
-write.mafSummary(maf = laml, basename = 'laml')
+**Summary for all genes**
+```{r, fig.align= 'center'}
+plotmafSummary(maf = laml, 
+               rmOutlier = TRUE, 
+               addStat = 'median', 
+               dashboard = TRUE, 
+               titvRaw = FALSE)
 
 ```
 
-
-### Visualizations
-
-
-#### Ploting MAF summary
-
-```{r}
-plotmafSummary(maf = laml, rmOutlier = TRUE, addStat = 'median', dashboard = TRUE, titvRaw = FALSE)
-
+**Summary for the biomarker genes**
+```{r, echo=FALSE, fig.align= 'center'}
+plotmafSummary(maf = BM_laml, 
+               rmOutlier = TRUE, 
+               addStat = 'median', 
+               dashboard = TRUE, 
+               titvRaw = FALSE)
 ```
+
+### 2.2 Oncoplots and oncostrips {#anchor7}
 
 
 #### Ploting oncoplot with Transversions/Transitions
 
-```{r}
+```{r, fig.align= 'center'}
 oncoplot(maf = laml, top = 15, draw_titv = TRUE)
 
 ```
 
-##### oncoplot(maf = laml, top = 15, draw_titv = TRUE, additionalFeature = c("Tumor_Sample_Barcode", "MALME-3M"))
+As all the samples we are handling are of cancerous nature, all of them have mutations in one or several genes, with the most common mutation being a missense one and the most common transition of nucleotide is from cytosine to thymine. 
 
-#Altered in all samples as this are all cancer cell lines
 
-#### Oncoplot expression values
-
-```{r}
-set.seed(seed = 1024)
-exprs_tbl = data.frame(genes = getGeneSummary(x = laml)[1:20, Hugo_Symbol],
-                       exprn = rnorm(n = 10, mean = 12, sd = 5))
-head(exprs_tbl)
+```{r, echo=FALSE, fig.align= 'center'}
+oncoplot(maf = BM_laml, top = 15, draw_titv = TRUE)
 
 ```
 
+When we consider only the biomarkers, within the top 15 genes there are only 21 samples that are mutated. What is also interesting, is that when we consider 100 biomarkers, only 28 samples of the 58 that were studied in total, show some type of mutation. 
+
+#### Oncostrips
+
+##### **Oncostrip of the top 10 biomarkers**
 
 ```{r}
-oncoplot(maf = laml, exprsTbl = exprs_tbl)
-
-```
-
-##### CHANGE EXPRESSION VALUES
-
-
-#### Oncostrips for the top10 biomarkers
-
-```{r}
-oncostrip(maf = laml, genes = c('DHRS2',
-                                'ABAT', 
-                                'SERPINI1', 
-                                'MIR612///NEAT1	',
-                                'HBA2///HBA1	',
-                                'CLU',
-                                'NMI',
-                                'STC1',
-                                'AREG',
-                                'NSMAF',
-                                'SERPINH1')
+oncostrip(maf = laml, 
+          genes = c('DHRS2',
+                    'ABAT', 
+                    'SERPINI1', 
+                    'MIR612///NEAT1	',
+                    'HBA2///HBA1	',
+                    'CLU',
+                    'NMI',
+                    'STC1',
+                    'AREG',
+                    'NSMAF',
+                    'SERPINH1'),
+          showTumorSampleBarcodes = TRUE,
+          SampleNamefontSize = 0.8
           )
 ```
 
 
+##### **Oncostrips for the 10 genes with the least change in expression**
 
-#### Oncostrips for the 10 genes with the least change in expression
 
-
-```{r}
-oncostrip(maf = laml, genes = c('ADAMTS6', 
-                                'YWHAQ',
-                                'EMID1', 
-                                'PLCH2', 
-                                'HRH2',
-                                'WNT10B',
-                                'RGPD6///RGPD8///RGPD3///RGPD4///RGPD5',
-                                'ANGPTL8',
-                                'CABP2',
-                                'UPK2',
-                                'CLPS')
+```{r, echo=FALSE, fig.align= 'center'}
+oncostrip(maf = laml, 
+          genes = c('ADAMTS6', 
+                    'YWHAQ',
+                    'EMID1', 
+                    'PLCH2', 
+                    'HRH2',
+                    'WNT10B',
+                    'RGPD6///RGPD8///RGPD3///RGPD4///RGPD5',
+                    'ANGPTL8',
+                    'CABP2',
+                    'UPK2',
+                    'CLPS'),
+          showTumorSampleBarcodes = TRUE,
+          SampleNamefontSize = 0.8
         )
 ```
 
+### 2.3 Transitions and Transversions {#anchor8}
 
-#### Transitions and Transversion
-
+**Plot for all genes**
 ```{r}
 laml.titv = titv(maf = laml, plot = FALSE, useSyn = TRUE)
 
@@ -312,24 +313,28 @@ plotTiTv(res = laml.titv)
 ```
 
 
-#### Mutation load vs TCGA cohorts
+**Plot for the biomarker genes**
 
-```{r}
-laml.mutload = tcgaCompare(maf = laml, cohortName = 'Example-LAML')
+```{r, echo=FALSE, fig.align= 'center'}
+BM_laml.titv = titv(maf = BM_laml, plot = FALSE, useSyn = TRUE)
+
+#plot titv summary
+plotTiTv(res = BM_laml.titv)
 ```
 
 
+### 2.4 Somatic interactions with oncostrips {#anchor9}
 
-#### Somatic interactions
 
-```{r, include = FALSE}
+**All genes**
+
+```{r}
 somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1))
 
-
-summary(somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1)))
 ```
 
 ```{r}
+summary(somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1)))
 
 pairlist(somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1)))
 
@@ -338,9 +343,31 @@ pairlist(somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1)))
 
 
 ```{r}
-oncostrip(maf = laml, genes = c('LRP1B', 'PCDH15', 'MT-ND5'))
+oncostrip(maf = laml, genes = c('LRP1B', 'USH2A', 'TTN'))
 
 ```
+
+**Biomarker genes**
+
+
+```{r}
+somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1))
+
+
+summary(somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1)))
+```
+
+
+
+```{r}
+
+pairlist(somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1)))
+
+```
+
+
+
+
 
 # Drug Gene interactions
 ```{r}
