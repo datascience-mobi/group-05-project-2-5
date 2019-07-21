@@ -131,11 +131,12 @@ This plot is done to compare the gene expression of all provided genes with and 
 ```{r,fig.height= 5, fig.width= 7}
 TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
 
-    UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
 UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
 
 par(mar=c(5, 4, 5, 9))
-plot(density(UntreatedVorinostat), col="blue" ,xlab = "Gene expression",
+plot(density(UntreatedVorinostat), col="blue",
+     xlab = "Gene expression",
      main = "Effects of Vorinostat on overall gene expression")
 lines(density(TreatedVorinostat), col = "red")
 legend("topright", inset = c(-0.4,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
@@ -180,7 +181,7 @@ FC <- TreatedVorinostat  - UntreatedVorinostat
 
 ## 3. Finding biomarkers {#anchor5}
 <div style="text-align: justify">
-Biomarkers are the genes which respond to the treatment. 
+Biomarkers are the genes which respond most to the treatment. 
 In order to find these, we applied different methods and compared the results.
 </div>
 
