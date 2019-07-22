@@ -1,0 +1,318 @@
+---
+title: 'MAF: Visualization of somatic mutations'
+author: "Florencia Zuniga"
+date: "7/17/2019"
+output:
+  html_document: default
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+[1. Creation of polished MAF files ](#anchor1)
+
+[2. Oncoplots and oncostrips ](#anchor2)
+
+[3. Somatic interactions ](#anchor3)
+
+
+
+
+***
+
+
+
+
+
+```{r read_data, message = FALSE, warning = FALSE, include=FALSE}
+#Loading packages
+
+library(readr)
+library(rstudioapi)
+library(maftools)
+
+# Directory
+wd = ("/GitHub/project-02-group-05")
+
+
+# Reading the data
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), 
+                      header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+Sensitivity <- readRDS(paste0(wd,"/data/NegLogGI50.rds"))
+
+
+Basal <- readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
+Copynumber <- readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
+Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
+
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), 
+                                 header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), 
+                             header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+# Transforming the data
+
+Treated <- as.data.frame(Treated)
+Untreated <- as.data.frame(Untreated)
+Sensitivity<- as.data.frame(Sensitivity)
+
+#Data normalization
+Untreated_norm <- apply(Untreated, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+
+
+Treated_norm <- apply(Treated, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+
+
+FC <- Treated - Untreated
+FC_norm <- apply(FC, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+```
+
+
+```{r, include=FALSE}
+### Loading data of the biomarkers                                                                                                    
+##  (1)  Creating Vorinostat
+
+#Untreated matrix
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+
+#Same with treated matrix
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+
+#Define Vorinostat-data: 
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+#fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#Sensitivity 
+vorinostat_Sensitivity_alleZeilen= grep ('vorinostat', rownames(Sensitivity))
+vorinostat_Sensitivity_data= Sensitivity[vorinostat_Sensitivity_alleZeilen,]
+
+##  (2)  Creating FC Data -  Finding the Biomarkers
+
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#We work with mean of the rows because we only want to compare the genes 
+FC_meanrow= rowMeans(FC)
+
+## Sorting the data 
+#We work with absolute value to find the highest values, 
+#because we want to have the most up and down regulated genes.
+FC_abs= abs(FC_meanrow)
+
+#We sort the values to get the 100 largest values 
+sortedFC_abs <- sort(FC_abs, decreasing = TRUE)
+sortedFC_abs <- as.matrix(sortedFC_abs)
+
+#We select the first n for biomarkers 
+biomarkers_FC30 = sortedFC_abs[1:30,]
+biomarkers_FC30 <- as.matrix(biomarkers_FC30)
+
+biomarkers_FC100 = sortedFC_abs[1:100,]
+biomarkers_FC100 <- as.matrix(biomarkers_FC100)
+
+## Creating a matrix with FC values, that are both positive and negative 
+FC_both= cbind(FC_meanrow,FC_abs)
+FC_both=as.data.frame(FC_both)
+
+#Ordering this matrix 
+FC_both_sorted <- FC_both[order(FC_both$FC_abs, decreasing = TRUE),]
+
+#FC values of biomarkers: We select the first 100 of the sorted matrix. 
+biomarkers_FC_values30 = FC_both_sorted[1:30,]
+
+biomarkers_FC_values100 = FC_both_sorted[1:100,]
+
+#Removing the absolute values
+biomarkers_FC_values30 <- subset( biomarkers_FC_values30, select = -FC_abs)
+biomarkers_FC_values30 = as.matrix(biomarkers_FC_values30)
+
+biomarkers_FC_values100 <- subset( biomarkers_FC_values100, select = -FC_abs)
+biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
+
+```
+
+***
+
+##  1. Creation of polished MAF files {#anchor1}
+
+
+```{r , include=FALSE}
+Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
+
+names(Mutations)[names(Mutations) == "Tumor_Seq_Allele1"] <- "Tumor_Seq_Allele2"
+names(Mutations)[names(Mutations) == "Start_position"] <- "Start_Position"
+names(Mutations)[names(Mutations) == "End_position"] <- "End_Position"
+rownames(Mutations) <- c()
+MutationsT <- Mutations[,c(1,4,5,6,10,11,8,9,16,2,3,7,12,13,14,15,17,18)]
+```
+
+
+
+```{r echo = T, results = 'hide'}
+write.table(MutationsT, file = "MutationsT.csv", row.names = F, sep = "\t")
+
+laml <- read.maf(maf ="C:/GitHub/project-02-group-05/MutationsT.csv", useAll = T, verbose = T)
+```
+
+
+```{r echo = F, results = 'hide'}
+BM_mut = MutationsT[ which((MutationsT$Hugo_Symbol) 
+                                  %in% rownames(biomarkers_FC_values100)), ]
+
+write.table(BM_mut, file = "BM_mut.csv", row.names = F, sep = "\t")
+
+BM_laml <- read.maf(maf ="C:/GitHub/project-02-group-05/BM_mut.csv", useAll = T, verbose = T)
+```
+***
+
+## 2. Oncoplots and oncostrips {#anchor2}
+
+
+#### Ploting oncoplot with Transversions/Transitions
+
+**All genes**
+
+```{r, fig.align= 'center', echo=FALSE}
+oncoplot(maf = laml, top = 15, draw_titv = TRUE)
+
+```
+
+
+<p> **Biomarker genes**
+<p>
+```{r, echo=FALSE, fig.align= 'center'}
+oncoplot(maf = BM_laml, top = 15, draw_titv = TRUE)
+
+```
+
+
+<p>
+***
+#### Oncostrips
+<p>
+
+##### **Oncostrip of the top 10 biomarkers**
+
+```{r, fig.align= 'center', echo=FALSE}
+oncostrip(maf = laml, 
+          genes = c('DHRS2',
+                    'ABAT', 
+                    'SERPINI1', 
+                    'MIR612///NEAT1	',
+                    'HBA2///HBA1	',
+                    'CLU',
+                    'NMI',
+                    'STC1',
+                    'AREG',
+                    'NSMAF',
+                    'SERPINH1'),
+          showTumorSampleBarcodes = TRUE,
+          SampleNamefontSize = 0.8
+          )
+```
+
+
+##### **Oncostrip for the 10 genes with the least change in expression**
+
+
+```{r, echo=FALSE, fig.align= 'center'}
+oncostrip(maf = laml, 
+          genes = c('ADAMTS6', 
+                    'YWHAQ',
+                    'EMID1', 
+                    'PLCH2', 
+                    'HRH2',
+                    'WNT10B',
+                    'RGPD6///RGPD8///RGPD3///RGPD4///RGPD5',
+                    'ANGPTL8',
+                    'CABP2',
+                    'UPK2',
+                    'CLPS'),
+          showTumorSampleBarcodes = TRUE,
+          SampleNamefontSize = 0.8
+        )
+```
+
+
+<p>
+***
+## 3. Somatic interactions {#anchor3}
+
+<p>
+**All genes**
+<p>
+#### Somatic Interactions
+```{r, include=TRUE, results='hide', fig.align= 'center', echo=FALSE}
+somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1))
+```
+
+<p>
+
+#### Oncostrip
+
+<p> The function of each gene can be obtained in the table below: 
+<p> 
+|   | Codes for   | Protein name  | Function  |   
+|:-:|:-:|:-:|:-:|
+| HERC2 | Protein  |  E3 ubiquitin-protein ligase  | DNA repair regulation |   
+| MT-ND5 |Protein | NADH-ubiquinone oxidoreductase chain 5  | Part of the respiratory complex I|   
+| USH2A  | Protein | Usherin | Component of basement membranes  |   
+| XIRP2  |  Protein | Xin actin-binding repeat-containing protein 2 | Protects actin filaments from depolymerization |  
+|   |   |   |   |
+<p> 
+
+
+
+```{r, fig.align= 'center', echo=FALSE}
+oncostrip(maf = laml, genes = c('USH2A', 'XIRP2','MT-ND5', 'HERC2'))
+
+```
+
+<p>
+
+**Biomarker genes**
+<p>
+#### Somatic Interactions
+
+```{r, include=TRUE, results='hide', fig.align= 'center', echo=FALSE}
+somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1))
+
+```
+
+<p>
+
+#### Oncostrip
+<p> The function of each gene can be obtained in the table below: 
+<p> 
+|   | Codes for   | Protein name  | Function  |   
+|:-:|:-:|:-:|:-:|
+| NSMAF | Protein  | FAN  | Neutral sphingomyelinase activation |   
+| DHRS2 |Protein | Dehydrogenase/reductase SDR family member 2  | Metabolism of different compunds|   
+| LMNB1  | Protein | Lamin B1 | Intermediate filament protein  |   
+|   |   |   |   |
+<p> 
+
+
+```{r, echo=FALSE, fig.align= 'center'}
+oncostrip(maf = BM_laml, genes = c('NSMAF', 'DHRS2', 'LMNB1'))
+
+```
+
