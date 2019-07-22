@@ -83,38 +83,8 @@ legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE,
        pch=19, col = levels, title = "Drugs")
 ```
 
-***
 
-## 2. Analysis of fold change matrix
-
-
-```{r}
-FC_all = (Treated - Untreated)
-```
-
-```{r, fig.height= 5, fig.width= 7, echo=FALSE}
-FC_all_mean = colMeans(FC_all)
-
-# create levels for coloring 
-drug <- Metadata$drug
-palette(rainbow(15))
-
-# create boxplot
-par(mar=c(5, 4, 5, 9))
-barplot( height = FC_all_mean, names= FALSE, col = drug, border = NA,
-         main= "Fold changes by treatment with 15 anticancer drugs",
-         xlab="samples", ylab="mean Fold Change values")
-
-# create a legend 
-levels <- as.factor(levels(drug))
-legend("topright", inset = c(-0.4,0.0), legend= levels(drug), xpd = TRUE,
-       pch=19, col = levels, title = "Drugs")
-```
-
-***
-
-
-## 3. Principal Component Analysis
+## 2. Principal Component Analysis
 
 ```{r, echo=FALSE, message = FALSE, warning = FALSE}
 library(readr)
