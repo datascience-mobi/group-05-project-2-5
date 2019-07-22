@@ -142,8 +142,6 @@ p_values_Vorinostat$significance = Significance_Treated
 
 p_values_Vorinostat = p_values_Vorinostat[ order(p_values_Vorinostat$` p_values`), ,drop = FALSE ]
 
-
-p_values_Vorinostat[1:5,]
 ```
   
 __Chosing 100 genes showing the smallest p-values__
