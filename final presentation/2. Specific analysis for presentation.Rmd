@@ -98,11 +98,11 @@ FC <- TreatedVorinostat  - UntreatedVorinostat
 
 ##Biomarkers received from two-sided paired T-test
 
-__Comparison of rows and columns of data frames Treated and Untreated__
+__Comparison of rows in data frames Treated and Untreated__
 ```{r}
 identical(rownames(UntreatedVorinostat), rownames(TreatedVorinostat))
 ```
-
+__Comparison of cell line names in columns__
 ```{r, echo= FALSE }
 head(colnames(UntreatedVorinostat),2)
 head(colnames(TreatedVorinostat),  2)
