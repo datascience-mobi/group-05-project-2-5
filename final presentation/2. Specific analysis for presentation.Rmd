@@ -17,6 +17,7 @@ wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05
 
 ```{r read_data, message = FALSE, warning = FALSE, include=FALSE}
 library(readr)
+library(pheatmap)
   Untreated = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
   Treated = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
   Metadata = read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
@@ -110,9 +111,9 @@ __Comparison of rows and columns of data frames Treated and Untreated__
 identical(rownames(UntreatedVorinostat), rownames(TreatedVorinostat))
 ```
 
-```{r}
-head(colnames(UntreatedVorinostat),3)
-head(colnames(TreatedVorinostat),  3)
+```{r, echo= FALSE }
+head(colnames(UntreatedVorinostat),2)
+head(colnames(TreatedVorinostat),  2)
 
 col_names_VU    = as.data.frame(strsplit(x=colnames(UntreatedVorinostat), split="_"))
 col_names_VU    = as.data.frame (t(col_names_VU[1,]))[,1]
@@ -129,8 +130,9 @@ p_values_Vorinostat = sapply(1:13299, function(i){
                       t.test( TreatedVorinostat[i,],UntreatedVorinostat[i,],paired = TRUE,
                                                         alternative = "two.sided")$p.value
 })
+```
 
-
+```{r, echo= FALSE}
 p_values_Vorinostat           = as.data.frame (p_values_Vorinostat)
 rownames(p_values_Vorinostat) = rownames((TreatedVorinostat))
 colnames(p_values_Vorinostat) =  " p_values"
@@ -153,12 +155,12 @@ p_values_Vorinostat[1:5,]
 ```
   
 __Chosing 100 genes showing the smallest p-values__
-```{r}
+```{r, echo= FALSE}
    biomarkers.pValues = head( p_values_Vorinostat,100 )
 head(biomarkers.pValues)
 ```
 
-```{r}
+```{r, echo= FALSE}
 biomarkers.genes= rownames(biomarkers.pValues)
 ```
 
@@ -166,7 +168,7 @@ biomarkers.genes= rownames(biomarkers.pValues)
 ###Biomarkers received from variance
 
 __Selecting genes showing high variance__   
-```{r, echo= TRUE}
+```{r, echo= FALSE}
 
 Variances_Untreated             = as.data.frame (apply(UntreatedVorinostat,1,var))
 
@@ -196,14 +198,16 @@ Variances_Untreated             = as.data.frame (apply(Highly_variant_Untreated,
 Variances_Treated               = as.data.frame (apply(Highly_variant_Treated,1,var  ))
 
 Variance_Change                 = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
+```
 
+```{r, echo=FALSE}
 row.names(Variance_Change)      = rownames(Variances_Treated)
 colnames(Variance_Change)[1]    = "Var_Change"
 
 lower_quartile_VC               = quantile (Variance_Change$Var_Change, probs = 0.05)
 Most_neg_var_change             = Variance_Change[-which(
                                   Variance_Change$Var_Change > lower_quartile_VC),, drop= FALSE] 
-                                  
+                           
 Most_neg_var_change             = Most_neg_var_change[ 
                                   order(Most_neg_var_change$Var_Change), ,drop = FALSE ] 
 ```
