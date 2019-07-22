@@ -9,10 +9,10 @@ output:
 
 ```{r, include = FALSE}
 # Franzi
-wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
 
 # Laura 
-#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 ```{r read_data, message = FALSE, warning = FALSE, include=FALSE}
@@ -233,7 +233,8 @@ colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
 ```
 
 ```{r, echo=TRUE}
-heatmap(Highest_VC_Biomarkers, main = "Expression Changes of Genes in 59 Cell Lines")
+library(pheatmap)
+pheatmap(Highest_VC_Biomarkers, main = "Expression Changes of Genes in 59 Cell Lines")
 ```
 
 
