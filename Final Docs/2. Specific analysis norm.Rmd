@@ -18,6 +18,7 @@ wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
 Load data:
 ```{r read_data, message = FALSE, warning = FALSE}
 library(readr)
+library(pheatmap)
   Untreated = readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
   Treated = readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
   Metadata = read_tsv(paste0(wd,"/data/NCI_TPW_metadata.tsv"))
@@ -350,7 +351,7 @@ colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
 ```
 
 ```{r,fig.height=5, fig.width= 10}
-heatmap(Highest_VC_Biomarkers, main = "Expression Changes of Highly Variant Genes in 59 Cell Lines")
+pheatmap(Highest_VC_Biomarkers, main = "Expression Changes of Highly Variant Genes in 59 Cell Lines")
 ```
 
 <div style="text-align: justify">
