@@ -237,7 +237,6 @@ colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
 ```
 
 ```{r, echo=TRUE}
-library(pheatmap)
 pheatmap(Highest_VC_Biomarkers, main = "Expression Changes of Genes in 59 Cell Lines")
 ```
 
