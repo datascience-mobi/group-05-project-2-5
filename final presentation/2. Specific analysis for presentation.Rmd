@@ -228,7 +228,7 @@ rownames(Metadata_V_after)      = Metadata_V_after$cell
 colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
 ```
 
-```{r, echo=TRUE}
+```{r,fig.height=5, fig.width= 10}
 pheatmap(Highest_VC_Biomarkers, main = "Expression Changes of Genes in 59 Cell Lines")
 ```
 
