@@ -157,7 +157,7 @@ biomarkers.genes= rownames(biomarkers.pValues)
 
 ###Biomarkers received from variance
 
-__Selecting genes showing high variance__   
+__1) Selecting genes showing high variance__   
 ```{r, echo= FALSE}
 
 Variances_Untreated             = as.data.frame (apply(UntreatedVorinostat,1,var))
@@ -171,7 +171,7 @@ Most_Variances_Unt              = Most_Variances_Unt[
                                  -which(Most_Variances_Unt$var < nintyfive_quartile_Untr),, drop= FALSE]
 ```
 
-__Creating data frames from Treated and Untreated only with the selected genes__
+__2) Creating data frames from Treated and Untreated only with the selected genes__
 ```{r, echo= FALSE}
 Highly_variant_Treated          = TreatedVorinostat  [ which(
                                   row.names(TreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
@@ -180,7 +180,7 @@ Highly_variant_Untreated        = UntreatedVorinostat[ which(
                                   row.names(UntreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
 ```
  
-__Selecting genes with diminished variances after treatment__
+__3) Selecting genes with diminished variances after treatment__
 
 ```{r, echo=TRUE}
 
@@ -202,7 +202,7 @@ Most_neg_var_change             = Most_neg_var_change[
                                   order(Most_neg_var_change$Var_Change), ,drop = FALSE ] 
 ```
 
- __Selecting 30 genes with highest negative variance change__
+ __4) Selecting 30 genes with highest negative variance change__
 ```{r, echo=FALSE}
 Highest_VC                      = head(Most_neg_var_change, 30)
 
@@ -211,7 +211,7 @@ Highest_VC_Biomarkers           = FC[ which(row.names(FC) %in% rownames(Highest_
 colnames(Highest_VC_Biomarkers) = col_names_VT
 ```
  
-__Do these genes show similar responses in a specific cancer type?__
+__5) Do these genes show similar responses in a specific cancer type?__
  
  
 ```{r, echo=FALSE}
