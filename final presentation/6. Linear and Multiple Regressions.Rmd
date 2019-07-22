@@ -1,0 +1,448 @@
+---
+title: "Linear and Multiple Regressions"
+author: "Florencia Zúñiga"
+date: "7/9/2019"
+output:
+  html_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+# Table of contents
+
+[1. Preparation of the data: Table](#anchor1)
+
+[2. SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber](#anchor2)
+
+* [2.1. Plots and visualization: Predicting how fit linear regression will be as a model to describe our data](#anchor3)
+
+* [2.2. Linear Regression](#anchor4)
+       
+* [2.3. Visualization of regression](#anchor5)
+
+[3. MULTIPLE REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time and copynumber og 100 biomarkers](#anchor6)
+
+* [3.1. Plots and visualization: Predicting how fit linear regression will be as a model to describe our data](#anchor7)
+
+* [3.2. Linear Regression](#anchor9
+       
+* [3.3. Visualization of regression](#anchor9)
+
+
+```{r read_data, message = FALSE, warning = FALSE, include=FALSE}
+
+### Loading packages
+
+library(readr)
+library(rstudioapi)
+library(lattice)
+library(e1071)
+library(ggplot2)
+library(scatterplot3d)
+library(car)
+library(scatterD3)
+library(rgl)
+library(dplyr)
+
+wd = ("/GitHub/project-02-group-05")
+
+
+### Reading the data
+Untreated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_untreated.rds"))
+Treated <- readRDS(paste0(wd,"/data/NCI_TPW_gep_treated.rds"))
+
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), 
+                      header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+Sensitivity <- readRDS(paste0(wd,"/data/NegLogGI50.rds"))
+
+
+Basal <- readRDS(paste0(wd,"/data/CCLE_basalexpression.rds"))
+Copynumber <- readRDS(paste0(wd,"/data/CCLE_copynumber.rds"))
+Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
+
+Metadata = read.table(paste0(wd,"/data/NCI_TPW_metadata.tsv"), header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+Cellline_annotation = read.table(paste0(wd,"/data/cellline_annotation.tsv"), 
+                                 header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+Drug_annotation = read.table(paste0(wd,"/data/drug_annotation.tsv"), 
+                             header = TRUE, sep ="\t", stringsAsFactors = TRUE)
+
+### Transforming the data
+
+Treated <- as.data.frame(Treated)
+Untreated <- as.data.frame(Untreated)
+Sensitivity<- as.data.frame(Sensitivity)
+
+### Data normalization
+
+Untreated_norm <- apply(Untreated, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+
+
+Treated_norm <- apply(Treated, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+
+
+FC <- Treated - Untreated
+FC_norm <- apply(FC, 2, function(x){
+  (x - mean(x)) / sd(x)
+ })
+
+### Loading data of the biomarkers                                                                                                    
+##  (1)  Creating Vorinostat
+
+#Untreated matrix
+UntreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Untreated))
+
+#Same with treated matrix
+TreatedVorinostatcolumns <- grep(pattern = "vorinostat",colnames(Treated))
+
+#Define Vorinostat-data: 
+UntreatedVorinostat <- Untreated[,UntreatedVorinostatcolumns]
+TreatedVorinostat <- Treated[,TreatedVorinostatcolumns]
+
+#fold change matrix 
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#Sensitivity 
+vorinostat_Sensitivity_alleZeilen= grep ('vorinostat', rownames(Sensitivity))
+vorinostat_Sensitivity_data= Sensitivity[vorinostat_Sensitivity_alleZeilen,]
+
+##  (2)  Creating FC Data -  Finding the Biomarkers
+
+FC <- TreatedVorinostat - UntreatedVorinostat
+
+#We work with mean of the rows because we only want to compare the genes 
+FC_meanrow= rowMeans(FC)
+
+## Sorting the data 
+#We work with absolute value to find the highest values, 
+#because we want to have the most up and down regulated genes.
+FC_abs= abs(FC_meanrow)
+
+#We sort the values to get the 100 largest values 
+sortedFC_abs <- sort(FC_abs, decreasing = TRUE)
+sortedFC_abs <- as.matrix(sortedFC_abs)
+
+#We select the first n for biomarkers 
+biomarkers_FC30 = sortedFC_abs[1:30,]
+biomarkers_FC30 <- as.matrix(biomarkers_FC30)
+
+biomarkers_FC100 = sortedFC_abs[1:100,]
+biomarkers_FC100 <- as.matrix(biomarkers_FC100)
+
+## Creating a matrix with FC values, that are both positive and negative 
+FC_both= cbind(FC_meanrow,FC_abs)
+FC_both=as.data.frame(FC_both)
+
+#Ordering this matrix 
+FC_both_sorted <- FC_both[order(FC_both$FC_abs, decreasing = TRUE),]
+
+#FC values of biomarkers: We select the first 100 of the sorted matrix. 
+biomarkers_FC_values30 = FC_both_sorted[1:30,]
+
+biomarkers_FC_values100 = FC_both_sorted[1:100,]
+
+#Removing the absolute values
+biomarkers_FC_values30 <- subset( biomarkers_FC_values30, select = -FC_abs)
+biomarkers_FC_values30 = as.matrix(biomarkers_FC_values30)
+
+biomarkers_FC_values100 <- subset( biomarkers_FC_values100, select = -FC_abs)
+biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
+
+```
+
+***
+##  1.  Preparation of the data: Table  {#anchor1}                                                               
+***
+
+
+```{r}
+headCN <- Copynumber[1:4,1:5]
+headCN
+```
+
+
+```{r, include=FALSE}
+#### (4) Table 4: Drug sensitivity 
+drug_sensitivity <- Sensitivity[-c(1:14),] 
+
+drug_sensitivity = t(drug_sensitivity)
+```
+
+
+
+```{r}
+head(drug_sensitivity)
+```
+
+
+**Table 1: Copynumber of 100 biomarkers**
+```{r}
+### (1)  Selection of 100 Biomarkers in copynumber 
+BM_copynumber = Copynumber[ which(row.names(Copynumber) 
+                                  %in% rownames(biomarkers_FC_values100)), ]
+
+
+
+### Mean of each column
+BM_Copynumber_meancol= colMeans(BM_copynumber)
+
+```
+
+
+
+```{r, include=FALSE}
+
+CN = as.data.frame(BM_Copynumber_meancol)
+
+
+```
+
+
+
+
+
+```{r, include=FALSE}
+
+#### (2) Table 2: All genes in copynumber 
+CN_meancol= colMeans(Copynumber)
+
+CN_all = as.data.frame(CN_meancol)
+
+#### (3) Table 3: Selection of Doubling time from cellline_annotation
+
+#Selecting the desired columns
+Doubling_Time <- Cellline_annotation %>% 
+  select(Cell_Line_Name, Doubling_Time)
+
+#Changig the name of the "name" column to the names of the cell lines
+
+row.names(Doubling_Time) <- Doubling_Time$Cell_Line_Name
+Doubling_Time[1] <- NULL
+
+```
+
+***
+##  2.  SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber {#anchor2}
+***
+
+
+```{r, include=FALSE}
+### Data frames
+
+CN = as.data.frame(BM_Copynumber_meancol)
+
+DS = as.data.frame(drug_sensitivity)
+```
+
+
+
+```{r, include=FALSE}
+#### Table with drug sensitivity and copynumber values per cell line
+
+
+
+lm_tab2 = transform(merge(CN,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+lm_tab2 <- na.omit(lm_tab2)
+```
+
+
+***
+###  2.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data  {#anchor3}        
+
+**Visualizations of copynumber values vs drug sensitivity**
+
+#### (1) Scatter Plot
+
+```{r, fig.align= 'center', echo=FALSE}
+scatter.smooth(lm_tab2$vorinostat, 
+              lm_tab2$BM_Copynumber_meancol, 
+              col = "dodgerblue1",
+              main = "Drug sensitivity & Copynumber Regression",
+              xlab = "Drug sensitivity",
+              ylab = "Copynumber",
+              cex = 1.3,
+              pch = 1)
+```
+
+
+#### (2) Boxplots and density plots
+
+```{r, fig.align= 'center', fig.height=10, fig.width=8, echo=FALSE}
+par(mfrow=c(3, 2))
+boxplot(lm_tab2$vorinostat, 
+        main="Drug sensitivity") 
+boxplot(lm_tab2$BM_Copynumber_meancol, 
+        main="Copynumber") 
+
+
+plot(density(lm_tab2$vorinostat), 
+     main="Density Plot: Drug Sensitivity", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$vorinostat), 2))
+    )
+
+polygon(density(lm_tab2$vorinostat), col="royalblue1")
+
+plot(density(lm_tab2$BM_Copynumber_meancol), 
+     main="Density Plot: Copynumber", 
+     ylab="Frequency", 
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$BM_Copynumber_meancol), 2))
+    )
+
+polygon(density(lm_tab2$BM_Copynumber_meancol), col="skyblue1")
+
+```
+
+
+```{r, echo=FALSE}
+cor(lm_tab2$vorinostat, lm_tab2$BM_Copynumber_meancol)
+```
+
+***
+###   2.2 Linear Regression {#anchor4}
+
+#### Linear Regression
+
+```{r}
+reg2 <- lm(vorinostat ~ BM_Copynumber_meancol, data = lm_tab2)
+```
+
+
+#### Details about the linear regression: what we need draw some conclusions
+
+```{r}
+summary(reg2)
+```
+
+
+```{r, fig.align= 'center', echo=FALSE}
+ggplot(data = lm_tab2, aes(x = BM_Copynumber_meancol, y = vorinostat)) +
+  geom_point() +
+  stat_smooth(method = "lm", col = "slateblue3", level = 0.975) +
+  theme(panel.background = element_rect(fill = "white"),
+        axis.line.x=element_line(),
+        axis.line.y=element_line()) +
+  ggtitle("Linear Model Fitted to Data with confidence interval in grey") 
+```
+
+
+***
+###   2.3 Visualization of regression   {#anchor5}                                                       
+
+**Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?**
+
+
+```{r, fig.align= 'center', echo=FALSE}
+par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
+plot(reg2, which = c(1, 2), col = "dodgerblue1")
+```
+
+***
+##  3.  MULTIPLE REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time and copynumber {#anchor6}
+***
+
+
+```{r, include=FALSE}
+### Data frames
+CN = as.data.frame(BM_Copynumber_meancol)
+
+DT = as.data.frame(Doubling_Time)
+
+DS = as.data.frame(drug_sensitivity)
+
+### Table with drug sensitivity and doubling time per cell line
+
+lm_tab = transform(merge(DT,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+
+
+
+### Table with drug sensitivity, copynumber and doubling time per cell line
+
+lm_tab_m = transform(merge(CN, 
+                           lm_tab,by=0,all=TRUE), 
+                          row.names=Row.names, 
+                          Row.names=NULL
+                    )
+
+
+names(lm_tab_m)[names(lm_tab_m) == "BM_Copynumber_meancol"] <- "Copynumber"
+names(lm_tab_m)[names(lm_tab_m) == "vorinostat"] <- "Drug_Sensitivity"
+
+lm_tab_m <- na.omit(lm_tab_m)
+```
+
+***
+###   3.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data   {#anchor7}         
+
+### Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
+
+**Visualization of drug sensitivity vs copynumber and doubling time** 
+
+
+#### (1) Sactter plot
+
+```{r, fig.align= 'center', echo=FALSE}
+plot(lm_tab_m , 
+     pch=20 , 
+     cex=1.5 , 
+     col=rgb(0.5, 0.8, 0.9, 0.7)
+    )
+```
+
+#### (2) Checking for correlation
+
+```{r, echo=FALSE, fig.align= 'center', echo=FALSE}
+cor(lm_tab_m)
+```
+
+
+***
+###   3.2 Multiple Regression     {#anchor8}                                                                                            
+
+#### Multiple Regression
+
+```{r}
+reg_m <- lm(Drug_Sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
+```
+
+
+#### Details about the linear regression: what we need draw some conclusions 
+
+```{r}
+summary(reg_m)
+```
+
+***
+###   3.3 Visualization of regression {#anchor9}
+
+**3D Plot with Regression Plane**
+
+```{r, fig.align= 'center', echo=FALSE}
+#Creating 3D plot
+m_3d <- scatterplot3d(lm_tab_m, 
+                     type = "h", 
+                     color = "hotpink",
+                     angle=55, 
+                     pch = 16)
+#Adding regression plane
+reg_m_3D <- lm(Drug_Sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
+m_3d$plane3d(reg_m_3D)
+
+```
+
+**Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?**
+
+```{r, echo=FALSE, fig.align= 'center'}
+par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
+plot(reg_m, which = c(1, 2), col = "orchid1")
+```
+
