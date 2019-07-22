@@ -28,7 +28,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 * [3.1. Plots and visualization: Predicting how fit linear regression will be as a model to describe our data](#anchor7)
 
-* [3.2. Linear Regression](#anchor9
+* [3.2. Linear Regression](#anchor8)
        
 * [3.3. Visualization of regression](#anchor9)
 
@@ -255,7 +255,6 @@ lm_tab2 <- na.omit(lm_tab2)
 ```
 
 
-***
 ###  2.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data  {#anchor3}        
 
 **Visualizations of copynumber values vs drug sensitivity**
@@ -277,7 +276,7 @@ scatter.smooth(lm_tab2$vorinostat,
 #### (2) Boxplots and density plots
 
 ```{r, fig.align= 'center', fig.height=10, fig.width=8, echo=FALSE}
-par(mfrow=c(3, 2))
+par(mfrow=c(2, 2))
 boxplot(lm_tab2$vorinostat, 
         main="Drug sensitivity") 
 boxplot(lm_tab2$BM_Copynumber_meancol, 
@@ -302,8 +301,9 @@ polygon(density(lm_tab2$BM_Copynumber_meancol), col="skyblue1")
 
 ```
 
+#### (3) Checking for correlation
 
-```{r, echo=FALSE}
+```{r}
 cor(lm_tab2$vorinostat, lm_tab2$BM_Copynumber_meancol)
 ```
 
@@ -380,10 +380,8 @@ names(lm_tab_m)[names(lm_tab_m) == "vorinostat"] <- "Drug_Sensitivity"
 lm_tab_m <- na.omit(lm_tab_m)
 ```
 
-***
-###   3.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data   {#anchor7}         
 
-### Ploting the data: can a linear relationship be observed? Should we have expected a high value for R-squared?
+###   3.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data   {#anchor7}         
 
 **Visualization of drug sensitivity vs copynumber and doubling time** 
 
@@ -400,7 +398,7 @@ plot(lm_tab_m ,
 
 #### (2) Checking for correlation
 
-```{r, echo=FALSE, fig.align= 'center', echo=FALSE}
+```{r, echo=FALSE, fig.align= 'center'}
 cor(lm_tab_m)
 ```
 
