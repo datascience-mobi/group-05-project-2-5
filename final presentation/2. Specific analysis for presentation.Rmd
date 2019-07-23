@@ -429,7 +429,7 @@ legend("topright", inset = c(-0.3,0), legend=c("Untreated", "Treated") , xpd = T
 
 ##Are the targets for vorinostat (HDACs) part of our biomarkers?
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
 ###find target of vorinostat 
 
 target=Drug_annotation$target
