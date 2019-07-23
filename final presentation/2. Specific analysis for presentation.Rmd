@@ -93,7 +93,7 @@ TreatedVorinostat <- apply(TreatedVorinostat, 2, function(x){
 FC <- TreatedVorinostat  - UntreatedVorinostat
 ```
 
-##Find biomarkers
+#Find biomarkers
 
 
 ##Biomarkers received from two-sided paired T-test
@@ -155,7 +155,7 @@ biomarkers.genes= rownames(biomarkers.pValues)
 ```
 
 
-###Biomarkers received from variance
+##Biomarkers received from variance
 
 __1) Selecting genes showing high variance__   
 ```{r, echo= FALSE}
