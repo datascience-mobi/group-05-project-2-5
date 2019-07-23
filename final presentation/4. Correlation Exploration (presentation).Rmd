@@ -188,7 +188,13 @@ is.numeric(cor1.2_tab)
 ***
 ##   Heatmaps                                                        
 ***
-###  1. Heatmap with 30 Biomarkers and 59 cell lines                                                      
+###  1. Heatmap with 30 Biomarkers and 59 cell lines       
+***
+<p>
+<p>
+<p>
+<p>
+<p>
 ```{r, include=FALSE}
 ##### **Tissue Annotation**
 
@@ -233,7 +239,7 @@ cor1_colour = list(tissue = c("Renal" = "#A0E862",
 cor1 = pheatmap(cor1_tab,
                 annotation_colors = cor1_colour,
                 annotation_col = cor1_tissue,
-                fontsize = 6.5,
+                fontsize = 10,
                 fontsize_row= 5, 
                 fontsize_col = 6,
                 cutree_rows = 2,
@@ -247,13 +253,17 @@ cor1 = pheatmap(cor1_tab,
 ***
 ###   2. Heatmap with 100 Biomarkers and 59 cell lines
 ***
-
+<p>
+<p>
+<p>
+<p>
+<p>
 ```{r, fig.align= 'center', echo=FALSE}
 # Heatmap with annotations and breaks 
 cor1.2 = pheatmap(cor1.2_tab,
                   annotation_colors = cor1_colour,
                   annotation_col = cor1_tissue,
-                  fontsize = 6.5,
+                  fontsize = 10,
                   fontsize_row= 2.7, 
                   fontsize_col = 6,
                   cutree_rows = 2,

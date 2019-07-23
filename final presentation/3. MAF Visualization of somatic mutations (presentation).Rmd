@@ -13,17 +13,6 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 
-[1. Creation of polished MAF files ](#anchor1)
-
-[2. Oncoplots and oncostrips ](#anchor2)
-
-[3. Somatic interactions ](#anchor3)
-
-
-
-
-***
-
 
 
 
@@ -151,9 +140,9 @@ biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
 
 ***
 
-##  1. Creation of polished MAF files {#anchor1}
+##  1. Creation of polished MAF files 
 
-
+***
 ```{r , include=FALSE}
 Mutations <- readRDS(paste0(wd,"/data/CCLE_mutations.rds"))
 
@@ -183,20 +172,21 @@ BM_laml <- read.maf(maf ="C:/GitHub/project-02-group-05/BM_mut.csv", useAll = T,
 ```
 ***
 
-## 2. Oncoplots and oncostrips {#anchor2}
-
-
-#### Ploting oncoplot with Transversions/Transitions
-
-**All genes**
-
+## 2. Oncoplot with Transversions/Transitions
+<p>
+***
+#### **All genes**
+<p>
+<p>
 ```{r, fig.align= 'center', echo=FALSE}
 oncoplot(maf = laml, top = 15, draw_titv = TRUE)
 
 ```
-
-
-<p> **Biomarker genes**
+<p>
+<p>
+***
+#### **Biomarker genes**
+<p>
 <p>
 ```{r, echo=FALSE, fig.align= 'center'}
 oncoplot(maf = BM_laml, top = 15, draw_titv = TRUE)
@@ -206,113 +196,3 @@ oncoplot(maf = BM_laml, top = 15, draw_titv = TRUE)
 
 <p>
 ***
-#### Oncostrips
-<p>
-
-##### **Oncostrip of the top 10 biomarkers**
-
-```{r, fig.align= 'center', echo=FALSE}
-oncostrip(maf = laml, 
-          genes = c('DHRS2',
-                    'ABAT', 
-                    'SERPINI1', 
-                    'MIR612///NEAT1	',
-                    'HBA2///HBA1	',
-                    'CLU',
-                    'NMI',
-                    'STC1',
-                    'AREG',
-                    'NSMAF',
-                    'SERPINH1'),
-          showTumorSampleBarcodes = TRUE,
-          SampleNamefontSize = 0.8
-          )
-```
-
-
-##### **Oncostrip for the 10 genes with the least change in expression**
-
-
-```{r, echo=FALSE, fig.align= 'center'}
-oncostrip(maf = laml, 
-          genes = c('ADAMTS6', 
-                    'YWHAQ',
-                    'EMID1', 
-                    'PLCH2', 
-                    'HRH2',
-                    'WNT10B',
-                    'RGPD6///RGPD8///RGPD3///RGPD4///RGPD5',
-                    'ANGPTL8',
-                    'CABP2',
-                    'UPK2',
-                    'CLPS'),
-          showTumorSampleBarcodes = TRUE,
-          SampleNamefontSize = 0.8
-        )
-```
-
-
-<p>
-***
-## 3. Somatic interactions {#anchor3}
-
-<p>
-**All genes**
-<p>
-#### Somatic Interactions
-```{r, include=TRUE, results='hide', fig.align= 'center', echo=FALSE}
-somaticInteractions(maf = laml, top = 30, pvalue = c(0.05, 0.1))
-```
-
-<p>
-
-#### Oncostrip
-
-<p> The function of each gene can be obtained in the table below: 
-<p> 
-|   | Codes for   | Protein name  | Function  |   
-|:-:|:-:|:-:|:-:|
-| HERC2 | Protein  |  E3 ubiquitin-protein ligase  | DNA repair regulation |   
-| MT-ND5 |Protein | NADH-ubiquinone oxidoreductase chain 5  | Part of the respiratory complex I|   
-| USH2A  | Protein | Usherin | Component of basement membranes  |   
-| XIRP2  |  Protein | Xin actin-binding repeat-containing protein 2 | Protects actin filaments from depolymerization |  
-|   |   |   |   |
-<p> 
-
-
-
-```{r, fig.align= 'center', echo=FALSE}
-oncostrip(maf = laml, genes = c('USH2A', 'XIRP2','MT-ND5', 'HERC2'))
-
-```
-
-<p>
-
-**Biomarker genes**
-<p>
-#### Somatic Interactions
-
-```{r, include=TRUE, results='hide', fig.align= 'center', echo=FALSE}
-somaticInteractions(maf = BM_laml, top = 30, pvalue = c(0.05, 0.1))
-
-```
-
-<p>
-
-#### Oncostrip
-<p> The function of each gene can be obtained in the table below: 
-<p> 
-|   | Codes for   | Protein name  | Function  |   
-|:-:|:-:|:-:|:-:|
-| NSMAF | Protein  | FAN  | Neutral sphingomyelinase activation |   
-| DHRS2 |Protein | Dehydrogenase/reductase SDR family member 2  | Metabolism of different compunds|   
-| LMNB1  | Protein | Lamin B1 | Intermediate filament protein  |   
-|   |   |   |   |
-<p> 
-
-
-```{r, echo=FALSE, fig.align= 'center'}
-oncostrip(maf = BM_laml, genes = c('NSMAF', 'DHRS2', 'LMNB1'))
-
-```
-
