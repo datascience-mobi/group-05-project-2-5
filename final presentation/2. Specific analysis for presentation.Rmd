@@ -107,11 +107,11 @@ __Comparison of cell line names in columns__
 head(colnames(UntreatedVorinostat),2)
 head(colnames(TreatedVorinostat),  2)
 
-col_names_VU    = as.data.frame(strsplit(x=colnames(UntreatedVorinostat), split="_"))
-col_names_VU    = as.data.frame (t(col_names_VU[1,]))[,1]
+col_names_VU = as.data.frame(strsplit(x=colnames(UntreatedVorinostat), split="_"))
+col_names_VU = as.data.frame (t(col_names_VU[1,]))[,1]
 
-col_names_VT    = as.data.frame(strsplit(x=colnames(TreatedVorinostat),split="_"))
-col_names_VT    = as.data.frame (t(col_names_VT[1,]))[,1]
+col_names_VT = as.data.frame(strsplit(x=colnames(TreatedVorinostat),split="_"))
+col_names_VT = as.data.frame (t(col_names_VT[1,]))[,1]
 
 identical(colnames(col_names_VU), colnames(col_names_VT))
 ```
@@ -119,8 +119,8 @@ identical(colnames(col_names_VU), colnames(col_names_VT))
 __Calculation of significance using p-values__
 ```{r}
 p_values_Vorinostat = sapply(1:13299, function(i){  
-                      t.test( TreatedVorinostat[i,],UntreatedVorinostat[i,],paired = TRUE,
-                                                        alternative = "two.sided")$p.value
+                      t.test(TreatedVorinostat[i,],UntreatedVorinostat[i,],
+                      paired = TRUE, alternative = "two.sided")$p.value
 })
 ```
 
@@ -160,23 +160,23 @@ biomarkers.genes= rownames(biomarkers.pValues)
 __1) Selecting genes showing high variance__   
 ```{r, echo= FALSE}
 
-Variances_Untreated             = as.data.frame (apply(UntreatedVorinostat,1,var))
+Variances_Untreated     = as.data.frame (apply(UntreatedVorinostat,1,var))
 
 colnames(Variances_Untreated)[1]= "var"
-Most_Variances_Unt              = Variances_Untreated[ order(-Variances_Untreated$var), , drop= FALSE ] 
+Most_Variances_Unt      = Variances_Untreated[ order(-Variances_Untreated$var), , drop= FALSE ] 
 
-nintyfive_quartile_Untr         = quantile(Variances_Untreated$var, probs = 0.95)
+nintyfive_quartile_Untr = quantile(Variances_Untreated$var, probs = 0.95)
 
-Most_Variances_Unt              = Most_Variances_Unt[
-                                 -which(Most_Variances_Unt$var < nintyfive_quartile_Untr),, drop= FALSE]
+Most_Variances_Unt      = Most_Variances_Unt[
+                         -which(Most_Variances_Unt$var < nintyfive_quartile_Untr),, drop= FALSE]
 ```
 
 __2) Creating data frames from Treated and Untreated only with the selected genes__
 ```{r, echo= FALSE}
-Highly_variant_Treated          = TreatedVorinostat  [ which(
+Highly_variant_Treated  = TreatedVorinostat  [ which(
                                   row.names(TreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
 
-Highly_variant_Untreated        = UntreatedVorinostat[ which(
+Highly_variant_Untreated= UntreatedVorinostat[ which(
                                   row.names(UntreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
 ```
  
@@ -184,10 +184,10 @@ __3) Selecting genes with diminished variances after treatment__
 
 ```{r, echo=TRUE}
 
-Variances_Untreated             = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
-Variances_Treated               = as.data.frame (apply(Highly_variant_Treated,1,var  ))
+Variances_Untreated     = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
+Variances_Treated       = as.data.frame (apply(Highly_variant_Treated,1,var  ))
 
-Variance_Change                 = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
+Variance_Change         = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
 ```
 
 ```{r, echo=FALSE}
