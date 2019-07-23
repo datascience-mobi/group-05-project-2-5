@@ -296,19 +296,19 @@ Most_Variances_Unt       = Most_Variances_Unt[
 # 2 - Selecting genes which showed highest decreases in their high variance
 
 # Creating smaller data frames from Treated and Untreated with only the selected genes
-Highly_variant_Treated     = TreatedVorinostat  [ which(
+Highly_variant_Treated    = TreatedVorinostat  [ which(
                                   row.names(TreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
 
-Highly_variant_Untreated   = UntreatedVorinostat[ which(
+Highly_variant_Untreated  = UntreatedVorinostat[ which(
                                   row.names(UntreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
  
-Variances_Untreated        = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
-Variances_Treated          = as.data.frame (apply(Highly_variant_Treated,1,var  ))
+Variances_Untreated       = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
+Variances_Treated         = as.data.frame (apply(Highly_variant_Treated,1,var  ))
 
 ```
 
 ```{r, echo=TRUE}
-Variance_Change             = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
+Variance_Change           = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
 ```
 
 ```{r, echo=FALSE}
