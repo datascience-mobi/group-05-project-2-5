@@ -9,10 +9,10 @@ output:
 
 ```{r, include = FALSE}
 # Franzi
-#wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
+wd = ("C:/Users/franz/Documents/GitHub/project-02-group-05/Broad Analysis")
 
 # Laura 
-wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
+#wd = ("/Users/laura.plutowski/Desktop/Uni/4.Semester/projekt/project-02-group-05")
 ``` 
 
 ```{r read_data, message = FALSE, warning = FALSE, include=FALSE}
@@ -30,14 +30,6 @@ __Mechanism of vorinostat__
 ```{r, echo=FALSE}
 Drug_annotation$Mechanism[grep(Drug_annotation$Drug, pattern= "vorinostat")]
 ```
-
-
-__Target of vorinostat__ 
-```{r,echo=FALSE}
-target=Drug_annotation$target[grep(Drug_annotation$Drug, pattern= "vorinostat")]
-target
-```
-
 
 __Cancer type vorinostat__ 
 ```{r,echo=FALSE}
@@ -101,25 +93,25 @@ TreatedVorinostat <- apply(TreatedVorinostat, 2, function(x){
 FC <- TreatedVorinostat  - UntreatedVorinostat
 ```
 
-##Find biomarkers
+#Find biomarkers
 
 
 ##Biomarkers received from two-sided paired T-test
 
-__Comparison of rows and columns of data frames Treated and Untreated__
+__Comparison of rows in data frames Treated and Untreated__
 ```{r}
 identical(rownames(UntreatedVorinostat), rownames(TreatedVorinostat))
 ```
-
+__Comparison of cell line names in columns__
 ```{r, echo= FALSE }
 head(colnames(UntreatedVorinostat),2)
 head(colnames(TreatedVorinostat),  2)
 
-col_names_VU    = as.data.frame(strsplit(x=colnames(UntreatedVorinostat), split="_"))
-col_names_VU    = as.data.frame (t(col_names_VU[1,]))[,1]
+col_names_VU = as.data.frame(strsplit(x=colnames(UntreatedVorinostat), split="_"))
+col_names_VU = as.data.frame (t(col_names_VU[1,]))[,1]
 
-col_names_VT    = as.data.frame(strsplit(x=colnames(TreatedVorinostat),split="_"))
-col_names_VT    = as.data.frame (t(col_names_VT[1,]))[,1]
+col_names_VT = as.data.frame(strsplit(x=colnames(TreatedVorinostat),split="_"))
+col_names_VT = as.data.frame (t(col_names_VT[1,]))[,1]
 
 identical(colnames(col_names_VU), colnames(col_names_VT))
 ```
@@ -127,8 +119,8 @@ identical(colnames(col_names_VU), colnames(col_names_VT))
 __Calculation of significance using p-values__
 ```{r}
 p_values_Vorinostat = sapply(1:13299, function(i){  
-                      t.test( TreatedVorinostat[i,],UntreatedVorinostat[i,],paired = TRUE,
-                                                        alternative = "two.sided")$p.value
+                      t.test(TreatedVorinostat[i,],UntreatedVorinostat[i,],
+                      paired = TRUE, alternative = "two.sided")$p.value
 })
 ```
 
@@ -150,8 +142,6 @@ p_values_Vorinostat$significance = Significance_Treated
 
 p_values_Vorinostat = p_values_Vorinostat[ order(p_values_Vorinostat$` p_values`), ,drop = FALSE ]
 
-
-p_values_Vorinostat[1:5,]
 ```
   
 __Chosing 100 genes showing the smallest p-values__
@@ -165,39 +155,39 @@ biomarkers.genes= rownames(biomarkers.pValues)
 ```
 
 
-###Biomarkers received from variance
+##Biomarkers received from variance
 
-__Selecting genes showing high variance__   
+__1) Selecting genes showing high variance__   
 ```{r, echo= FALSE}
 
-Variances_Untreated             = as.data.frame (apply(UntreatedVorinostat,1,var))
+Variances_Untreated     = as.data.frame (apply(UntreatedVorinostat,1,var))
 
 colnames(Variances_Untreated)[1]= "var"
-Most_Variances_Unt              = Variances_Untreated[ order(-Variances_Untreated$var), , drop= FALSE ] 
+Most_Variances_Unt      = Variances_Untreated[ order(-Variances_Untreated$var), , drop= FALSE ] 
 
-nintyfive_quartile_Untr         = quantile(Variances_Untreated$var, probs = 0.95)
+nintyfive_quartile_Untr = quantile(Variances_Untreated$var, probs = 0.95)
 
-Most_Variances_Unt              = Most_Variances_Unt[
-                                 -which(Most_Variances_Unt$var < nintyfive_quartile_Untr),, drop= FALSE]
+Most_Variances_Unt      = Most_Variances_Unt[
+                         -which(Most_Variances_Unt$var < nintyfive_quartile_Untr),, drop= FALSE]
 ```
 
-__Creating data frames from Treated and Untreated only with the selected genes__
+__2) Creating data frames from Treated and Untreated only with the selected genes__
 ```{r, echo= FALSE}
-Highly_variant_Treated          = TreatedVorinostat  [ which(
+Highly_variant_Treated  = TreatedVorinostat  [ which(
                                   row.names(TreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
 
-Highly_variant_Untreated        = UntreatedVorinostat[ which(
+Highly_variant_Untreated= UntreatedVorinostat[ which(
                                   row.names(UntreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
 ```
  
-__Selecting genes with diminished variances after treatment__
+__3) Selecting genes with diminished variances after treatment__
 
 ```{r, echo=TRUE}
 
-Variances_Untreated             = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
-Variances_Treated               = as.data.frame (apply(Highly_variant_Treated,1,var  ))
+Variances_Untreated     = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
+Variances_Treated       = as.data.frame (apply(Highly_variant_Treated,1,var  ))
 
-Variance_Change                 = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
+Variance_Change         = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
 ```
 
 ```{r, echo=FALSE}
@@ -212,7 +202,7 @@ Most_neg_var_change             = Most_neg_var_change[
                                   order(Most_neg_var_change$Var_Change), ,drop = FALSE ] 
 ```
 
- __Selecting 30 genes with highest negative variance change__
+ __4) Selecting 30 genes with highest negative variance change__
 ```{r, echo=FALSE}
 Highest_VC                      = head(Most_neg_var_change, 30)
 
@@ -221,7 +211,7 @@ Highest_VC_Biomarkers           = FC[ which(row.names(FC) %in% rownames(Highest_
 colnames(Highest_VC_Biomarkers) = col_names_VT
 ```
  
-__Do these genes show similar responses in a specific cancer type?__
+__5) Do these genes show similar responses in a specific cancer type?__
  
  
 ```{r, echo=FALSE}
@@ -236,7 +226,7 @@ rownames(Metadata_V_after)      = Metadata_V_after$cell
 colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
 ```
 
-```{r, echo=TRUE}
+```{r,fig.height=5, fig.width= 10}
 pheatmap(Highest_VC_Biomarkers, main = "Expression Changes of Genes in 59 Cell Lines")
 ```
 
@@ -345,40 +335,13 @@ colnames(top100generalbiomarkers_withUporDown)[1] <- "FCmean"
 head(top100generalbiomarkers_withUporDown)
 ```
 
-```{r,fig.height= 5, fig.width= 7, echo=FALSE, echo=FALSE}
+```{r,fig.height= 5, fig.width= 7, echo=FALSE, include=FALSE}
 top100generalbiomarkers_withUporDown=as.data.frame(top100generalbiomarkers_withUporDown)
 change=top100generalbiomarkers_withUporDown$Generalchange
 col=palette(rainbow(2))
 barplot(table(change), ylab="counts", main="Number of up and down regulated genes", col=col)
 ```
 
-
-###Vorinostat affects only single genes
-
-```{r, fig.height= 7, fig.width= 13, echo=FALSE}
-
-Treated_Vorinostat_biomarker <- Treated[generalbiomarkergenes,TreatedVorinostatcolumns]
-Untreated_Vorinostat_biomarker <- Untreated[generalbiomarkergenes,UntreatedVorinostatcolumns]
-
-par(mar=c(4, 1, 4, 1), mfrow = c(1, 2))
-
-par(mar=c(5, 4, 5, 7))
-plot(density(UntreatedVorinostat), col="blue" ,xlab = "Gene expression",
-     main = "Effects of Vorinostat on overall gene expression")
-lines(density(TreatedVorinostat), col = "red")
-legend("topright", inset = c(-0.3,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
-       pch=19, col = c("blue", "red"))
-
-par(mar=c(5, 4, 5, 7))
-plot(density(Untreated_Vorinostat_biomarker),col="blue" ,xlab = "Gene expression",
-     main = "Effects of Vorinostat on biomarker gene expression")
-
-lines(density(Treated_Vorinostat_biomarker), col = "red")
-
-legend("topright", inset = c(-0.3,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
-       pch=19, col = c("blue", "red"))
-
-```
 
 
 ###Visualization of biomarkers with Vulcanoplot
@@ -434,9 +397,39 @@ EnhancedVolcano(FCandpvalues,
 
 
 
+
+###Vorinostat affects only single genes
+
+```{r, fig.height= 7, fig.width= 13, echo=FALSE}
+
+Treated_Vorinostat_biomarker <- Treated[generalbiomarkergenes,TreatedVorinostatcolumns]
+Untreated_Vorinostat_biomarker <- Untreated[generalbiomarkergenes,UntreatedVorinostatcolumns]
+
+par(mar=c(4, 1, 4, 1), mfrow = c(1, 2))
+
+par(mar=c(5, 4, 5, 7))
+plot(density(UntreatedVorinostat), col="blue" ,xlab = "Gene expression",
+     main = "Effects of Vorinostat on overall gene expression")
+lines(density(TreatedVorinostat), col = "red")
+legend("topright", inset = c(-0.3,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
+       pch=19, col = c("blue", "red"))
+
+par(mar=c(5, 4, 5, 7))
+plot(density(Untreated_Vorinostat_biomarker),col="blue" ,xlab = "Gene expression",
+     main = "Effects of Vorinostat on biomarker gene expression")
+
+lines(density(Treated_Vorinostat_biomarker), col = "red")
+
+legend("topright", inset = c(-0.3,0), legend=c("Untreated", "Treated") , xpd = TRUE, 
+       pch=19, col = c("blue", "red"))
+
+```
+
+
+
 ##Are the targets for vorinostat (HDACs) part of our biomarkers?
 
-```{r, echo=FALSE}
+```{r, include=FALSE}
 ###find target of vorinostat 
 
 target=Drug_annotation$target
@@ -452,7 +445,7 @@ target_vorinostat=c("HDAC1","HDAC10","HDAC11","HDAC2","HDAC3","HDAC5","HDAC6",
                     "HDAC8","HDAC9")
 ```
 
-```{r, echo=FALSE}
+```{r, echo=FALSE, include = FALSE}
 # search for HDAC in biomarkers 
 target <- grep(pattern = "HDAC",colnames(top100generalbiomarkers))
 length(target)
@@ -497,6 +490,12 @@ FC_HDAC <-FC[c,]
 
 ```{r, include=FALSE}
 FC_HDAC =na.omit(FC_HDAC)
+```
+
+__Targets of Vorinostat__ 
+```{r,echo=FALSE}
+target=Drug_annotation$target[grep(Drug_annotation$Drug, pattern= "vorinostat")]
+target
 ```
 
 ```{r, fig.height= 5, fig.width= 7, echo=FALSE}

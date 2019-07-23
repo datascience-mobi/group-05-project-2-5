@@ -279,58 +279,58 @@ The steps were:
 ```{r, echo=FALSE}
 
 # 1- Selecting the upper 5% of genes with highest variances
-Variances_Untreated             = as.data.frame (apply(UntreatedVorinostat,1,var))
+Variances_Untreated      = as.data.frame (apply(UntreatedVorinostat,1,var))
 
 colnames(Variances_Untreated)[1]= "var"
-Most_Variances_Unt              = Variances_Untreated[ order(-Variances_Untreated$var), , drop= FALSE ] 
+Most_Variances_Unt       = Variances_Untreated[ order(-Variances_Untreated$var), , drop= FALSE ] 
 
-nintyfive_quartile_Untr         = quantile(Variances_Untreated$var, probs = 0.95)
+nintyfive_quartile_Untr  = quantile(Variances_Untreated$var, probs = 0.95)
 ```
 
 ```{r, echo=TRUE}
-Most_Variances_Unt              = Most_Variances_Unt[
-                                 -which(Most_Variances_Unt$var < nintyfive_quartile_Untr),, drop= FALSE]
+Most_Variances_Unt       = Most_Variances_Unt[
+                          -which(Most_Variances_Unt$var < nintyfive_quartile_Untr),, drop= FALSE]
 ```
 
 ```{r, echo=FALSE}
 # 2 - Selecting genes which showed highest decreases in their high variance
 
 # Creating smaller data frames from Treated and Untreated with only the selected genes
-Highly_variant_Treated          = TreatedVorinostat  [ which(
+Highly_variant_Treated    = TreatedVorinostat  [ which(
                                   row.names(TreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
 
-Highly_variant_Untreated        = UntreatedVorinostat[ which(
+Highly_variant_Untreated  = UntreatedVorinostat[ which(
                                   row.names(UntreatedVorinostat) %in% rownames(Most_Variances_Unt)),]
  
-Variances_Untreated             = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
-Variances_Treated               = as.data.frame (apply(Highly_variant_Treated,1,var  ))
+Variances_Untreated       = as.data.frame (apply(Highly_variant_Untreated,1,var  ))
+Variances_Treated         = as.data.frame (apply(Highly_variant_Treated,1,var  ))
 
 ```
 
 ```{r, echo=TRUE}
-Variance_Change                 = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
+Variance_Change           = as.data.frame (Variances_Treated[,1] - Variances_Untreated[,1])
 ```
 
 ```{r, echo=FALSE}
-row.names(Variance_Change)      = rownames(Variances_Treated)
-colnames(Variance_Change)[1]    = "Var_Change"
+row.names(Variance_Change)   = rownames(Variances_Treated)
+colnames(Variance_Change)[1] = "Var_Change"
 
-lower_quartile_VC               = quantile (Variance_Change$Var_Change, probs = 0.05)
+lower_quartile_VC            = quantile (Variance_Change$Var_Change, probs = 0.05)
 ```
 
 ```{r, echo=TRUE}
-Most_neg_var_change             = Variance_Change[-which(
+Most_neg_var_change          = Variance_Change[-which(
                                   Variance_Change$Var_Change > lower_quartile_VC),, drop= FALSE] 
 ```
 
 ```{r, echo=FALSE}
 # We focus on the negative part of the variance change, as we expect treatment to diminish the variance
-Most_neg_var_change             = Most_neg_var_change[ 
+Most_neg_var_change          = Most_neg_var_change[ 
                                   order(Most_neg_var_change$Var_Change), ,drop = FALSE ] 
 
 # Here we select 30 genes which had a high variance at the beginning 
 # and showed a variance decrease after treatment
-Highest_VC                      = head(Most_neg_var_change, 30)
+Highest_VC                   = head(Most_neg_var_change, 30)
 
 # We get for these genes the drug response (Fold Change) values for depicting with a heatmap
 Highest_VC_Biomarkers           = FC[ which(row.names(FC) %in% rownames(Highest_VC)),]
@@ -339,13 +339,13 @@ colnames(Highest_VC_Biomarkers) = col_names_VT
 
 # 3  - Depicting the drug responses of these genes with a heatmap
 # 3.1- Manipulate colnames to show only cancer type
-Metadata                        = as.data.frame(Metadata)
-Metadata_Vorinostat             = Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
-Metadata_Vorinostat             = Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
-Metadata_V_after                = subset(Metadata_Vorinostat, Metadata_Vorinostat$dose == "5000nM")
-Metadata_V_after                = Metadata_V_after [, -which(colnames(Metadata_V_after) %in% 
+Metadata                     = as.data.frame(Metadata)
+Metadata_Vorinostat          = Metadata    [ which(grepl  ("vorinostat" , Metadata$drug) ), ] 
+Metadata_Vorinostat          = Metadata_Vorinostat [ order(Metadata_Vorinostat$cell), ,drop = FALSE ] 
+Metadata_V_after             = subset(Metadata_Vorinostat, Metadata_Vorinostat$dose == "5000nM")
+Metadata_V_after             = Metadata_V_after [, -which(colnames(Metadata_V_after) %in% 
                                                  c( "time", "drug", "sample", "dose" ))]
-rownames(Metadata_V_after)      = Metadata_V_after$cell
+rownames(Metadata_V_after)   = Metadata_V_after$cell
 
 colnames(Highest_VC_Biomarkers) = Metadata_V_after$tissue
 ```
