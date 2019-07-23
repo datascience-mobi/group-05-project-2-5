@@ -1,5 +1,5 @@
 ---
-title: 'Correlation Exploration: Heatmaps, dendrograms and other fun things'
+title: 'Correlation Exploration: Heatmaps'
 author: "Florencia Zúñiga"
 date: "7/10/2019"
 output:
@@ -9,19 +9,6 @@ output:
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-
-# Table of contents
-
-[1. Heatmaps](#anchor1)
-
-* [1.1. Heatmap with 30 Biomarkers and 59 cell lines](#anchor2)
-       
-* [1.2. Heatmap with 100 Biomarkers and 59 cell lines](#anchor3)
-       
-[2. A comparison of the clustering of biomarkers](#anchor4)
-       
-
-***
 
 
 ```{r read_data, message = FALSE, warning = FALSE, include=FALSE}
@@ -199,9 +186,9 @@ is.numeric(cor1.2_tab)
 
 
 ***
-##   1. Heatmaps {#anchor1}                                                        
+##   Heatmaps                                                        
 ***
-###  1.1 Heatmap with 30 Biomarkers and 59 cell lines {#anchor2}                                                        
+###  1. Heatmap with 30 Biomarkers and 59 cell lines                                                      
 ```{r, include=FALSE}
 ##### **Tissue Annotation**
 
@@ -249,18 +236,16 @@ cor1 = pheatmap(cor1_tab,
                 fontsize = 6.5,
                 fontsize_row= 5, 
                 fontsize_col = 6,
-                gaps_col=50,
-                info = TRUE,
                 cutree_rows = 2,
                 cutree_cols = 4,
-                main = "Heatmap with k=2 showing 30 biomarkers (y-axis) and 59 cell lines (x-axis)",
+                main = "Heatmap showing 30 biomarkers (y-axis) and 59 cell lines (x-axis)",
                 scale = "row"
                 )
 ```
 
 
 ***
-###   1.2 Heatmap with 100 Biomarkers and 59 cell lines {#anchor3}
+###   2. Heatmap with 100 Biomarkers and 59 cell lines
 ***
 
 ```{r, fig.align= 'center', echo=FALSE}
@@ -271,11 +256,9 @@ cor1.2 = pheatmap(cor1.2_tab,
                   fontsize = 6.5,
                   fontsize_row= 2.7, 
                   fontsize_col = 6,
-                  gaps_col=50,
-                  info = TRUE,
                   cutree_rows = 2,
                   cutree_cols = 4,
-                  main = "Heatmap with k=2 showing 100 biomarkers (y-axis) and 59 cell lines (x-axis)",
+                  main = "Heatmap showing 100 biomarkers (y-axis) and 59 cell lines (x-axis)",
                   scale = "row"
                   )
 ```
@@ -283,35 +266,5 @@ cor1.2 = pheatmap(cor1.2_tab,
 
 ***
 
-###   2. A comparison of the clustering of biomarkers {#anchor4}                                                    
-***
 
 
-##### **Recreation of the hierachichal clustering of both heatmaps**
-
-```{r, fig.align= 'center'}
-# Dedrogram for 30 biomarkers
-d_gg30 <- cor1_tab %>% dist %>% hclust %>% as.dendrogram %>%
-  set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
-  set("branches_lty", c(1,1,3,1,1,2)) %>%
-  set("labels_colors") %>% set("labels_cex", c(.5,0.8)) %>% 
-  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA),
-                               )
-
-plot(d_gg30, 
-     main = "Hierarchical clustering of 30 biomarkers")
-```
-
-```{r, fig.align= 'center', echo=FALSE}
-
-# Dedrogram for 100 biomarkers
-d_gg100 <- cor1.2_tab %>% dist %>% hclust %>% as.dendrogram %>%
-  set("branches_k_color", k=2) %>% set("branches_lwd", c(1.5,1,1)) %>%
-  set("branches_lty", c(1,1,3,1,1,2)) %>%
-  set("labels_colors") %>% set("labels_cex", c(0.28,0.5)) %>% 
-  set("nodes_pch", 19) %>% set("nodes_col", c("orange", "black", "plum", NA)
-                              )
-
-plot(d_gg100,
-     main = "Hierarchical clustering of 100 biomarkers")
-```
