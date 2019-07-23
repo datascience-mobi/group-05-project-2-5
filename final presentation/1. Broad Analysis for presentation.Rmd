@@ -1,5 +1,5 @@
 ---
-title: "Broad Analysis Presentation"
+title: "Broad Analysis"
 author: "Laura Plutowski and Franziska Heinkele"
 date: "25 July 2019"
 output: html_document
@@ -21,7 +21,7 @@ Treated <- as.data.frame(Treated)
 Untreated <- as.data.frame(Untreated)
 ```
 
-## 1. Searching for batches
+## Searching for batches
 
 
 ```{r, fig.height= 5, fig.width= 7, echo=FALSE}
@@ -50,8 +50,8 @@ legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE, pch=19,
        col = levels, title = "Drugs")
 ```
 
-###Normalization:
 
+###Normalization:
 
 ```{r}
 Treated_norm <- apply(Treated, 2, function(x){
@@ -59,7 +59,7 @@ Treated_norm <- apply(Treated, 2, function(x){
 })
 ```
 
-```{r,  fig.height= 5, fig.width= 7, echo=FALSE}
+```{r,  fig.height= 5, fig.width= 7, include=FALSE}
 
 Untreated_norm <- apply(Untreated, 2, function(x){
   (x - mean(x)) / sd(x)
@@ -84,7 +84,7 @@ legend("topright", inset = c(-0.4,0), legend= levels(drug), xpd = TRUE,
 ```
 
 
-## 2. Principal Component Analysis
+## Principal Component Analysis
 
 ```{r, echo=FALSE, message = FALSE, warning = FALSE}
 library(readr)
@@ -104,9 +104,7 @@ Metadatadrugs <- Metadata[TreatedrowsMetadata,"drug"]
 
 FCwithdrugs <- rbind(FC_norm, Metadatadrugs)
 drugfactorFC <- as.factor(FCwithdrugs["Metadatadrugs",])
-``` 
 
-```{r, eval=FALSE}
 Marking <- ifelse(Metadata$drug == "vorinostat", "yellow", "black")
 ```
 
