@@ -277,7 +277,7 @@ summary(reg2)
 <p>**Visualization of regression with confidence interval**
 <p>
 ```{r, fig.align= 'center', echo=FALSE}
-ggplot(data = lm_tab2, aes(x = Copynumber_100_biomarkers, y = Drug_Sensitivity)) +
+ggplot(data = lm_tab2, aes(x = Drug_Sensitivity, y = Copynumber_100_biomarkers)) +
   geom_point() +
   stat_smooth(method = "lm", col = "slateblue3", level = 0.975) +
   theme(panel.background = element_rect(fill = "white"),
@@ -333,30 +333,9 @@ lm_tab_m <- na.omit(lm_tab_m)
 ```
 
 
-###   2.1 Predicting the fittness of the model       
-<p>
-<p>**Visualization of drug sensitivity vs copynumber and doubling time** 
-<p>
-
-#### (1) Sactter plot
-
-```{r, fig.align= 'center', echo=FALSE}
-plot(lm_tab_m , 
-     pch=20 , 
-     cex=1.5 , 
-     col=rgb(0.5, 0.8, 0.9, 0.7)
-    )
-```
-
-#### (2) Checking for correlation
-
-```{r, echo=FALSE, fig.align= 'center'}
-cor(lm_tab_m)
-```
 
 
-***
-###   2.2 Multiple Regression                                                                                                
+###   2.1 Multiple Regression                                                                                                
 
 #### Multiple Regression
 
@@ -372,7 +351,7 @@ summary(reg_m)
 ```
 
 ***
-###   2.3 Visualization of regression 
+###   2.2 Visualization of regression 
 <p>
 <p>**3D Plot with Regression Plane**
 <p>
