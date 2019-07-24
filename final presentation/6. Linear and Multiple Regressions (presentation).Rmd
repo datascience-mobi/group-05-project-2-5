@@ -14,19 +14,19 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Table of contents
 
-[1. Preparation of the data: Table](#anchor1)
+[1. PREPARATION OF THE DATA](#anchor1)
 
-[2. SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber](#anchor2)
+[2. SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber of 100 biomarkers](#anchor2)
 
-* [2.1. Plots and visualization: Predicting how fit linear regression will be as a model to describe our data](#anchor3)
+* [2.1. Predicting the fittness of the model](#anchor3)
 
 * [2.2. Linear Regression](#anchor4)
        
 * [2.3. Visualization of regression](#anchor5)
 
-[3. MULTIPLE REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time and copynumber og 100 biomarkers](#anchor6)
+[3. MULTIPLE REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time and copynumber of 100 biomarkers](#anchor6)
 
-* [3.1. Plots and visualization: Predicting how fit linear regression will be as a model to describe our data](#anchor7)
+* [3.1. Predicting the fittness of the model](#anchor7)
 
 * [3.2. Linear Regression](#anchor8)
        
@@ -163,13 +163,6 @@ biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
 ##  1.  Preparation of the data: Table  {#anchor1}                                                               
 ***
 
-
-```{r}
-headCN <- Copynumber[1:4,1:5]
-headCN
-```
-
-
 ```{r, include=FALSE}
 #### (4) Table 4: Drug sensitivity 
 drug_sensitivity <- Sensitivity[-c(1:14),] 
@@ -182,6 +175,13 @@ drug_sensitivity = t(drug_sensitivity)
 ```{r}
 head(drug_sensitivity)
 ```
+
+
+```{r}
+headCN <- Copynumber[1:4,1:5]
+headCN
+```
+
 
 
 **Table 1: Copynumber of 100 biomarkers**
@@ -251,19 +251,25 @@ DS = as.data.frame(drug_sensitivity)
 
 
 lm_tab2 = transform(merge(CN,DS,by=0,all=TRUE), row.names=Row.names, Row.names=NULL)
+
+
+names(lm_tab2)[names(lm_tab2) == "BM_Copynumber_meancol"] <- "Copynumber_100_biomarkers"
+names(lm_tab2)[names(lm_tab2) == "vorinostat"] <- "Drug_Sensitivity"
+
+
 lm_tab2 <- na.omit(lm_tab2)
 ```
 
 
-###  2.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data  {#anchor3}        
-
-**Visualizations of copynumber values vs drug sensitivity**
-
+###  2.1 Predicting the fittness of the model  {#anchor3}        
+<p>
+<p>**Visualizations of copynumber values vs drug sensitivity**
+<p>
 #### (1) Scatter Plot
 
 ```{r, fig.align= 'center', echo=FALSE}
-scatter.smooth(lm_tab2$vorinostat, 
-              lm_tab2$BM_Copynumber_meancol, 
+scatter.smooth(lm_tab2$Drug_Sensitivity, 
+              lm_tab2$Copynumber_100_biomarkers, 
               col = "dodgerblue1",
               main = "Drug sensitivity & Copynumber Regression",
               xlab = "Drug sensitivity",
@@ -277,34 +283,34 @@ scatter.smooth(lm_tab2$vorinostat,
 
 ```{r, fig.align= 'center', fig.height=10, fig.width=8, echo=FALSE}
 par(mfrow=c(2, 2))
-boxplot(lm_tab2$vorinostat, 
+boxplot(lm_tab2$Drug_Sensitivity, 
         main="Drug sensitivity") 
-boxplot(lm_tab2$BM_Copynumber_meancol, 
+boxplot(lm_tab2$Copynumber_100_biomarkers, 
         main="Copynumber") 
 
 
-plot(density(lm_tab2$vorinostat), 
+plot(density(lm_tab2$Drug_Sensitivity), 
      main="Density Plot: Drug Sensitivity", 
      ylab="Frequency", 
-     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$vorinostat), 2))
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$Drug_Sensitivity), 2))
     )
 
-polygon(density(lm_tab2$vorinostat), col="royalblue1")
+polygon(density(lm_tab2$Drug_Sensitivity), col="royalblue1")
 
-plot(density(lm_tab2$BM_Copynumber_meancol), 
+plot(density(lm_tab2$Copynumber_100_biomarkers), 
      main="Density Plot: Copynumber", 
      ylab="Frequency", 
-     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$BM_Copynumber_meancol), 2))
+     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$Copynumber_100_biomarkers), 2))
     )
 
-polygon(density(lm_tab2$BM_Copynumber_meancol), col="skyblue1")
+polygon(density(lm_tab2$Copynumber_100_biomarkers), col="skyblue1")
 
 ```
 
 #### (3) Checking for correlation
 
 ```{r}
-cor(lm_tab2$vorinostat, lm_tab2$BM_Copynumber_meancol)
+cor(lm_tab2$Drug_Sensitivity, lm_tab2$Copynumber_100_biomarkers)
 ```
 
 ***
@@ -313,7 +319,7 @@ cor(lm_tab2$vorinostat, lm_tab2$BM_Copynumber_meancol)
 #### Linear Regression
 
 ```{r}
-reg2 <- lm(vorinostat ~ BM_Copynumber_meancol, data = lm_tab2)
+reg2 <- lm(Drug_Sensitivity ~ Copynumber_100_biomarkers, data = lm_tab2)
 ```
 
 
@@ -323,9 +329,13 @@ reg2 <- lm(vorinostat ~ BM_Copynumber_meancol, data = lm_tab2)
 summary(reg2)
 ```
 
-
+***
+###   2.3 Visualization of regression   {#anchor5} 
+<p>
+<p>**Visualization of regression with confidence interval**
+<p>
 ```{r, fig.align= 'center', echo=FALSE}
-ggplot(data = lm_tab2, aes(x = BM_Copynumber_meancol, y = vorinostat)) +
+ggplot(data = lm_tab2, aes(x = Copynumber_100_biomarkers, y = Drug_Sensitivity)) +
   geom_point() +
   stat_smooth(method = "lm", col = "slateblue3", level = 0.975) +
   theme(panel.background = element_rect(fill = "white"),
@@ -335,11 +345,10 @@ ggplot(data = lm_tab2, aes(x = BM_Copynumber_meancol, y = vorinostat)) +
 ```
 
 
-***
-###   2.3 Visualization of regression   {#anchor5}                                                       
-
-**Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?**
-
+                             
+<p>
+<p>**Residual diagnostics**
+<p>
 
 ```{r, fig.align= 'center', echo=FALSE}
 par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
@@ -377,14 +386,15 @@ lm_tab_m = transform(merge(CN,
 names(lm_tab_m)[names(lm_tab_m) == "BM_Copynumber_meancol"] <- "Copynumber"
 names(lm_tab_m)[names(lm_tab_m) == "vorinostat"] <- "Drug_Sensitivity"
 
+
 lm_tab_m <- na.omit(lm_tab_m)
 ```
 
 
-###   3.1 Plots and visualization: Predicting how fit linear regression will be as a model to describe our data   {#anchor7}         
-
-**Visualization of drug sensitivity vs copynumber and doubling time** 
-
+###   3.1 Predicting the fittness of the model   {#anchor7}         
+<p>
+<p>**Visualization of drug sensitivity vs copynumber and doubling time** 
+<p>
 
 #### (1) Sactter plot
 
@@ -421,9 +431,9 @@ summary(reg_m)
 
 ***
 ###   3.3 Visualization of regression {#anchor9}
-
-**3D Plot with Regression Plane**
-
+<p>
+<p>**3D Plot with Regression Plane**
+<p>
 ```{r, fig.align= 'center', echo=FALSE}
 #Creating 3D plot
 m_3d <- scatterplot3d(lm_tab_m, 
@@ -436,9 +446,9 @@ reg_m_3D <- lm(Drug_Sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
 m_3d$plane3d(reg_m_3D)
 
 ```
-
-**Residual diagnostics: are the various assumptions that underpin linear regression reasonable for our data?**
-
+<p>
+<p>**Residual diagnostics**
+<p>
 ```{r, echo=FALSE, fig.align= 'center'}
 par(mar = c(4, 4, 2, 2), mfrow = c(1, 2))
 plot(reg_m, which = c(1, 2), col = "orchid1")

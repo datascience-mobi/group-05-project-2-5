@@ -138,9 +138,7 @@ biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
 
 ```
 
-***
 
-##  1. Creation of polished MAF files 
 
 ***
 ```{r , include=FALSE}
@@ -150,29 +148,28 @@ names(Mutations)[names(Mutations) == "Tumor_Seq_Allele1"] <- "Tumor_Seq_Allele2"
 names(Mutations)[names(Mutations) == "Start_position"] <- "Start_Position"
 names(Mutations)[names(Mutations) == "End_position"] <- "End_Position"
 rownames(Mutations) <- c()
-MutationsT <- Mutations[,c(1,4,5,6,10,11,8,9,16,2,3,7,12,13,14,15,17,18)]
 ```
 
 
 
-```{r echo = T, results = 'hide'}
-write.table(MutationsT, file = "MutationsT.csv", row.names = F, sep = "\t")
+```{r echo = F, results = 'hide'}
+write.table(Mutations, file = "Mutations.csv", row.names = F, sep = "\t")
 
 laml <- read.maf(maf ="C:/GitHub/project-02-group-05/MutationsT.csv", useAll = T, verbose = T)
 ```
 
 
 ```{r echo = F, results = 'hide'}
-BM_mut = MutationsT[ which((MutationsT$Hugo_Symbol) 
+BM_mut = Mutations[ which((Mutations$Hugo_Symbol) 
                                   %in% rownames(biomarkers_FC_values100)), ]
 
 write.table(BM_mut, file = "BM_mut.csv", row.names = F, sep = "\t")
 
 BM_laml <- read.maf(maf ="C:/GitHub/project-02-group-05/BM_mut.csv", useAll = T, verbose = T)
 ```
-***
 
-## 2. Oncoplot with Transversions/Transitions
+
+## Oncoplot with Transversions/Transitions
 <p>
 ***
 #### **All genes**
