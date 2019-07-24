@@ -279,35 +279,7 @@ scatter.smooth(lm_tab2$Drug_Sensitivity,
 ```
 
 
-#### (2) Boxplots and density plots
-
-```{r, fig.align= 'center', fig.height=10, fig.width=8, echo=FALSE}
-par(mfrow=c(2, 2))
-boxplot(lm_tab2$Drug_Sensitivity, 
-        main="Drug sensitivity") 
-boxplot(lm_tab2$Copynumber_100_biomarkers, 
-        main="Copynumber") 
-
-
-plot(density(lm_tab2$Drug_Sensitivity), 
-     main="Density Plot: Drug Sensitivity", 
-     ylab="Frequency", 
-     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$Drug_Sensitivity), 2))
-    )
-
-polygon(density(lm_tab2$Drug_Sensitivity), col="royalblue1")
-
-plot(density(lm_tab2$Copynumber_100_biomarkers), 
-     main="Density Plot: Copynumber", 
-     ylab="Frequency", 
-     sub=paste("Skewness:", round(e1071::skewness(lm_tab2$Copynumber_100_biomarkers), 2))
-    )
-
-polygon(density(lm_tab2$Copynumber_100_biomarkers), col="skyblue1")
-
-```
-
-#### (3) Checking for correlation
+#### (2) Checking for correlation
 
 ```{r}
 cor(lm_tab2$Drug_Sensitivity, lm_tab2$Copynumber_100_biomarkers)
@@ -316,7 +288,7 @@ cor(lm_tab2$Drug_Sensitivity, lm_tab2$Copynumber_100_biomarkers)
 ***
 ###   2.2 Linear Regression {#anchor4}
 
-#### Linear Regression
+#### Linear Regression (y = slope * x + intercept)
 
 ```{r}
 reg2 <- lm(Drug_Sensitivity ~ Copynumber_100_biomarkers, data = lm_tab2)
@@ -328,7 +300,15 @@ reg2 <- lm(Drug_Sensitivity ~ Copynumber_100_biomarkers, data = lm_tab2)
 ```{r}
 summary(reg2)
 ```
+***
+#### **y = slope * x + intercept** 
+<p>
+<p>
 
+<p>
+
+#### Drug_Sensitivity = 1.11 * x + 5.95
+<p>
 ***
 ###   2.3 Visualization of regression   {#anchor5} 
 <p>
