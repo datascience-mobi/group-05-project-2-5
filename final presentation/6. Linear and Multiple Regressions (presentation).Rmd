@@ -12,25 +12,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 
 
-# Table of contents
 
-[1. PREPARATION OF THE DATA](#anchor1)
-
-[2. SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber of 100 biomarkers](#anchor2)
-
-* [2.1. Predicting the fittness of the model](#anchor3)
-
-* [2.2. Linear Regression](#anchor4)
-       
-* [2.3. Visualization of regression](#anchor5)
-
-[3. MULTIPLE REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time and copynumber of 100 biomarkers](#anchor6)
-
-* [3.1. Predicting the fittness of the model](#anchor7)
-
-* [3.2. Linear Regression](#anchor8)
-       
-* [3.3. Visualization of regression](#anchor9)
 
 
 ```{r read_data, message = FALSE, warning = FALSE, include=FALSE}
@@ -159,33 +141,13 @@ biomarkers_FC_values100 = as.matrix(biomarkers_FC_values100)
 
 ```
 
-***
-##  1.  Preparation of the data: Table  {#anchor1}                                                               
-***
 
 ```{r, include=FALSE}
 #### (4) Table 4: Drug sensitivity 
 drug_sensitivity <- Sensitivity[-c(1:14),] 
 
 drug_sensitivity = t(drug_sensitivity)
-```
 
-
-
-```{r}
-head(drug_sensitivity)
-```
-
-
-```{r}
-headCN <- Copynumber[1:4,1:5]
-headCN
-```
-
-
-
-**Table 1: Copynumber of 100 biomarkers**
-```{r}
 ### (1)  Selection of 100 Biomarkers in copynumber 
 BM_copynumber = Copynumber[ which(row.names(Copynumber) 
                                   %in% rownames(biomarkers_FC_values100)), ]
@@ -231,7 +193,7 @@ Doubling_Time[1] <- NULL
 ```
 
 ***
-##  2.  SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber {#anchor2}
+##  1.  SIMPLE LINEAR REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with copynumber of 100 biomarkers* 
 ***
 
 
@@ -261,7 +223,7 @@ lm_tab2 <- na.omit(lm_tab2)
 ```
 
 
-###  2.1 Predicting the fittness of the model  {#anchor3}        
+###  1.1 Predicting the fittness of the model      
 <p>
 <p>**Visualizations of copynumber values vs drug sensitivity**
 <p>
@@ -286,7 +248,7 @@ cor(lm_tab2$Drug_Sensitivity, lm_tab2$Copynumber_100_biomarkers)
 ```
 
 ***
-###   2.2 Linear Regression {#anchor4}
+###   1.2 Linear Regression 
 
 #### Linear Regression (y = slope * x + intercept)
 
@@ -295,7 +257,7 @@ reg2 <- lm(Drug_Sensitivity ~ Copynumber_100_biomarkers, data = lm_tab2)
 ```
 
 
-#### Details about the linear regression: what we need draw some conclusions
+#### Details about the linear regression
 
 ```{r}
 summary(reg2)
@@ -310,7 +272,7 @@ summary(reg2)
 #### Drug_Sensitivity = 1.11 * x + 5.95
 <p>
 ***
-###   2.3 Visualization of regression   {#anchor5} 
+###   1.3 Visualization of regression   
 <p>
 <p>**Visualization of regression with confidence interval**
 <p>
@@ -336,7 +298,7 @@ plot(reg2, which = c(1, 2), col = "dodgerblue1")
 ```
 
 ***
-##  3.  MULTIPLE REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time and copynumber {#anchor6}
+##  2.  MULTIPLE REGRESSION WITH 100 BIOMARKERS: Drug sensitivity with doubling time and copynumber of 100 biomarkers 
 ***
 
 
@@ -371,7 +333,7 @@ lm_tab_m <- na.omit(lm_tab_m)
 ```
 
 
-###   3.1 Predicting the fittness of the model   {#anchor7}         
+###   2.1 Predicting the fittness of the model       
 <p>
 <p>**Visualization of drug sensitivity vs copynumber and doubling time** 
 <p>
@@ -394,7 +356,7 @@ cor(lm_tab_m)
 
 
 ***
-###   3.2 Multiple Regression     {#anchor8}                                                                                            
+###   2.2 Multiple Regression                                                                                                
 
 #### Multiple Regression
 
@@ -403,14 +365,14 @@ reg_m <- lm(Drug_Sensitivity ~ Copynumber + Doubling_Time, data = lm_tab_m)
 ```
 
 
-#### Details about the linear regression: what we need draw some conclusions 
+#### Details about the linear regression
 
 ```{r}
 summary(reg_m)
 ```
 
 ***
-###   3.3 Visualization of regression {#anchor9}
+###   2.3 Visualization of regression 
 <p>
 <p>**3D Plot with Regression Plane**
 <p>
