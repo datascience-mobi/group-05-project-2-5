@@ -396,11 +396,7 @@ EnhancedVolcano(FCandpvalues,
 ```
 
 
-
-
-###Vorinostat affects only single genes
-
-```{r, fig.height= 7, fig.width= 13, echo=FALSE}
+```{r, fig.height= 7, fig.width= 13, include=FALSE}
 
 Treated_Vorinostat_biomarker <- Treated[generalbiomarkergenes,TreatedVorinostatcolumns]
 Untreated_Vorinostat_biomarker <- Untreated[generalbiomarkergenes,UntreatedVorinostatcolumns]
