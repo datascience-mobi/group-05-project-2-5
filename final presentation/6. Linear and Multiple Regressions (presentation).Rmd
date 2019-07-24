@@ -230,12 +230,12 @@ lm_tab2 <- na.omit(lm_tab2)
 #### (1) Scatter Plot
 
 ```{r, fig.align= 'center', echo=FALSE}
-scatter.smooth(lm_tab2$Drug_Sensitivity, 
-              lm_tab2$Copynumber_100_biomarkers, 
+scatter.smooth(lm_tab2$Copynumber_100_biomarkers, 
+               lm_tab2$Drug_Sensitivity,
               col = "dodgerblue1",
               main = "Drug sensitivity & Copynumber Regression",
-              xlab = "Drug sensitivity",
-              ylab = "Copynumber",
+              ylab = "Drug sensitivity",
+              xlab = "Copynumber",
               cex = 1.3,
               pch = 1)
 ```
@@ -277,7 +277,7 @@ summary(reg2)
 <p>**Visualization of regression with confidence interval**
 <p>
 ```{r, fig.align= 'center', echo=FALSE}
-ggplot(data = lm_tab2, aes(x = Drug_Sensitivity, y = Copynumber_100_biomarkers)) +
+ggplot(data = lm_tab2, aes(x = Copynumber_100_biomarkers, y = Drug_Sensitivity)) +
   geom_point() +
   stat_smooth(method = "lm", col = "slateblue3", level = 0.975) +
   theme(panel.background = element_rect(fill = "white"),
